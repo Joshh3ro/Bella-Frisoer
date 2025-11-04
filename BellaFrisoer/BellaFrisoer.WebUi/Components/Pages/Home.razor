@@ -1,7 +1,39 @@
 ﻿@page "/"
-
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+
+<InputDate @bind-Value="myDate" />
+
+
+@foreach (Booking b in Bookings)
+{
+	if (myDate == b.BookingDateTime)
+	{
+		<p>@b.BookingDateTime</p>
+		<p>@b.Customer</p>
+	}
+	else
+	{
+		<p>No Bookings</p>
+	}
+}
+
+
+@code
+{
+	DateTime myDate = DateTime.Now.Date;
+
+	public List<Booking> Bookings = new List<Booking>
+	{
+
+		new Booking(new DateTime(2025, 12, 25), "John"),
+		new Booking(DateTime.Now.AddDays(1), "Jane")
+
+	};
+
+
+}
