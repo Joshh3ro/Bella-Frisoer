@@ -11,12 +11,12 @@ Welcome to your new app.
 
 @foreach (Booking b in Bookings)
 {
-	if (myDate == b.BookingDateTime)
+	if (myDate.Date == b.BookingDateTime.Date)
 	{
 		<p>@b.BookingDateTime</p>
 		<p>@b.Customer</p>
 	}
-	else
+	else if (Bookings.Count <= 0)
 	{
 		<p>No Bookings</p>
 	}
