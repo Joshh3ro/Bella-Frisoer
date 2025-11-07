@@ -1,39 +1,46 @@
 ﻿@page "/"
-<PageTitle>Home</PageTitle>
+@rendermode InteractiveServer
 
-<h1>Hello, world!</h1>
+<PageTitle>Kalender</PageTitle>
 
-Welcome to your new app.
+<EditForm Model="@this">
+	<InputDate @bind-Value="myDate" />
+</EditForm>
+<button @onclick="SortBookings">Sort Bookings</button>
+<p>@myDate.ToShortDateString()</p>
 
-
-<InputDate @bind-Value="myDate" />
-
-
-@foreach (Booking b in Bookings)
+@if (SortedBookings.Any())
 {
-	if (myDate.Date == b.BookingDateTime.Date)
+	@foreach (Booking b in SortedBookings)
 	{
-		<p>@b.BookingDateTime</p>
-		<p>@b.Customer</p>
-	}
-	else if (Bookings.Count <= 0)
-	{
-		<p>No Bookings</p>
+		<p>@b.CustomerName</p>
+		<p> Har en tid kl. @b.BookingDateTime.TimeOfDay</p>
 	}
 }
 
 
-@code
-{
-	DateTime myDate = DateTime.Now.Date;
+@code {
+	private int currentCount = 0;
+	public DateTime myDate = DateTime.Today;
 
-	public List<Booking> Bookings = new List<Booking>
+	private void IncrementCount()
 	{
+		currentCount++;
+	}
 
-		new Booking(new DateTime(2025, 12, 25), "John"),
-		new Booking(DateTime.Now.AddDays(1), "Jane")
-
+	public List<Booking> SortedBookings { get; set; } = new List<Booking>();
+	public List<Booking> Bookings { get; } = new List<Booking>
+	{
+		new Booking(new DateTime(2025, 11, 7), "Kasper"),
+		new Booking(new DateTime(2025, 11, 7), "Aleksander"),
+		new Booking(new DateTime(2025, 11, 10), "Joshua"),
+		new Booking(new DateTime(2025, 11, 11), "Oskar"),
 	};
 
-
+	private void SortBookings()
+	{
+		SortedBookings = Bookings
+			.Where(b => b.BookingDateTime.Date == myDate.Date)
+			.ToList();
+	}
 }
