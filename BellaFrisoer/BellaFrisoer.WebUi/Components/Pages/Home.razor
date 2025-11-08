@@ -3,9 +3,15 @@
 
 <PageTitle>Kalender</PageTitle>
 
+<!--
+	<EditForm Model="@this">
+		Fortæller blazor at dette er en formular der kan modtage data.
+-->
 <EditForm Model="@this">
 	<InputDate @bind-Value="myDate" />
 </EditForm>
+
+
 <button @onclick="SortBookings">Sort Bookings</button>
 <p>@myDate.ToShortDateString()</p>
 
