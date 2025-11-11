@@ -1,7 +1,54 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Kalender</PageTitle>
 
-<h1>Hello, world!</h1>
+<!--
+	<EditForm Model="@this">
+		Fortæller blazor at dette er en formular der kan modtage data.
+-->
+<EditForm Model="@this">
+	<InputDate @bind-Value="myDate" />
+</EditForm>
 
-Welcome to your new app.
+
+<button @onclick="SortBookings">Sort Bookings</button>
+<p>@myDate.ToShortDateString()</p>
+
+@if (SortedBookings.Any())
+{
+	@foreach (Booking b in SortedBookings)
+	{
+		<p>@b.CustomerName</p>
+		<p> Har en tid kl. @b.BookingDateTime.TimeOfDay</p>
+	}
+}
+
+
+@code {
+	private int currentCount = 0;
+	public DateTime myDate = DateTime.Today;
+
+	private void IncrementCount()
+	{
+		currentCount++;
+	}
+
+	public List<Booking> SortedBookings { get; set; } = new List<Booking>();
+	public List<Booking> Bookings { get; } = new List<Booking>
+	{
+		new Booking(new DateTime(2025, 11, 7, 11, 30, 0), "Kasper"),
+		new Booking(new DateTime(2025, 11, 7), "Aleksander"),
+		new Booking(new DateTime(2025, 11, 10), "Joshua"),
+		new Booking(new DateTime(2025, 11, 11), "Oskar"),
+	};
+
+	private void SortBookings()
+	{
+		SortedBookings = Bookings
+			.Where(b => b.BookingDateTime.Date == myDate.Date)
+			.ToList();
+	}
+
+
+}

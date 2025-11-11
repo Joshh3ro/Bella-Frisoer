@@ -1,0 +1,54 @@
+﻿@page "/bookings/create"
+@using Microsoft.EntityFrameworkCore
+@using BellaFrisoer.Domain.Models
+@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Booking</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Booking" OnValidSubmit="AddBooking" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="bookingdatetime" class="form-label">BookingDateTime:</label> 
+                <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" /> 
+                <ValidationMessage For="() => Booking.BookingDateTime" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+	            <label for="customername" class="form-label">CustomerName:</label> 
+	            <InputText id="customername" @bind-Value="Booking.CustomerName" class="form-control" /> 
+                <ValidationMessage For="() => Booking.CustomerName" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/bookings">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Booking Booking { get; set; }
+
+    protected override void OnInitialized()
+    {
+	    Booking ??= new Booking(DateTime.Now, "");
+    }
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddBooking()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Booking.Add(Booking);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/bookings");
+    }
+}
