@@ -37,7 +37,7 @@
 	public List<Booking> SortedBookings { get; set; } = new List<Booking>();
 	public List<Booking> Bookings { get; } = new List<Booking>
 	{
-		new Booking(new DateTime(2025, 11, 7), "Kasper"),
+		new Booking(new DateTime(2025, 11, 7, 11, 30, 0), "Kasper"),
 		new Booking(new DateTime(2025, 11, 7), "Aleksander"),
 		new Booking(new DateTime(2025, 11, 10), "Joshua"),
 		new Booking(new DateTime(2025, 11, 11), "Oskar"),
@@ -49,4 +49,6 @@
 			.Where(b => b.BookingDateTime.Date == myDate.Date)
 			.ToList();
 	}
+
+
 }
