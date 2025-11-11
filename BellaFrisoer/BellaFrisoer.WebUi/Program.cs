@@ -1,3 +1,4 @@
+using BellaFrisoer.Application.Services;
 using BellaFrisoer.WebUi.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,9 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
+
+var service = new BookingService();
+var finalPrice = service.CalculateFinalPrice(100m, new GoldDiscount());
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
