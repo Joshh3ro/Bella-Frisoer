@@ -1,0 +1,15 @@
+﻿@page "/testdatepicker"
+@rendermode InteractiveAuto
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>Date Picker Test</h3>
+
+<EditForm>
+    <InputDate @bind-Value="selectedDate" />
+</EditForm>
+
+<p>Selected date: <strong>@selectedDate.ToString("yyyy-MM-dd")</strong></p>
+
+@code {
+    private DateTime selectedDate = DateTime.Now;
+}

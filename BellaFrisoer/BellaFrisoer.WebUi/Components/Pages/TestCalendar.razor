@@ -1,0 +1,60 @@
+﻿@page "/test"
+@using System
+
+<h1>Hello, world!</h1>
+Welcome to your new app.
+
+<p>Selected date: @myDate.ToShortDateString()</p>
+<InputDate @bind-Value="myDate" @bind-Value:event="onchange" />
+<p>Current selected date: <strong>@myDate.ToString("yyyy-MM-dd")</strong></p>
+
+
+<button @onclick="() => myDate = new DateTime(2025, 12, 25)">Set to Dec 25, 2025</button>
+
+@if (BookingsForSelectedDate.Any())
+{
+    @foreach (Booking b in BookingsForSelectedDate)
+    {
+        <p>@b.BookingDateTime</p>
+        <p>@b.Customer</p>
+    }
+}
+else
+{
+    <p>No Bookings</p>
+}
+
+@code {
+    private DateTime _myDate = DateTime.Now.Date;
+    public DateTime myDate
+    {
+        get => _myDate;
+        set
+        {
+            _myDate = value;
+            Console.WriteLine($"Date changed to: {_myDate}");
+            StateHasChanged();
+        }
+    }
+
+    public List<Booking> Bookings = new List<Booking>
+    {
+        new Booking(new DateTime(2025, 12, 25), "John"),
+        new Booking(DateTime.Now.AddDays(1), "Jane")
+    };
+
+    private List<Booking> BookingsForSelectedDate =>
+        Bookings.Where(b => b.BookingDateTime.Date == myDate.Date).ToList();
+
+    public class Booking
+    {
+        public DateTime BookingDateTime { get; set; }
+        public string Customer { get; set; }
+
+        public Booking(DateTime bookingDateTime, string customer)
+        {
+            BookingDateTime = bookingDateTime;
+            Customer = customer;
+        }
+    }
+}
