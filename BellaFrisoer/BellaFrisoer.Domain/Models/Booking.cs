@@ -12,13 +12,12 @@ namespace BellaFrisoer.Domain.Models
         [Key]
         public int Id { get; set; }
         public DateTime BookingDateTime { get; set; }
-        public string CustomerName { get; set; }
+        public Customer Customer { get; set; }
 
-        public Booking(DateTime bookingDateTime, string customerName)
+        public Booking(DateTime bookingDateTime, Customer customer)
         {
             BookingDateTime = bookingDateTime;
-            CustomerName = customerName;
-
+            Customer = customer;
         }
     }
 }

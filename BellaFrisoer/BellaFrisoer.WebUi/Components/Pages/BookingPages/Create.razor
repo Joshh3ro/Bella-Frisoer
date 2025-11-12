@@ -21,10 +21,30 @@
                 <ValidationMessage For="() => Booking.BookingDateTime" class="text-danger" /> 
             </div>        
             <div class="mb-3">
-	            <label for="customername" class="form-label">CustomerName:</label> 
-	            <InputText id="customername" @bind-Value="Booking.CustomerName" class="form-control" /> 
+                <label for="customername" class="form-label">CustomerName:</label> 
+                <InputText id="customername" @bind-Value="Booking.CustomerName" class="form-control" /> 
                 <ValidationMessage For="() => Booking.CustomerName" class="text-danger" /> 
-            </div>        
+            </div>
+            <div class="mb-3">
+                <label for="customeremail" class="form-label">CustomerEmail:</label>
+                <InputText id="customeremail" @bind-Value="Booking.CustomerEmail" class="form-control" />
+                <ValidationMessage For="() => Booking.CustomerEmail" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="customeraddress" class="form-label">CustomerAdddress:</label>
+                <InputText id="customeraddress" @bind-Value="Booking.CustomerAddress" class="form-control" />
+                <ValidationMessage For="() => Booking.CustomerAddress" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="customerphonenumber" class="form-label">CustomerPhoneNumber:</label>
+                <InputNumber id="customerphonenumber" @bind-Value="Booking.CustomerPhoneNumber" class="form-control" />
+                <ValidationMessage For="() => Booking.CustomerPhoneNumber" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="customerbirthdate" class="form-label">CustomerBirthDate:</label>
+                <InputDate id="customerbirthdate" @bind-Value="Booking.CustomerBirthDate" class="form-control" />
+                <ValidationMessage For="() => Booking.CustomerBirthDate" class="text-danger" />
+            </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -40,7 +60,7 @@
 
     protected override void OnInitialized()
     {
-	    Booking ??= new Booking(DateTime.Now, "");
+	    Booking ??= new Booking(DateTime.Now, "",);
     }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
