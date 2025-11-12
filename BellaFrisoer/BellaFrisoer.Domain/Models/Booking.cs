@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BellaFrisoer.Domain.Models
 {
@@ -11,13 +8,22 @@ namespace BellaFrisoer.Domain.Models
     {
         [Key]
         public int Id { get; set; }
-        public DateTime BookingDateTime { get; set; }
-        public Customer Customer { get; set; }
 
-        public Booking(DateTime bookingDateTime, Customer customer)
+        [Required]
+        public DateTime BookingDateTime { get; set; }
+
+        public int CustomerId { get; set; }
+
+        //[ForeignKey(nameof(CustomerId))]
+        //public Customer Customer { get; set; }
+        public string Customer { get; set; }
+
+        public Booking(DateTime bookingDateTime, string customer)
         {
             BookingDateTime = bookingDateTime;
             Customer = customer;
         }
+
+        public Booking() { }
     }
 }

@@ -5,19 +5,24 @@ public class Customer
 {
     [Key]
     public int Id { get; set; }
-    public string CustomerName { get; set; }
-    public string CustomerEmail { get; set; }
-    public string CustomerAddress { get; set; }
-    public long? CustomerPhoneNumber { get; set; }
-    public DateTime? CustomerBirthDate { get; set; }
+    [Required]
+    public string Name { get; set; }
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>(); public string? Email { get; set; }
+    public string? Address { get; set; }
+    public long? PhoneNumber { get; set; }
+    public DateTime? BirthDate { get; set; }
 
-    public Customer(DateTime bookingDateTime, string customerName, string customerEmail, string customerAddress, int customerPhoneNumber, DateTime? customerBirthDate )
+    public Customer( string? Name, string? Email, string? Address, int? PhoneNumber, DateTime? BirthDate )
     {
-        CustomerName = customerName;
-        CustomerEmail = customerEmail;
-        CustomerAddress = customerAddress;
-        CustomerPhoneNumber = customerPhoneNumber;
-        CustomerBirthDate = customerBirthDate;
+        Name = Name;
+        Email = Email;
+        Address = Address;
+        PhoneNumber = PhoneNumber;
+        BirthDate = BirthDate;
+
+    }
+    public Customer()
+    {
 
     }
 }

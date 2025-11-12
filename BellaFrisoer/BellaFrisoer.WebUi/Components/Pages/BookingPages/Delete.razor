@@ -23,7 +23,7 @@
         </dl>
         <dl class="row">
             <dt class="col-sm-2">CustomerName</dt>
-            <dd class="col-sm-10">@booking.CustomerName</dd>
+            <dd class="col-sm-10">@booking.Customer</dd>
         </dl>
         <EditForm method="post" Model="booking" OnValidSubmit="DeleteBooking" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(booking is null)">Delete</button> |
@@ -41,7 +41,7 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        booking = await context.Booking.FirstOrDefaultAsync(m => m.Id == Id);
+        booking = await context.Bookings.FirstOrDefaultAsync(m => m.Id == Id);
 
         if (booking is null)
         {
@@ -52,7 +52,7 @@
     private async Task DeleteBooking()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Booking.Remove(booking!);
+        context.Bookings.Remove(booking!);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/bookings");
     }

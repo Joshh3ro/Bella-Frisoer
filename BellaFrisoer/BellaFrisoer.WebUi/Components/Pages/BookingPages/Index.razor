@@ -14,9 +14,9 @@
     <a href="bookings/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Booking">
+<QuickGrid Class="table" Items="context.Bookings">
     <PropertyColumn Property="booking => booking.BookingDateTime" />
-    <PropertyColumn Property="booking => booking.CustomerName" />
+    <PropertyColumn Property="booking => booking.Customer" />
 
     <TemplateColumn Context="booking">
         <a href="@($"bookings/edit?id={booking.Id}")">Edit</a> |

@@ -1,6 +1,7 @@
 ﻿using BellaFrisoer.WebUi.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using BellaFrisoer.WebUi.Data;
 
 var builder = WebApplication.CreateBuilder(args);

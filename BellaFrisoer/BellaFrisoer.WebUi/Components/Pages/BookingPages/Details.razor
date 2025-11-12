@@ -38,7 +38,7 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        booking = await context.Booking.FirstOrDefaultAsync(m => m.Id == Id);
+        booking = await context.Bookings.FirstOrDefaultAsync(m => m.Id == Id);
 
         if (booking is null)
         {

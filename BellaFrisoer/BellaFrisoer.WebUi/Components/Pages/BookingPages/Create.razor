@@ -2,6 +2,7 @@
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+
 @inject NavigationManager NavigationManager
 
 <PageTitle>Create</PageTitle>
@@ -22,28 +23,8 @@
             </div>        
             <div class="mb-3">
                 <label for="customername" class="form-label">CustomerName:</label> 
-                <InputText id="customername" @bind-Value="Booking.CustomerName" class="form-control" /> 
-                <ValidationMessage For="() => Booking.CustomerName" class="text-danger" /> 
-            </div>
-            <div class="mb-3">
-                <label for="customeremail" class="form-label">CustomerEmail:</label>
-                <InputText id="customeremail" @bind-Value="Booking.CustomerEmail" class="form-control" />
-                <ValidationMessage For="() => Booking.CustomerEmail" class="text-danger" />
-            </div>
-            <div class="mb-3">
-                <label for="customeraddress" class="form-label">CustomerAdddress:</label>
-                <InputText id="customeraddress" @bind-Value="Booking.CustomerAddress" class="form-control" />
-                <ValidationMessage For="() => Booking.CustomerAddress" class="text-danger" />
-            </div>
-            <div class="mb-3">
-                <label for="customerphonenumber" class="form-label">CustomerPhoneNumber:</label>
-                <InputNumber id="customerphonenumber" @bind-Value="Booking.CustomerPhoneNumber" class="form-control" />
-                <ValidationMessage For="() => Booking.CustomerPhoneNumber" class="text-danger" />
-            </div>
-            <div class="mb-3">
-                <label for="customerbirthdate" class="form-label">CustomerBirthDate:</label>
-                <InputDate id="customerbirthdate" @bind-Value="Booking.CustomerBirthDate" class="form-control" />
-                <ValidationMessage For="() => Booking.CustomerBirthDate" class="text-danger" />
+                <InputText id="customername" @bind-Value="Booking.Customer" class="form-control" /> 
+                <ValidationMessage For="() => Booking.Customer" class="text-danger" /> 
             </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
@@ -55,19 +36,19 @@
 </div>
 
 @code {
-    [SupplyParameterFromForm]
     private Booking Booking { get; set; }
 
     protected override void OnInitialized()
     {
-	    Booking ??= new Booking(DateTime.Now, "",);
+	    Customer customer = new Customer();
+	    Booking ??= new Booking(DateTime.Now, "");
     }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddBooking()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Booking.Add(Booking);
+        context.Bookings.Add(Booking);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/bookings");
     }
