@@ -1,6 +1,7 @@
 ﻿@page "/bookings/create"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
+@using BellaFrisoer.WebUi.Migrations
 @inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
 
 @inject NavigationManager NavigationManager
@@ -23,7 +24,12 @@
             </div>        
             <div class="mb-3">
                 <label for="customername" class="form-label">CustomerName:</label> 
-                <InputText id="customername" @bind-Value="Booking.Customer" class="form-control" /> 
+                <InputText id="customername" @bind-Value="Booking.Customer.Name" class="form-control" /> 
+                <ValidationMessage For="() => Booking.Customer" class="text-danger" /> 
+            </div>
+            <div class="mb-3">
+                <label for="customernumber" class="form-label">Phone Number:</label> 
+                <InputNumber id="customernumber" @bind-Value="Booking.Customer.PhoneNumber" class="form-control" /> 
                 <ValidationMessage For="() => Booking.Customer" class="text-danger" /> 
             </div>
             <button type="submit" class="btn btn-primary">Create</button>
@@ -40,8 +46,7 @@
 
     protected override void OnInitialized()
     {
-	    Customer customer = new Customer();
-	    Booking ??= new Booking(DateTime.Now, "");
+	    Booking ??= new Booking{BookingDateTime = DateTime.Now, Customer = new Customer()};
     }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.

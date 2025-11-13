@@ -14,16 +14,19 @@ namespace BellaFrisoer.Domain.Models
 
         public int CustomerId { get; set; }
 
-        //[ForeignKey(nameof(CustomerId))]
-        //public Customer Customer { get; set; }
-        public string Customer { get; set; }
+        [ForeignKey(nameof(CustomerId))]
+        public Customer Customer { get; set; }
+        // public string Customer { get; set; }
 
-        public Booking(DateTime bookingDateTime, string customer)
+        public Booking(DateTime bookingDateTime, Customer customer)
         {
             BookingDateTime = bookingDateTime;
             Customer = customer;
         }
 
-        public Booking() { }
+        public Booking()
+        {
+            
+        }
     }
 }
