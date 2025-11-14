@@ -5,8 +5,8 @@ public class Customer
 {
     [Key]
     public int Id { get; set; }
-    [Required]
     public string? Name { get; set; }
+    [Required]
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>(); public string? Email { get; set; }
     public string? Address { get; set; }
     public long? PhoneNumber { get; set; }
