@@ -11,7 +11,6 @@ namespace BellaFrisoer.Domain.Models
 
         [Required]
         public DateTime BookingDateTime { get; set; }
-        public string? Name { get; set; }
 
         public int CustomerId { get; set; }
 
