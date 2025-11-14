@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -22,6 +22,11 @@ namespace BellaFrisoer.Domain.Models
         {
             BookingDateTime = bookingDateTime;
             Customer = customer;
+        }
+
+        public Booking()
+        {
+            
         }
     }
 }
