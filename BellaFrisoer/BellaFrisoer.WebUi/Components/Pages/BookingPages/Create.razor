@@ -25,7 +25,7 @@
             <div class="mb-3">
                 <label for="customername" class="form-label">CustomerName:</label> 
                 <InputText id="customername" @bind-Value="Booking.Customer.Name" class="form-control" /> 
-                <ValidationMessage For="() => Booking.Customer" class="text-danger" /> 
+                <ValidationMessage For="() => Booking.Customer.Name" class="text-danger" /> 
             </div>
             <div class="mb-3">
                 <label for="customernumber" class="form-label">Phone Number:</label> 
