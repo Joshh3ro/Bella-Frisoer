@@ -23,10 +23,5 @@ namespace BellaFrisoer.Domain.Models
             BookingDateTime = bookingDateTime;
             Customer = customer;
         }
-
-        public Booking()
-        {
-            
-        }
     }
 }

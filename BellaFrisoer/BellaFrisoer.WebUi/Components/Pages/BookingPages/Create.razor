@@ -1,8 +1,9 @@
 ﻿@page "/bookings/create"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@using BellaFrisoer.WebUi.Migrations
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@using BellaFrisoer.Domain.Interfaces
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IBookingRepository BookingRepository
 
 @inject NavigationManager NavigationManager
 
@@ -16,21 +17,21 @@
     <div class="col-md-4">
         <EditForm method="post" Model="Booking" OnValidSubmit="AddBooking" FormName="create" Enhance>
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert"/>
+            <ValidationSummary class="text-danger" role="alert" />
             <div class="mb-3">
-                <label for="bookingdatetime" class="form-label">BookingDateTime:</label> 
-                <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" /> 
-                <ValidationMessage For="() => Booking.BookingDateTime" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="customername" class="form-label">CustomerName:</label> 
-                <InputText id="customername" @bind-Value="Booking.Customer.Name" class="form-control" /> 
-                <ValidationMessage For="() => Booking.Customer" class="text-danger" /> 
+                <label for="bookingdatetime" class="form-label">BookingDateTime:</label>
+                <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" />
+                <ValidationMessage For="() => Booking.BookingDateTime" class="text-danger" />
             </div>
             <div class="mb-3">
-                <label for="customernumber" class="form-label">Phone Number:</label> 
-                <InputNumber id="customernumber" @bind-Value="Booking.Customer.PhoneNumber" class="form-control" /> 
-                <ValidationMessage For="() => Booking.Customer" class="text-danger" /> 
+                <label for="customername" class="form-label">CustomerName:</label>
+                <InputText id="customername" @bind-Value="Booking.Customer.Name" class="form-control" />
+                <ValidationMessage For="() => Booking.Customer.Name" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="customernumber" class="form-label">Phone Number:</label>
+                <InputText id="customernumber" @bind-Value="Booking.Customer.PhoneNumber" class="form-control" placeholder="Customer Name" />
+                <ValidationMessage For="() => Booking.Customer.PhoneNumber" class="text-danger" />
             </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
@@ -42,19 +43,26 @@
 </div>
 
 @code {
-    private Booking Booking { get; set; }
+
+    private Booking Booking { get; set; } = new Booking(new Booking(DateTime.Now, new Customer("", "", "", "", null)));
 
     protected override void OnInitialized()
     {
-	    Booking ??= new Booking{BookingDateTime = DateTime.Now, Customer = new Customer()};
+        // You can add initialization logic here if needed
     }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddBooking()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Bookings.Add(Booking);
-        await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/bookings");
+        try
+        {
+            await BookingRepository.AddAsync(Booking);
+            NavigationManager.NavigateTo("/bookings");
+        }
+        catch (Exception ex)
+        {
+            // Log error or show user feedback
+            Console.Error.WriteLine(ex.Message);
+        }
     }
 }

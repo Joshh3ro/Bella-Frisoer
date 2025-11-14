@@ -9,20 +9,15 @@ public class Customer
     public string? Name { get; set; }
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>(); public string? Email { get; set; }
     public string? Address { get; set; }
-    public long? PhoneNumber { get; set; }
+    public string? PhoneNumber { get; set; }
     public DateTime? BirthDate { get; set; }
 
-    public Customer( string name, string? email, string? address, int? phoneNumber, DateTime? birthDate )
+    public Customer( string name, string? email, string? address, string? phoneNumber, DateTime? birthDate )
     {
         Name = name;
         Email = email;
         Address = address;
         PhoneNumber = phoneNumber;
         BirthDate = birthDate;
-    }
-
-    public Customer()
-    {
-        
     }
 }
