@@ -1,7 +1,45 @@
 ﻿@page "/"
+@using BellaFrisoer.WebUi.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
 
-<PageTitle>Home</PageTitle>
+@rendermode InteractiveServer
 
-<h1>Hello, world!</h1>
+<PageTitle>Kalender</PageTitle>
 
-Welcome to your new app.
+<!--
+	<EditForm Model="@this">
+		Fortæller blazor at dette er en formular der kan modtage data.
+-->
+<EditForm Model="@this">
+	<InputDate @bind-Value="myDate" />
+</EditForm>
+
+
+<button @onclick="SortBookings">Sort Bookings</button>
+<p>@myDate.ToShortDateString()</p>
+
+@if (SortedBookings.Any())
+{
+	@foreach (Booking b in SortedBookings)
+	{
+		<p>@b.Customer</p>
+		<p> Har en tid kl. @b.BookingDateTime.TimeOfDay</p>
+	}
+}
+
+
+@code {
+	private DateTime myDate = DateTime.Today;
+	private List<Booking> SortedBookings { get; set; } = new List<Booking>();
+
+	private async Task SortBookings()
+	{
+		using var context = DbFactory.CreateDbContext();
+		SortedBookings = await context.Bookings
+			.Include(b => b.Customer)
+			.Where(b => b.BookingDateTime.Date == myDate.Date)
+			.ToListAsync();
+	}
+
+}
