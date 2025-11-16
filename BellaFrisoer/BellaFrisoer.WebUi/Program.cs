@@ -1,8 +1,7 @@
 ﻿using BellaFrisoer.WebUi.Components;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-
-using BellaFrisoer.WebUi.Data;
+using BellaFrisoer.Domain.Interfaces;
+using BellaFrisoer.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<BellaFrisoerWebUiContext>(options =>
@@ -15,6 +14,9 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Register repositories
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 var app = builder.Build();
 

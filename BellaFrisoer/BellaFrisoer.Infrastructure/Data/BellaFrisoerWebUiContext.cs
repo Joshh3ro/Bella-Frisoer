@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using BellaFrisoer.Domain.Models;
 
-namespace BellaFrisoer.WebUi.Data
+namespace BellaFrisoer.Infrastructure.Data
 {
     public class BellaFrisoerWebUiContext : DbContext
     {

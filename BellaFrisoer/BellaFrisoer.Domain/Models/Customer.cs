@@ -1,4 +1,4 @@
-﻿namespace BellaFrisoer.Domain.Models;
+namespace BellaFrisoer.Domain.Models;
 using System.ComponentModel.DataAnnotations;
 
 public class Customer
