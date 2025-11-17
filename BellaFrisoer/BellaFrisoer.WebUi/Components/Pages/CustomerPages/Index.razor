@@ -34,8 +34,8 @@ else
 		@foreach (var c in customers)
 		{
 				<p>@c.Name</p>
-			<p>@c.PhoneNumber</p>
-					<a href="@($"/customers/details?id={c.Id}")">Details</a>
+				<p>@c.PhoneNumber</p>
+			<a href="@($"/customers/details?id={c.Id}")">Details</a>
 		}
 		</tbody>
 	</table>
@@ -43,11 +43,13 @@ else
 
 
 @code {
-    private List<Customer>? customers;
 
-    protected override async Task OnInitializedAsync()
-    {
-        using var ctx = DbFactory.CreateDbContext();
-        customers = await ctx.Customers.OrderBy(c => c.Name).ToListAsync();
-    }
+	private List<Customer>? customers;
+
+	protected override async Task OnInitializedAsync()
+	{
+		using var ctx = DbFactory.CreateDbContext();
+		var list = await ctx.Customers.OrderBy(c => c.Name).ToListAsync();
+		customers = list;
+	}
 }

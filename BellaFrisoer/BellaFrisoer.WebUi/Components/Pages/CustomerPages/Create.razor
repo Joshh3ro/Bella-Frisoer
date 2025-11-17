@@ -4,6 +4,7 @@
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Create Customer</PageTitle>
 
@@ -20,7 +21,7 @@
 
     <div class="mb-3">
         <label class="form-label">Name</label>
-        <InputText @bind-Value="CustomerModel.Name" @bind-Value:event="oninput" class="form-control" />
+        <InputText @bind-Value="CustomerModel.Name" class="form-control" />
         <ValidationMessage For="@(() => CustomerModel.Name)" />
     </div>
 
@@ -41,25 +42,10 @@
 
     private async Task AddCustomer()
     {
-        ErrorMessage = null;
-        try
-        {
-	        using var ctx = DbFactory.CreateDbContext();
-	        ctx.Customers.Add(CustomerModel);
-	        await ctx.SaveChangesAsync();
-	        redirectAfterSave = true;
-        }
-        catch (Exception ex)
-        {
-	        ErrorMessage = $"Save failed: {ex}";
-        }
+	    Console.WriteLine($"Saving Customer: Name = '{CustomerModel.Name}', Phone = '{CustomerModel.PhoneNumber}'");
+	    using var ctx = DbFactory.CreateDbContext();
+	    ctx.Customers.Add(CustomerModel);
+	    await ctx.SaveChangesAsync();
     }
-    protected override void OnAfterRender(bool firstRender)
-    {
-	    if (redirectAfterSave)
-	    {
-		    redirectAfterSave = false;
-		    NavigationManager.NavigateTo("/customers");
-	    }
-    }
+
 }

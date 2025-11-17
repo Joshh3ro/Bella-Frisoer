@@ -13,20 +13,20 @@
     <div class="alert alert-danger" role="alert">@ErrorMessage</div>
 }
 
-@if (customers is null)
+@if (customers == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <EditForm Model="Booking" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit">
+    <EditForm Model="Booking" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit" FormName="BookingForm">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="mb-3">
             <label class="form-label">Booking date/time</label>
             <InputDate @bind-Value="Booking.BookingDateTime" class="form-control" />
-            <ValidationMessage For="() => Booking.BookingDateTime" />
+            <ValidationMessage For="@(() => Booking.BookingDateTime)" />
         </div>
 
         <div class="mb-3">
@@ -46,7 +46,7 @@ else
                         <option value="@c.Id">@c.Name (@(c.PhoneNumber?.ToString() ?? "no phone"))</option>
                     }
                 </InputSelect>
-                <ValidationMessage For="() => Booking.CustomerId" />
+                <ValidationMessage For="@(() => Booking.CustomerId)" />
             }
         </div>
 
@@ -57,7 +57,7 @@ else
 
 @code {
     private Booking Booking { get; set; } = new Booking { BookingDateTime = DateTime.Now, CustomerId = 0 };
-    private List<Customer> customers = new();
+    private List<Customer>? customers;
     private string? ErrorMessage;
 
     protected override async Task OnInitializedAsync()
@@ -75,22 +75,23 @@ else
     {
         ErrorMessage = null;
 
-        if (Booking.CustomerId == 0)
+        if (Booking.CustomerId <= 0)
         {
-            ErrorMessage = "Please select a customer.";
-            return;
+	        ErrorMessage = "Please select a customer.";
+	        return;
         }
 
         try
         {
-            using var ctx = DbFactory.CreateDbContext();
-            ctx.Bookings.Add(Booking);
-            await ctx.SaveChangesAsync();
-            NavigationManager.NavigateTo("/bookings", forceLoad: true);
+	        using var ctx = DbFactory.CreateDbContext();
+	        ctx.Bookings.Add(Booking);
+	        await ctx.SaveChangesAsync();
+	        NavigationManager.NavigateTo("/bookings");
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Save failed: {ex.Message}";
+	        ErrorMessage = $"Save failed: {ex.Message}";
         }
+    }
     }
 }
