@@ -1,9 +1,7 @@
-@page "/bookings/create"
+﻿@page "/bookings/create"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@using BellaFrisoer.Infrastructure.Migrations
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
-
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Create</PageTitle>
@@ -19,19 +17,14 @@
             <ValidationSummary class="text-danger" role="alert"/>
             <div class="mb-3">
                 <label for="bookingdatetime" class="form-label">BookingDateTime:</label> 
-                <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" /> 
+                <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" aria-required="true"/> 
                 <ValidationMessage For="() => Booking.BookingDateTime" class="text-danger" /> 
             </div>        
             <div class="mb-3">
-                <label for="customername" class="form-label">CustomerName:</label> 
-                <InputText id="customername" @bind-Value="Booking.Customer.Name" class="form-control" /> 
-                <ValidationMessage For="() => Booking.Customer.Name" class="text-danger" /> 
-            </div>
-            <div class="mb-3">
-                <label for="customernumber" class="form-label">Phone Number:</label> 
-                <InputNumber id="customernumber" @bind-Value="Booking.Customer.PhoneNumber" class="form-control" /> 
-                <ValidationMessage For="() => Booking.Customer.PhoneNumber" class="text-danger" /> 
-            </div>
+                <label for="customerid" class="form-label">CustomerId:</label> 
+                <InputNumber id="customerid" @bind-Value="Booking.CustomerId" class="form-control" /> 
+                <ValidationMessage For="() => Booking.CustomerId" class="text-danger" /> 
+            </div>        
             <button type="submit" class="btn btn-primary">Create</button>
         </EditForm>
     </div>
@@ -42,12 +35,8 @@
 </div>
 
 @code {
-    private Booking Booking { get; set; }
-
-    protected override void OnInitialized()
-    {
-	    Booking ??= new Booking{BookingDateTime = DateTime.Now, Customer = new Customer()};
-    }
+    [SupplyParameterFromForm]
+    private Booking Booking { get; set; } = new();
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddBooking()

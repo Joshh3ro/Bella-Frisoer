@@ -1,7 +1,7 @@
 ﻿@page "/bookings/edit"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Edit</PageTitle>
@@ -24,13 +24,13 @@ else
                 <input type="hidden" name="Booking.Id" value="@Booking.Id" />
                 <div class="mb-3">
                     <label for="bookingdatetime" class="form-label">BookingDateTime:</label>
-                    <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" />
+                    <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" aria-required="true"/>
                     <ValidationMessage For="() => Booking.BookingDateTime" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="customername" class="form-label">CustomerName:</label>
-                    <InputText id="customername" @bind-Value="Booking.Customer.Name" class="form-control" />
-                    <ValidationMessage For="() => Booking.Customer" class="text-danger" />
+                    <label for="customerid" class="form-label">CustomerId:</label>
+                    <InputNumber id="customerid" @bind-Value="Booking.CustomerId" class="form-control" />
+                    <ValidationMessage For="() => Booking.CustomerId" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>

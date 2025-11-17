@@ -4,10 +4,18 @@ using BellaFrisoer.Domain.Interfaces;
 using BellaFrisoer.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContextFactory<BellaFrisoerWebUiContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("BellaFrisoerWebUiContext") ?? throw new InvalidOperationException("Connection string 'BellaFrisoerWebUiContext' not found.")));
 
+// Register a factory so components can inject IDbContextFactory<BellaFrisoerDbContext>
+builder.Services.AddDbContextFactory<BellaFrisoerDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("BellaFrisoerWebUiContext")
+            ?? throw new InvalidOperationException("Connection string 'BellaFrisoerWebUiContext' not found."),
+        sql => sql.MigrationsAssembly("BellaFrisoer.Infrastructure")
+    ));
+
+// optional: keep adapter + map DbContext to the concrete type for existing code
 builder.Services.AddQuickGridEntityFrameworkAdapter();
+builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<BellaFrisoerDbContext>());
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

@@ -1,7 +1,7 @@
-@page "/bookings/details"
+﻿@page "/bookings/details"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerDbContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Details</PageTitle>
@@ -19,8 +19,8 @@
         <dl class="row">
             <dt class="col-sm-2">BookingDateTime</dt>
             <dd class="col-sm-10">@booking.BookingDateTime</dd>
-            <dt class="col-sm-2">CustomerName</dt>
-            <dd class="col-sm-10">@booking.Customer</dd>
+            <dt class="col-sm-2">CustomerId</dt>
+            <dd class="col-sm-10">@booking.CustomerId</dd>
         </dl>
         <div>
             <a href="@($"/bookings/edit?id={booking.Id}")">Edit</a> |
