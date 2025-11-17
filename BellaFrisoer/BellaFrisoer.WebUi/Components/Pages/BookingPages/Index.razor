@@ -16,7 +16,11 @@
 
 <QuickGrid Class="table" Items="context.Booking">
     <PropertyColumn Property="booking => booking.BookingDateTime" />
+<<<<<<< Updated upstream
     <PropertyColumn Property="booking => booking.CustomerName" />
+=======
+    <PropertyColumn Property="booking => booking.Customer.Name" />
+>>>>>>> Stashed changes
 
     <TemplateColumn Context="booking">
         <a href="@($"bookings/edit?id={booking.Id}")">Edit</a> |
