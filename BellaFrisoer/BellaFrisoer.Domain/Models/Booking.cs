@@ -1,24 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BellaFrisoer.Domain.Models
+namespace BellaFrisoer.Domain.Models;
+
+public class Booking
 {
-    public class Booking
+    [Key]
+    public int Id { get; set; }
+
+    [Required]
+    public DateTime BookingDateTime { get; set; }
+
+    // scalar FK: what EF uses & what forms bind to
+    [Required]
+    public int CustomerId { get; set; }
+
+    [ForeignKey(nameof(CustomerId))]
+    public Customer? Customer { get; set; }
+
+    public Booking() { }
+
+    public Booking(DateTime bookingDateTime, int customerId)
     {
-        [Key]
-        public int Id { get; set; }
-        public DateTime BookingDateTime { get; set; }
-        public string CustomerName { get; set; }
-
-        public Booking(DateTime bookingDateTime, string customerName)
-        {
-            BookingDateTime = bookingDateTime;
-            CustomerName = customerName;
-
-        }
+        BookingDateTime = bookingDateTime;
+        CustomerId = customerId;
     }
 }

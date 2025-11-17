@@ -1,37 +1,53 @@
 ﻿@page "/customers"
-@using Microsoft.EntityFrameworkCore
-@using Microsoft.AspNetCore.Components.QuickGrid
 @using BellaFrisoer.Domain.Models
-@using BellaFrisoer.WebUi.Data
-@implements IAsyncDisposable
+@using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Customers</PageTitle>
 
-<h1>Index</h1>
+<h1>Customers</h1>
 
 <p>
-    <a href="customers/create">Create New</a>
+    <a class="btn btn-primary" href="/customers/create">Create Customer</a>
+    <a class="btn btn-secondary" href="/bookings">Bookings</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Customers">
-    <PropertyColumn Property="customer => customer.Name" />
-    <PropertyColumn Property="customer => customer.PhoneNumber" />
+@if (customers is null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!customers.Any())
+{
+    <p>No customers yet.</p>
+}
+else
+{
+	<table class="table">
+		<thead>
+		<tr>
+			<th>Name</th>
+			<th>Phone Number</th>
+			<th></th>
+		</tr>
+		</thead>
+		<tbody>
+		@foreach (var c in customers)
+		{
+				<p>@c.Name</p>
+			<p>@c.PhoneNumber</p>
+					<a href="@($"/customers/details?id={c.Id}")">Details</a>
+		}
+		</tbody>
+	</table>
+}
 
-    <TemplateColumn Context="customer">
-        <a href="@($"customers/edit?id={customer.Id}")">Edit</a> |
-        <a href="@($"customers/details?id={customer.Id}")">Details</a> |
-        <a href="@($"customers/delete?id={customer.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
 
 @code {
-    private BellaFrisoerWebUiContext context = default!;
+    private List<Customer>? customers;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        context = DbFactory.CreateDbContext();
+        using var ctx = DbFactory.CreateDbContext();
+        customers = await ctx.Customers.OrderBy(c => c.Name).ToListAsync();
     }
-
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }

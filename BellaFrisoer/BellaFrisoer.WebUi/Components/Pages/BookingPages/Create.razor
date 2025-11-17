@@ -3,112 +3,94 @@
 @using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Create Booking</PageTitle>
 
-<h1>Create</h1>
+<h1>Create Booking</h1>
 
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
     <div class="alert alert-danger" role="alert">@ErrorMessage</div>
 }
 
-<h2>Booking</h2>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Booking" FormName="BookingForm" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="mb-3">
-<<<<<<< Updated upstream
-                <label for="bookingdatetime" class="form-label">BookingDateTime:</label> 
-                <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" /> 
-                <ValidationMessage For="() => Booking.BookingDateTime" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-	            <label for="customername" class="form-label">CustomerName:</label> 
-	            <InputText id="customername" @bind-Value="Booking.CustomerName" class="form-control" /> 
-                <ValidationMessage For="() => Booking.CustomerName" class="text-danger" /> 
-            </div>        
-=======
-                <label for="bookingdatetime" class="form-label">BookingDateTime:</label>
-                <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" />
-                <ValidationMessage For="() => Booking.BookingDateTime" class="text-danger" />
-            </div>
-            <div class="mb-3">
-                <label for="customername" class="form-label">CustomerName:</label>
-                <InputText id="customername" @bind-Value="Booking.Customer.Name" class="form-control" />
-                <ValidationMessage For="() => Booking.Customer.Name" class="text-danger" />
-            </div>
-            <div class="mb-3">
-                <label for="customernumber" class="form-label">Phone Number:</label>
-                <InputNumber id="customernumber" TValue="long?" @bind-Value="Booking.Customer.PhoneNumber" class="form-control" />
-                <ValidationMessage For="() => Booking.Customer.PhoneNumber" class="text-danger" />
-            </div>
->>>>>>> Stashed changes
-            <button type="submit" class="btn btn-primary">Create</button>
-        </EditForm>
-    </div>
-</div>
+@if (customers is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="Booking" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-<div>
-    <a href="/bookings">Back to List</a>
-</div>
+        <div class="mb-3">
+            <label class="form-label">Booking date/time</label>
+            <InputDate @bind-Value="Booking.BookingDateTime" class="form-control" />
+            <ValidationMessage For="() => Booking.BookingDateTime" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Customer</label>
+            @if (!customers.Any())
+            {
+                <div>
+                    <p>No customers yet. <a href="/customers/create">Create one</a> first.</p>
+                </div>
+            }
+            else
+            {
+                <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
+                    <option value="0">-- select customer --</option>
+                    @foreach (var c in customers)
+                    {
+                        <option value="@c.Id">@c.Name (@(c.PhoneNumber?.ToString() ?? "no phone"))</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => Booking.CustomerId" />
+            }
+        </div>
+
+        <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Create</button>
+        <a class="btn btn-link" href="/customers/create">Create customer</a>
+    </EditForm>
+}
 
 @code {
-<<<<<<< Updated upstream
-    [SupplyParameterFromForm]
-    private Booking Booking { get; set; }
-=======
-    private Booking Booking { get; set; } = new Booking { BookingDateTime = DateTime.Now, Customer = new Customer() };
+    private Booking Booking { get; set; } = new Booking { BookingDateTime = DateTime.Now, CustomerId = 0 };
+    private List<Customer> customers = new();
     private string? ErrorMessage;
-    private bool _shouldNavigate;
->>>>>>> Stashed changes
 
-    private void OnInvalidSubmit(EditContext editContext)
+    protected override async Task OnInitializedAsync()
     {
-<<<<<<< Updated upstream
-	    Booking ??= new Booking(DateTime.Now, "");
-=======
+        using var ctx = DbFactory.CreateDbContext();
+        customers = await ctx.Customers.OrderBy(c => c.Name).ToListAsync();
+    }
+
+    private void OnInvalidSubmit(EditContext ctx)
+    {
         ErrorMessage = "Form is invalid. Please fix validation errors.";
->>>>>>> Stashed changes
     }
 
     private async Task AddBooking()
     {
-<<<<<<< Updated upstream
-        using var context = DbFactory.CreateDbContext();
-        context.Booking.Add(Booking);
-        await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/bookings");
-=======
         ErrorMessage = null;
+
+        if (Booking.CustomerId == 0)
+        {
+            ErrorMessage = "Please select a customer.";
+            return;
+        }
+
         try
         {
-            using var context = DbFactory.CreateDbContext();
-            context.Bookings.Add(Booking);
-            await context.SaveChangesAsync();
-
-            // Defer navigation to OnAfterRenderAsync to avoid NavigationException during prerender / circuit issues
-            _shouldNavigate = true;
-            await InvokeAsync(StateHasChanged);
+            using var ctx = DbFactory.CreateDbContext();
+            ctx.Bookings.Add(Booking);
+            await ctx.SaveChangesAsync();
+            NavigationManager.NavigateTo("/bookings", forceLoad: true);
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Save failed: {ex}";
+            ErrorMessage = $"Save failed: {ex.Message}";
         }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_shouldNavigate)
-        {
-            _shouldNavigate = false;
-            // run navigation on renderer; force reload to be robust against circuit issues
-            await InvokeAsync(() => NavigationManager.NavigateTo("/bookings", forceLoad: true));
-        }
->>>>>>> Stashed changes
     }
 }

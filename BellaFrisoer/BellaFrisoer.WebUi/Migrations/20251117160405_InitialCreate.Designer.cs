@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BellaFrisoer.WebUi.Migrations
 {
     [DbContext(typeof(BellaFrisoerWebUiContext))]
-    [Migration("20251117135742_InitialCreate")]
+    [Migration("20251117160405_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -43,7 +43,7 @@ namespace BellaFrisoer.WebUi.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Bookings");
+                    b.ToTable("Bookings", (string)null);
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
@@ -63,7 +63,7 @@ namespace BellaFrisoer.WebUi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>

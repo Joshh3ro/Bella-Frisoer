@@ -19,7 +19,7 @@
 {
 	@foreach (Booking b in SortedBookings)
 	{
-		<p>@b.CustomerName</p>
+		<p>@b.Customer.Name</p>
 		<p> Har en tid kl. @b.BookingDateTime.TimeOfDay</p>
 	}
 }
@@ -37,10 +37,10 @@
 	public List<Booking> SortedBookings { get; set; } = new List<Booking>();
 	public List<Booking> Bookings { get; } = new List<Booking>
 	{
-		new Booking(new DateTime(2025, 11, 7, 11, 30, 0), "Kasper"),
-		new Booking(new DateTime(2025, 11, 7), "Aleksander"),
-		new Booking(new DateTime(2025, 11, 10), "Joshua"),
-		new Booking(new DateTime(2025, 11, 11), "Oskar"),
+		new Booking(new DateTime(2025, 11, 7, 11, 30, 0), 1),
+		new Booking(new DateTime(2025, 11, 7), 2),
+		new Booking(new DateTime(2025, 11, 10), 3),
+		new Booking(new DateTime(2025, 11, 11), 4),
 	};
 
 	private void SortBookings()

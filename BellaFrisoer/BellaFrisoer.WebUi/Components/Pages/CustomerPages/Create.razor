@@ -1,82 +1,65 @@
 ﻿@page "/customers/create"
-@using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
-
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Create Customer</PageTitle>
 
-<h1>Create</h1>
+<h1>Create Customer</h1>
 
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
-    <div class="alert alert-danger" role="alert">@ErrorMessage</div>
+    <div class="alert alert-danger">@ErrorMessage</div>
 }
 
-<h2>Booking</h2>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Booking" FormName="BookingForm" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="mb-3">
-                <label for="customername" class="form-label">CustomerName:</label>
-                <InputText id="customername" @bind-Value="Booking.Customer.Name" class="form-control" />
-                <ValidationMessage For="() => Booking.Customer.Name" class="text-danger" />
-            </div>
-            <div class="mb-3">
-                <label for="customernumber" class="form-label">Phone Number:</label>
-                <InputNumber id="customernumber" TValue="long?" @bind-Value="Booking.Customer.PhoneNumber" class="form-control" />
-                <ValidationMessage For="() => Booking.Customer.PhoneNumber" class="text-danger" />
-            </div>
-            <button type="submit" class="btn btn-primary">Create</button>
-        </EditForm>
-    </div>
-</div>
+<EditForm Model="CustomerModel" OnValidSubmit="AddCustomer" FormName="CustomerForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-<div>
-    <a href="/bookings">Back to List</a>
-</div>
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <InputText @bind-Value="CustomerModel.Name" @bind-Value:event="oninput" class="form-control" />
+        <ValidationMessage For="@(() => CustomerModel.Name)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Phone number</label>
+        <InputNumber TValue="long?" @bind-Value="CustomerModel.PhoneNumber" class="form-control" />
+        <ValidationMessage For="@(() => CustomerModel.PhoneNumber)" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Create</button>
+    <a class="btn btn-link" href="/bookings/create">Create booking</a>
+</EditForm>
 
 @code {
-    private Booking Booking { get; set; } = new Booking { BookingDateTime = DateTime.Now, Customer = new Customer() };
+	private bool redirectAfterSave;
+    private Customer CustomerModel { get; set; } = new Customer();
     private string? ErrorMessage;
-    private bool _shouldNavigate;
 
-    private void OnInvalidSubmit(EditContext editContext)
-    {
-        ErrorMessage = "Form is invalid. Please fix validation errors.";
-    }
-
-    private async Task AddBooking()
+    private async Task AddCustomer()
     {
         ErrorMessage = null;
         try
         {
-            using var context = DbFactory.CreateDbContext();
-            context.Bookings.Add(Booking);
-            await context.SaveChangesAsync();
-
-            // Defer navigation to OnAfterRenderAsync to avoid NavigationException during prerender / circuit issues
-            _shouldNavigate = true;
-            await InvokeAsync(StateHasChanged);
+	        using var ctx = DbFactory.CreateDbContext();
+	        ctx.Customers.Add(CustomerModel);
+	        await ctx.SaveChangesAsync();
+	        redirectAfterSave = true;
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Save failed: {ex}";
+	        ErrorMessage = $"Save failed: {ex}";
         }
     }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (_shouldNavigate)
-        {
-            _shouldNavigate = false;
-            // run navigation on renderer; force reload to be robust against circuit issues
-            await InvokeAsync(() => NavigationManager.NavigateTo("/bookings", forceLoad: true));
-        }
+	    if (redirectAfterSave)
+	    {
+		    redirectAfterSave = false;
+		    NavigationManager.NavigateTo("/customers");
+	    }
     }
 }

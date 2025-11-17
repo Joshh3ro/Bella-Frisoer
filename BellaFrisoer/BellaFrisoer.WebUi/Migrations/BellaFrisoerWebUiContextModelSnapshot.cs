@@ -33,9 +33,6 @@ namespace BellaFrisoer.WebUi.Migrations
                     b.Property<DateTime>("BookingDateTime")
                         .HasColumnType("datetime2");
 
-<<<<<<< Updated upstream
-                    b.Property<string>("CustomerName")
-=======
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
@@ -43,7 +40,7 @@ namespace BellaFrisoer.WebUi.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Bookings");
+                    b.ToTable("Bookings", (string)null);
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
@@ -55,16 +52,15 @@ namespace BellaFrisoer.WebUi.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
->>>>>>> Stashed changes
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("PhoneNumber")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
-<<<<<<< Updated upstream
-                    b.ToTable("Booking");
-=======
-                    b.ToTable("Customers");
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
@@ -76,7 +72,6 @@ namespace BellaFrisoer.WebUi.Migrations
                         .IsRequired();
 
                     b.Navigation("Customer");
->>>>>>> Stashed changes
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
