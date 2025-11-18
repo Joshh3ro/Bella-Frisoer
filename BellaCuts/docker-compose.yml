@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Your_strong_P@ssw0rd!"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - db_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"${SA_PASSWORD:-Your_strong_P@ssw0rd!}\" -Q \"SELECT 1\""]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - bella-net
+
+  migrations:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    depends_on:
+      db:
+        condition: service_healthy
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace:cached
+    environment:
+      SA_PASSWORD: "Your_strong_P@ssw0rd!"
+      HOME: "/root"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=BellaCutsDb;User=sa;Password=Your_strong_P@ssw0rd!;TrustServerCertificate=True"
+    command: >
+      bash -lc 'until /opt/mssql-tools/bin/sqlcmd -S db -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" >/dev/null 2>&1; do echo waiting for db; sleep 2; done;
+      dotnet tool install --global dotnet-ef --version 9.0.0 || true;
+      export PATH="$PATH:$HOME/.dotnet/tools";
+      dotnet restore BellaCuts.Infrastructure/BellaCuts.Infrastructure.csproj;
+      dotnet build BellaCuts.WebUi/BellaCuts.WebUi.csproj -c Release;
+      dotnet ef database update --project BellaCuts.Infrastructure --startup-project BellaCuts.WebUi --no-build -v'
+    networks:
+      - bella-net
+
+  webui:
+    build:
+      context: .
+      dockerfile: BellaCuts.WebUi/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=BellaCutsDb;User=sa;Password=Your_strong_P@ssw0rd!;TrustServerCertificate=True"
+    ports:
+      - "5000:80"
+    networks:
+      - bella-net
+
+volumes:
+  db_data:
+
+networks:
+  bella-net:
+    driver: bridge
