@@ -1,10 +1,6 @@
 ﻿using BellaFrisoer.WebUi.Components;
 using Microsoft.EntityFrameworkCore;
-<<<<<<< HEAD
 using Microsoft.Extensions.DependencyInjection;
-
-=======
->>>>>>> Oskar
 using BellaFrisoer.WebUi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
