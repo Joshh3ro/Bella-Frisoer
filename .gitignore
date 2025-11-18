@@ -417,3 +417,5 @@ FodyWeavers.xsd
 *.msm
 *.msp
 /BellaFrisoer/.idea/.idea.BellaFrisoer/.idea
+/config/
+/.config/
