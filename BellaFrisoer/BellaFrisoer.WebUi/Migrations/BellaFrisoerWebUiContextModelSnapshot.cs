@@ -33,14 +33,58 @@ namespace BellaFrisoer.WebUi.Migrations
                     b.Property<DateTime>("BookingDateTime")
                         .HasColumnType("datetime2");
 
+<<<<<<< HEAD
                     b.Property<int?>("CustomerId")
+=======
+                    b.Property<int>("CustomerId")
+>>>>>>> Oskar
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
+<<<<<<< HEAD
                     b.ToTable("Booking");
+=======
+                    b.ToTable("Bookings", (string)null);
+                });
+
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("PhoneNumber")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Customers", (string)null);
+                });
+
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
+                {
+                    b.HasOne("BellaFrisoer.Domain.Models.Customer", "Customer")
+                        .WithMany("Bookings")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
+                {
+                    b.Navigation("Bookings");
+>>>>>>> Oskar
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>

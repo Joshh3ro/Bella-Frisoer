@@ -23,7 +23,11 @@
         </dl>
         <dl class="row">
             <dt class="col-sm-2">CustomerName</dt>
+<<<<<<< HEAD
             <dd class="col-sm-10">@booking.Customer</dd>
+=======
+            <dd class="col-sm-10">@booking.Customer.Name</dd>
+>>>>>>> Oskar
         </dl>
         <EditForm method="post" Model="booking" OnValidSubmit="DeleteBooking" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(booking is null)">Delete</button> |

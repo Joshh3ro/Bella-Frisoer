@@ -1,9 +1,16 @@
+<<<<<<< HEAD
 ﻿namespace BellaFrisoer.Domain.Models;
 using System.ComponentModel.DataAnnotations;
+=======
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using BellaFrisoer.Domain.Models;
+>>>>>>> Oskar
 
 public class Customer
 {
     [Key]
+<<<<<<< HEAD
     public int Id { get; set; }
     [Required]
     public string? Name { get; set; }
@@ -25,4 +32,14 @@ public class Customer
     {
         
     }
+=======
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public long? PhoneNumber { get; set; }
+
+    public Customer() { }
+>>>>>>> Oskar
 }

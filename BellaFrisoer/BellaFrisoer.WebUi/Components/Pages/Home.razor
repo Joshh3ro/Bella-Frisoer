@@ -23,7 +23,11 @@
 {
 	@foreach (Booking b in SortedBookings)
 	{
+<<<<<<< HEAD
 		<p>@b.Customer</p>
+=======
+		<p>@b.Customer.Name</p>
+>>>>>>> Oskar
 		<p> Har en tid kl. @b.BookingDateTime.TimeOfDay</p>
 	}
 }
@@ -35,9 +39,27 @@
 
 	private async Task SortBookings()
 	{
+<<<<<<< HEAD
 		using var context = DbFactory.CreateDbContext();
 		SortedBookings = await context.Bookings
 			.Include(b => b.Customer)
+=======
+		currentCount++;
+	}
+
+	public List<Booking> SortedBookings { get; set; } = new List<Booking>();
+	public List<Booking> Bookings { get; } = new List<Booking>
+	{
+		new Booking(new DateTime(2025, 11, 7, 11, 30, 0), 1),
+		new Booking(new DateTime(2025, 11, 7), 2),
+		new Booking(new DateTime(2025, 11, 10), 3),
+		new Booking(new DateTime(2025, 11, 11), 4),
+	};
+
+	private void SortBookings()
+	{
+		SortedBookings = Bookings
+>>>>>>> Oskar
 			.Where(b => b.BookingDateTime.Date == myDate.Date)
 			.ToListAsync();
 	}

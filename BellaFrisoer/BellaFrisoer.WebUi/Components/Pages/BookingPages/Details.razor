@@ -19,8 +19,13 @@
         <dl class="row">
             <dt class="col-sm-2">BookingDateTime</dt>
             <dd class="col-sm-10">@booking.BookingDateTime</dd>
+<<<<<<< HEAD
             <dt class="col-sm-2">CustomerName</dt>
             <dd class="col-sm-10">@booking.Customer</dd>
+=======
+            <dt class="col-sm-2">Customer</dt>
+            <dd class="col-sm-10">@booking.Customer?.Name</dd>
+>>>>>>> Oskar
         </dl>
         <div>
             <a href="@($"/bookings/edit?id={booking.Id}")">Edit</a> |
@@ -38,7 +43,13 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
+<<<<<<< HEAD
         booking = await context.Bookings.FirstOrDefaultAsync(m => m.Id == Id);
+=======
+        booking = await context.Bookings
+            .Include(b => b.Customer)
+            .FirstOrDefaultAsync(m => m.Id == Id);
+>>>>>>> Oskar
 
         if (booking is null)
         {

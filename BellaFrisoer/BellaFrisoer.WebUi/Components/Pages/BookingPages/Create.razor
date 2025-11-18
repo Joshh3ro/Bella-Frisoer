@@ -6,10 +6,11 @@
 
 @inject NavigationManager NavigationManager
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Create Booking</PageTitle>
 
-<h1>Create</h1>
+<h1>Create Booking</h1>
 
+<<<<<<< HEAD
 <h2>Booking</h2>
 <hr />
 <div class="row">
@@ -36,25 +37,107 @@
         </EditForm>
     </div>
 </div>
+=======
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">@ErrorMessage</div>
+}
+>>>>>>> Oskar
 
-<div>
-    <a href="/bookings">Back to List</a>
-</div>
+@if (customers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="Booking" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit" FormName="BookingForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Booking date/time</label>
+            <InputDate @bind-Value="Booking.BookingDateTime" class="form-control" />
+            <ValidationMessage For="@(() => Booking.BookingDateTime)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Customer</label>
+            @if (!customers.Any())
+            {
+                <div>
+                    <p>No customers yet. <a href="/customers/create">Create one</a> first.</p>
+                </div>
+            }
+            else
+            {
+                <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
+                    <option value="0">-- select customer --</option>
+                    @foreach (var c in customers)
+                    {
+                        <option value="@c.Id">@c.Name (@(c.PhoneNumber?.ToString() ?? "no phone"))</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Booking.CustomerId)" />
+            }
+        </div>
+
+        <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Create</button>
+        <a class="btn btn-link" href="/customers/create">Create customer</a>
+    </EditForm>
+}
 
 @code {
+<<<<<<< HEAD
     private Booking Booking { get; set; }
+=======
+    private Booking Booking { get; set; } = new Booking { BookingDateTime = DateTime.Now, CustomerId = 0 };
+    private List<Customer>? customers;
+    private string? ErrorMessage;
+>>>>>>> Oskar
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+<<<<<<< HEAD
 	    Booking ??= new Booking{BookingDateTime = DateTime.Now, Customer = new Customer()};
+=======
+        using var ctx = DbFactory.CreateDbContext();
+        customers = await ctx.Customers.OrderBy(c => c.Name).ToListAsync();
     }
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private void OnInvalidSubmit(EditContext ctx)
+    {
+        ErrorMessage = "Form is invalid. Please fix validation errors.";
+>>>>>>> Oskar
+    }
+
     private async Task AddBooking()
     {
+<<<<<<< HEAD
         using var context = DbFactory.CreateDbContext();
         context.Bookings.Add(Booking);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/bookings");
+=======
+        ErrorMessage = null;
+
+        if (Booking.CustomerId <= 0)
+        {
+	        ErrorMessage = "Please select a customer.";
+	        return;
+        }
+
+        try
+        {
+	        using var ctx = DbFactory.CreateDbContext();
+	        ctx.Bookings.Add(Booking);
+	        await ctx.SaveChangesAsync();
+	        NavigationManager.NavigateTo("/bookings");
+        }
+        catch (Exception ex)
+        {
+	        ErrorMessage = $"Save failed: {ex.Message}";
+        }
+    }
+>>>>>>> Oskar
     }
 }
