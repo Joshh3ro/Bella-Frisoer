@@ -3,6 +3,7 @@
 @using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Create Booking</PageTitle>
 
@@ -24,30 +25,51 @@ else
         <ValidationSummary />
 
         <div class="mb-3">
-            <label class="form-label">Booking date/time</label>
+            <label class="form-label">Booking Dato/Tidspunkt</label>
             <InputDate @bind-Value="Booking.BookingDateTime" class="form-control" />
             <ValidationMessage For="@(() => Booking.BookingDateTime)" />
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Customer</label>
-            @if (!customers.Any())
-            {
-                <div>
-                    <p>No customers yet. <a href="/customers/create">Create one</a> first.</p>
-                </div>
-            }
-            else
-            {
-                <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
-                    <option value="0">-- select customer --</option>
-                    @foreach (var c in customers)
-                    {
-                        <option value="@c.Id">@c.Name (@(c.PhoneNumber?.ToString() ?? "no phone"))</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => Booking.CustomerId)" />
-            }
+	        <label class="form-label">Kunde</label>
+	        @if (!customers.Any())
+	        {
+		        <div>
+			        <p>Ingen kunder endnu... <a href="/customers/create">Opret Kunde</a></p>
+		        </div>
+	        }
+	        else
+	        {
+		        <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
+			        <option value="0">-- Vælg Kunde --</option>
+			        @foreach (var c in customers)
+			        {
+				        <option value="@c.Id">@c.Name (@(c.PhoneNumber?.ToString() ?? "Intet tlf nummer..."))</option>
+			        }
+		        </InputSelect>
+		        <ValidationMessage For="@(() => Booking.CustomerId)" />
+	        }
+        </div>
+
+        <div class="mb-3">
+	        <label class="form-label">Ansatte</label>
+	        @if (!employees.Any() || employees == null)
+	        {
+		        <div>
+			        <p>Ingen registrerede ansatte... <a href="/customers/create">Opret Ansat</a></p>
+		        </div>
+	        }
+	        else
+	        {
+		        <InputSelect @bind-Value="Booking.EmployeeId" class="form-select">
+			        <option value="0"> -- Vælg Ansat --</option>
+			        @foreach (var e in employees)
+			        {
+				        <option value="@e.Id">@e.Name (@(e.PhoneNumber?.ToString() ?? "Intet tlf nummer..."))</option>
+			        }
+		        </InputSelect>
+		        <ValidationMessage For="@(() => Booking.EmployeeId)" />
+	        }
         </div>
 
         <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Create</button>
@@ -58,12 +80,16 @@ else
 @code {
     private Booking Booking { get; set; } = new Booking { BookingDateTime = DateTime.Now, CustomerId = 0 };
     private List<Customer>? customers;
+    // initialize to empty list to make Razor null-safe
+    private List<Employee> employees = new();
     private string? ErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
         using var ctx = DbFactory.CreateDbContext();
         customers = await ctx.Customers.OrderBy(c => c.Name).ToListAsync();
+        // load employees as well so employees isn't null at render time
+        employees = await ctx.Employees.OrderBy(e => e.Name).ToListAsync();
     }
 
     private void OnInvalidSubmit(EditContext ctx)
@@ -77,21 +103,20 @@ else
 
         if (Booking.CustomerId <= 0)
         {
-	        ErrorMessage = "Please select a customer.";
-	        return;
+            ErrorMessage = "Vælg kunde...";
+            return;
         }
 
         try
         {
-	        using var ctx = DbFactory.CreateDbContext();
-	        ctx.Bookings.Add(Booking);
-	        await ctx.SaveChangesAsync();
-	        NavigationManager.NavigateTo("/bookings");
+            using var ctx = DbFactory.CreateDbContext();
+            ctx.Bookings.Add(Booking);
+            await ctx.SaveChangesAsync();
+            NavigationManager.NavigateTo("/bookings");
         }
         catch (Exception ex)
         {
-	        ErrorMessage = $"Save failed: {ex.Message}";
+            ErrorMessage = $"Save failed: {ex.Message}";
         }
-    }
     }
 }

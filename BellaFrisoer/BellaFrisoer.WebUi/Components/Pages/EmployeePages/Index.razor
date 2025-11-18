@@ -1,0 +1,57 @@
+﻿@page "/employees"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BellaFrisoer.WebUi.Data
+@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+
+<PageTitle>Kunder</PageTitle>
+
+<h1>Kunder</h1>
+
+<p>
+    <a href="employees/create">Opret Kunde</a>
+</p>
+
+@if (employees is null)
+{
+<p><em>Loading...</em></p>
+}
+else if (!employees.Any())
+{
+<p>Ingen ansatte indtastet...</p>
+}
+else
+{
+<table class="table table-striped table-hover">
+	<thead>
+	<tr>
+		<th>Navn</th>
+		<th>Id</th>
+		<th></th>
+	</tr>
+	</thead>
+	<tbody>
+	@foreach (var e in employees)
+	{
+		<tr>
+			<td>@(e.Name ?? "—")</td>
+			<td>@(e.Id.ToString() ?? "-")</td>
+			<td>
+				<a href="/bookings/details?id=@e.Id" class="btn btn-sm btn-primary">Detajler</a>
+			</td>
+		</tr>
+	}
+	</tbody>
+</table>
+}
+
+@code {
+	private List<Employee> employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+	    using var ctx = DbFactory.CreateDbContext();
+	    var list = await ctx.Employee.OrderBy(e => e.Name).ToListAsync();
+	    employees = list;
+    }
+}

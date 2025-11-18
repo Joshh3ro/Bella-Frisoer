@@ -18,24 +18,30 @@
 }
 else if (!customers.Any())
 {
-    <p>No customers yet.</p>
+    <p>Ingen Kunder endnu...</p>
 }
 else
 {
-	<table class="table">
+	<table class="table table-striped table-hover">
 		<thead>
 		<tr>
-			<th>Name</th>
-			<th>Phone Number</th>
-			<th></th>
+			<th>Navn</th>
+			<th>Tlf Nummer</th>
+			<th>Id</th>
 		</tr>
 		</thead>
 		<tbody>
 		@foreach (var c in customers)
 		{
-				<p>@c.Name</p>
-				<p>@c.PhoneNumber</p>
-			<a href="@($"/customers/details?id={c.Id}")">Details</a>
+			<tr>
+				<td>@(c.Name ?? "—")</td>
+				<td>@(c.PhoneNumber.ToString() ?? "—")</td>
+				<td>@(c.Id.ToString() ?? "—")</td>
+
+				<td>
+					<a href="/bookings/details?id=@c.Id" class="btn btn-sm btn-primary">Detajler</a>
+				</td>
+			</tr>
 		}
 		</tbody>
 	</table>

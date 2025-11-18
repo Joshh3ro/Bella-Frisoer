@@ -36,16 +36,15 @@
 </EditForm>
 
 @code {
-	private bool redirectAfterSave;
     private Customer CustomerModel { get; set; } = new Customer();
     private string? ErrorMessage;
-
     private async Task AddCustomer()
     {
-	    Console.WriteLine($"Saving Customer: Name = '{CustomerModel.Name}', Phone = '{CustomerModel.PhoneNumber}'");
 	    using var ctx = DbFactory.CreateDbContext();
 	    ctx.Customers.Add(CustomerModel);
 	    await ctx.SaveChangesAsync();
+	    NavigationManager.NavigateTo("/customers");
+
     }
 
 }
