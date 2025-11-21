@@ -38,4 +38,6 @@ public class BellaFrisoerWebUiContext : DbContext
     }
 
 public DbSet<Employee> Employee { get; set; } = default!;
+
+public DbSet<Customer> Customer { get; set; } = default!;
 }
