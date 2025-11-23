@@ -1,35 +1,87 @@
-﻿@page "/bookings/create"
+﻿@* 
+  Create.razor
+  Purpose: Blazor page to create a new Booking.
+  The comments explain each directive, markup block and code member.
+*@
+
+@* Route for the page: component is accessible at /bookings/create *@
+@page "/bookings/create"
+
+@* Bring EF Core asynchronous query extensions (ToListAsync, OrderBy, Include) into scope *@
 @using Microsoft.EntityFrameworkCore
+
+@* Provide Blazor form components like EditForm, InputText, InputSelect, ValidationMessage *@
+@using Microsoft.AspNetCore.Components.Forms
+
+@* Domain model types used on this page: Booking, Customer, Employee *@
 @using BellaFrisoer.Domain.Models
+
+@* Inject a factory for creating short-lived DbContext instances in Blazor Server safely *@
 @inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+
+@* Inject NavigationManager to perform client navigation after saves *@
 @inject NavigationManager NavigationManager
+
+@* Render mode for Blazor Server with interactive prerendering (keeps component interactive) *@
 @rendermode InteractiveServer
 
+@* Sets the browser title while this page is active *@
 <PageTitle>Opret Booking</PageTitle>
 
+@* Page heading shown to users *@
 <h1>Opret Booking</h1>
 
+@* Show a persistent error area when ErrorMessage is set in the component state *@
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
     <div class="alert alert-danger" role="alert">@ErrorMessage</div>
 }
 
+@* Show a loading indicator while we fetch customers (customers is null until loaded) *@
 @if (customers == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
+    @* Main form binding to the Booking instance.
+       - Model: the object bound to inputs and validated by DataAnnotations
+       - OnValidSubmit: handler when validation passes
+       - OnInvalidSubmit: handler when validation fails *@
     <EditForm Model="Booking" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit" FormName="BookingForm">
+        @* Enables data-annotation validation on the model *@
         <DataAnnotationsValidator />
+        @* Displays a summary of validation errors *@
         <ValidationSummary />
 
+        @* Booking date input:
+           - InputDate binds to Booking.BookingDateTime (Date portion + time if present)
+           - ValidationMessage shows field-specific validation messages *@
         <div class="mb-3">
-            <label class="form-label">Booking Dato/Tidspunkt</label>
-            <InputDate @bind-Value="Booking.BookingDateTime" class="form-control" />
+            <label class="form-label">Booking Dato</label>
+            <InputDate @bind-value="Booking.BookingDateTime" class="form-control" />
             <ValidationMessage For="@(() => Booking.BookingDateTime)" />
         </div>
 
+        @* Booking start time:
+           - HTML <input type="time"> binds to a string in browser; we use InputText with type="time"
+           - BookingStartTimeString converts between the string and Booking.BookingStartTime *@
+        <div class="mb-3">
+            <label class="form-label">Booking starttidspunkt</label>
+            <InputText type="time" @bind-value="BookingStartTimeString" class="form-control" />
+            <ValidationMessage For="@(() => Booking.BookingStartTime)" />
+        </div>
+
+        @* Booking end time: same approach as start time *@
+        <div class="mb-3">
+            <label class="form-label">Booking sluttidspunkt</label>
+            <InputText type="time" @bind-value="BookingEndTimeString" class="form-control" />
+            <ValidationMessage For="@(() => Booking.BookingEndTime)" />
+        </div>
+
+        @* Customer selection:
+           - If there are no customers, show a helpful message and a link to create one
+           - If customers exist, InputSelect binds the integer FK Booking.CustomerId *@
         <div class="mb-3">
 	        <label class="form-label">Kunde</label>
 	        @if (!customers.Any())
@@ -40,7 +92,7 @@ else
 	        }
 	        else
 	        {
-		        <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
+		        <InputSelect @bind-value="Booking.CustomerId" class="form-select">
 			        <option value="0">-- Vælg Kunde --</option>
 			        @foreach (var c in customers)
 			        {
@@ -51,9 +103,11 @@ else
 	        }
         </div>
 
+        @* Employee selection: same pattern as customers.
+           Note the null-check for employees to protect rendering. *@
         <div class="mb-3">
 	        <label class="form-label">Ansatte</label>
-	        @if (!employees.Any() || employees == null)
+	        @if (employees == null || !employees.Any())
 	        {
 		        <div>
 			        <p>Ingen registrerede ansatte... <a href="/customers/create">Opret Ansat</a></p>
@@ -61,7 +115,7 @@ else
 	        }
 	        else
 	        {
-		        <InputSelect @bind-Value="Booking.EmployeeId" class="form-select">
+		        <InputSelect @bind-value="Booking.EmployeeId" class="form-select">
 			        <option value="0"> -- Vælg Ansat --</option>
 			        @foreach (var e in employees)
 			        {
@@ -72,31 +126,86 @@ else
 	        }
         </div>
 
+        @* Submit button:
+           - Disabled when there are no customers to prevent saving an invalid booking
+           - Link to create a customer for convenience *@
         <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Create</button>
         <a class="btn btn-link" href="/customers/create">Create customer</a>
     </EditForm>
 }
 
 @code {
+    @* Booking model instance bound to the form.
+       Initialized with current date and no selected customer (CustomerId = 0). *@
     private Booking Booking { get; set; } = new Booking { BookingDateTime = DateTime.Now, CustomerId = 0 };
-    private List<Customer>? customers;
-    // initialize to empty list to make Razor null-safe
-    private List<Employee> employees = new();
-    private string? ErrorMessage;
 
+    @* Lists loaded from the database. customers is nullable to indicate "not loaded yet". *@
+    private List<Customer>? customers;
+    private List<Employee> employees = new(); // initialize to avoid runtime null reference in UI
+    private string? ErrorMessage; // used to show non-field error messages in the UI
+
+    @* 
+       Explanation of time string properties:
+       - HTML time inputs exchange strings like "14:30".
+       - Booking.BookingStartTime/BookingEndTime are DateTime instances.
+       - BookingStartTimeString and BookingEndTimeString translate between the two:
+         formatting DateTime to "HH:mm" for display and parsing the string back to a TimeSpan,
+         then storing a DateTime that combines the Booking date with the chosen time.
+    *@
+    private string BookingStartTimeString
+    {
+        get
+        {
+            var dt = Booking.BookingStartTime == default ? Booking.BookingDateTime : Booking.BookingStartTime;
+            return dt.ToString("HH:mm"); // present only hours and minutes
+        }
+        set
+        {
+            if (TimeSpan.TryParse(value, out var ts))
+            {
+                // Booking.CombineDateTime(date, time) should produce a DateTime that uses the date part and the parsed time
+                Booking.BookingStartTime = Booking.CombineDateTime(Booking.BookingDateTime.Date, ts);
+            }
+        }
+    }
+
+    private string BookingEndTimeString
+    {
+        get
+        {
+            var dt = Booking.BookingEndTime == default ? Booking.BookingDateTime : Booking.BookingEndTime;
+            return dt.ToString("HH:mm");
+        }
+        set
+        {
+            if (TimeSpan.TryParse(value, out var ts))
+            {
+                Booking.BookingEndTime = Booking.CombineDateTime(Booking.BookingDateTime.Date, ts);
+            }
+        }
+    }
+
+    @* Load lookup data (customers and employees) when the component initializes.
+       Using DbFactory.CreateDbContext() is recommended in Blazor Server to create short-lived contexts. *@
     protected override async Task OnInitializedAsync()
     {
         using var ctx = DbFactory.CreateDbContext();
         customers = await ctx.Customers.OrderBy(c => c.Name).ToListAsync();
-        // load employees as well so employees isn't null at render time
         employees = await ctx.Employees.OrderBy(e => e.Name).ToListAsync();
     }
 
+    @* Handler for invalid form submission. Sets an overall error message; field errors are still displayed next to fields. *@
     private void OnInvalidSubmit(EditContext ctx)
     {
         ErrorMessage = "Form is invalid. Please fix validation errors.";
     }
 
+    @* Handler for valid form submission:
+       - Ensures a customer is selected (business rule).
+       - Adds the Booking to the DbContext and saves changes.
+       - Navigates back to the bookings list on success.
+       - Captures exceptions and shows a user-friendly error message.
+       In production consider logging the exception and surfacing less detail to users. *@
     private async Task AddBooking()
     {
         ErrorMessage = null;
@@ -116,6 +225,7 @@ else
         }
         catch (Exception ex)
         {
+            // Surface the error for debugging / user feedback; consider structured logging.
             ErrorMessage = $"Save failed: {ex.Message}";
         }
     }

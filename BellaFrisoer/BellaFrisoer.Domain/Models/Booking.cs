@@ -12,6 +12,10 @@ public class Booking
     [Required]
     public DateTime BookingDateTime { get; set; }
 
+    public DateTime BookingStartTime { get; set; }
+
+    public DateTime BookingEndTime { get; set; }
+
     // scalar FK: what EF uses & what forms bind to
     [Required]
     public int CustomerId { get; set; }
@@ -32,5 +36,10 @@ public class Booking
         BookingDateTime = bookingDateTime;
         CustomerId = customerId;
         EmployeeId = employeeId;
+    }
+
+    public DateTime CombineDateTime(DateTime date, TimeSpan time)
+    {
+        return date.Date + time;
     }
 }
