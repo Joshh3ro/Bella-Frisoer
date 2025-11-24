@@ -1,51 +1,50 @@
 ﻿@page "/customers/create"
-@using BellaFrisoer.Domain.Models
-@using System.ComponentModel.DataAnnotations
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<PageTitle>Create Customer</PageTitle>
+<PageTitle>Create</PageTitle>
 
-<h1>Create Customer</h1>
+<h1>Opret Ansatte</h1>
 
-@if (!string.IsNullOrEmpty(ErrorMessage))
-{
-    <div class="alert alert-danger">@ErrorMessage</div>
-}
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Customer" OnValidSubmit="AddCustomer" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label>
+                <InputText id="name" @bind-Value="Customer.Name" class="form-control" />
+                <ValidationMessage For="() => Customer.Name" class="text-danger" />
+            </div>
 
-<EditForm Model="CustomerModel" OnValidSubmit="AddCustomer" FormName="CustomerForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <InputText @bind-Value="CustomerModel.Name" class="form-control" />
-        <ValidationMessage For="@(() => CustomerModel.Name)" />
+            <div class="mb-3">
+                <label for="phonenumber" class="form-label">PhoneNumber:</label>
+                <InputNumber id="phonenumber" @bind-Value="Customer.PhoneNumber" class="form-control" />
+                <ValidationMessage For="() => Customer.PhoneNumber" class="text-danger" />
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label class="form-label">Phone number</label>
-        <InputNumber TValue="long?" @bind-Value="CustomerModel.PhoneNumber" class="form-control" />
-        <ValidationMessage For="@(() => CustomerModel.PhoneNumber)" />
-    </div>
-
-    <button class="btn btn-primary" type="submit">Create</button>
-    <a class="btn btn-link" href="/bookings/create">Create booking</a>
-</EditForm>
+<div>
+    <a href="/customers">Back to List</a>
+</div>
 
 @code {
-	private bool redirectAfterSave;
-    private Customer CustomerModel { get; set; } = new Customer();
-    private string? ErrorMessage;
+    [SupplyParameterFromForm]
+    private Customer Customer { get; set; } = new();
 
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddCustomer()
     {
-	    Console.WriteLine($"Saving Customer: Name = '{CustomerModel.Name}', Phone = '{CustomerModel.PhoneNumber}'");
-	    using var ctx = DbFactory.CreateDbContext();
-	    ctx.Customers.Add(CustomerModel);
-	    await ctx.SaveChangesAsync();
+        using var context = DbFactory.CreateDbContext();
+        // Use the DbSet property name defined on the DbContext (plural)
+        context.Customers.Add(Customer);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/customers");
     }
-
 }

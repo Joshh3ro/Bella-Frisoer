@@ -1,7 +1,7 @@
 ﻿@page "/bookings/edit"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Edit</PageTitle>
@@ -23,9 +23,9 @@ else
                 <ValidationSummary role="alert"/>
                 <input type="hidden" name="Booking.Id" value="@Booking.Id" />
                 <div class="mb-3">
-                    <label for="bookingdatetime" class="form-label">BookingDateTime:</label>
-                    <InputDate id="bookingdatetime" @bind-Value="Booking.BookingDateTime" class="form-control" />
-                    <ValidationMessage For="() => Booking.BookingDateTime" class="text-danger" />
+                    <label for="BookingDate" class="form-label">BookingDate:</label>
+                    <InputDate id="BookingDate" @bind-Value="Booking.BookingDate" class="form-control" />
+                    <ValidationMessage For="() => Booking.BookingDate" class="text-danger" />
                 </div>
                 <div class="mb-3">
 <<<<<<< HEAD
@@ -58,7 +58,10 @@ else
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        Booking ??= await context.Bookings.FirstOrDefaultAsync(m => m.Id == Id);
+        // Ensure the Customer navigation property is loaded to avoid null dereference in the UI
+        Booking ??= await context.Bookings
+                                 .Include(b => b.Customer)
+                                 .FirstOrDefaultAsync(m => m.Id == Id);
 
         if (Booking is null)
         {

@@ -1,24 +1,24 @@
-﻿@page "/customers"
+﻿@page "/employees"
 @using BellaFrisoer.Domain.Models
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 
-<PageTitle>Customers</PageTitle>
+<PageTitle>Ansatte</PageTitle>
 
-<h1>Customers</h1>
+<h1>Ansatte</h1>
 
 <p>
-    <a class="btn btn-primary" href="/customers/create">Create Customer</a>
-    <a class="btn btn-secondary" href="/bookings">Bookings</a>
+	<a class="btn btn-primary" href="/employees/create">Opret Ansatte</a>
+	<a class="btn btn-secondary" href="/bookings">Bookings</a>
 </p>
 
-@if (customers is null)
+@if (employees is null)
 {
-    <p><em>Loading...</em></p>
+	<p><em>Loading...</em></p>
 }
-else if (!customers.Any())
+else if (!employees.Any())
 {
-    <p>Ingen Kunder endnu...</p>
+	<p>Ingen Ansatte endnu...</p>
 }
 else
 {
@@ -31,7 +31,7 @@ else
 		</tr>
 		</thead>
 		<tbody>
-		@foreach (var c in customers)
+		@foreach (var c in employees)
 		{
 			<tr>
 				<td>@(c.Name ?? "—")</td>
@@ -50,12 +50,12 @@ else
 
 @code {
 
-	private List<Customer>? customers;
+	private List<Employee>? employees;
 
 	protected override async Task OnInitializedAsync()
 	{
 		using var ctx = DbFactory.CreateDbContext();
-		var list = await ctx.Customers.OrderBy(c => c.Name).ToListAsync();
-		customers = list;
+		var list = await ctx.Employees.OrderBy(c => c.Name).ToListAsync();
+		employees = list;
 	}
 }
