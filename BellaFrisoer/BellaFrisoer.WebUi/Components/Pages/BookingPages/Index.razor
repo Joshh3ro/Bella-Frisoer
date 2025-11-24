@@ -12,6 +12,18 @@
     <a class="btn btn-secondary" href="/customers">Customers</a>
 </p>
 
+<<<<<<< HEAD
+<QuickGrid Class="table" Items="context.Bookings">
+    <PropertyColumn Property="booking => booking.BookingDateTime" />
+    <PropertyColumn Property="booking => booking.Customer" />
+
+    <TemplateColumn Context="booking">
+        <a href="@($"bookings/edit?id={booking.Id}")">Edit</a> |
+        <a href="@($"bookings/details?id={booking.Id}")">Details</a> |
+        <a href="@($"bookings/delete?id={booking.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+=======
 @if (bookings is null)
 {
     <p><em>Loading...</em></p>
@@ -47,6 +59,7 @@ else
 		</tbody>
 	</table>
 }
+>>>>>>> Oskar
 
 @code {
     private List<Booking>? bookings;

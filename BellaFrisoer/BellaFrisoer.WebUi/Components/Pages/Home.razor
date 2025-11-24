@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using BellaFrisoer.WebUi.Data
 @using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+
 @rendermode InteractiveServer
 
 @inject BellaFrisoerWebUiContext Db
@@ -26,38 +28,28 @@
 {
 	@foreach (Booking b in SortedBookings)
 	{
-		<p>@b.Customer?.Name Har en tid hos @b.Employee?.Name kl. @b.BookingDateTime.TimeOfDay</p>
+		<p>@b.Customer.Name</p>
+		<p> Har en tid kl. @b.BookingDateTime.TimeOfDay</p>
 	}
 }
 
-@code
-{
-	public DateTime myDate = DateTime.Today;
 
-	public int? SelectedEmployeeId { get; set; }
+@code {
+	private DateTime myDate = DateTime.Today;
+	private List<Booking> SortedBookings { get; set; } = new List<Booking>();
+
+	private async Task SortBookings()
+	{
+		currentCount++;
+	}
 
 	public List<Employee> Employees { get; set; } = new();
 	public List<Booking> SortedBookings { get; set; } = new();
 
 	protected override async Task OnInitializedAsync()
 	{
-		Employees = await Db.Employees.OrderBy(e => e.Name).ToListAsync();
-	}
-
-	private async Task SortBookings()
-	{
-		var query = Db.Bookings
-			.Include(b => b.Customer)
-			.Include(b => b.Employee)
-			.Where(b => b.BookingDateTime.Date == myDate.Date);
-
-		if (SelectedEmployeeId.HasValue)
-		{
-			query = query.Where(b => b.EmployeeId == SelectedEmployeeId.Value);
-		}
-
-		SortedBookings = await query
-			.OrderBy(b => b.BookingDateTime)
+		SortedBookings = Bookings
+			.Where(b => b.BookingDateTime.Date == myDate.Date)
 			.ToListAsync();
 	}
 }

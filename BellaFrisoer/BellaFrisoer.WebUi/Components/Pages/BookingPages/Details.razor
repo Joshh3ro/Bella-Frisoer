@@ -19,10 +19,8 @@
         <dl class="row">
             <dt class="col-sm-2">Tidspunkt</dt>
             <dd class="col-sm-10">@booking.BookingDateTime</dd>
-            <dt class="col-sm-2">Kunde</dt>
+            <dt class="col-sm-2">Customer</dt>
             <dd class="col-sm-10">@booking.Customer?.Name</dd>
-            <dt class="col-sm-2">Ansat</dt>
-            <dd class="col-sm-10">@booking.Employee?.Name</dd>
         </dl>
         <div>
             <a href="@($"/bookings/edit?id={booking.Id}")">Edit</a> |

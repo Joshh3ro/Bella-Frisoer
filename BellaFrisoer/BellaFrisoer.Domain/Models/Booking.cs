@@ -31,6 +31,5 @@ public class Booking
     {
         BookingDateTime = bookingDateTime;
         CustomerId = customerId;
-        EmployeeId = employeeId;
     }
 }

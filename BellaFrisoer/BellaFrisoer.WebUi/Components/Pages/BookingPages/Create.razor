@@ -1,7 +1,9 @@
 ﻿@page "/bookings/create"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
+@using BellaFrisoer.WebUi.Migrations
 @inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -118,5 +120,6 @@ else
         {
             ErrorMessage = $"Save failed: {ex.Message}";
         }
+    }
     }
 }
