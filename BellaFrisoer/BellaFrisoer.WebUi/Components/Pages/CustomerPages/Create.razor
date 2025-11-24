@@ -6,46 +6,53 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<PageTitle>Create Customer</PageTitle>
+<PageTitle>Opret Kunde</PageTitle>
 
-<h1>Create Customer</h1>
+<h1>Opret Kunde</h1>
 
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
-    <div class="alert alert-danger">@ErrorMessage</div>
+    <div class="alert alert-danger" role="alert">@ErrorMessage</div>
+}
+@if (customers == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<EditForm Model="CustomerModel" OnValidSubmit="AddCustomer" FormName="CustomerForm">
+		<DataAnnotationsValidator/>
+		<ValidationSummary/>
+
+		<div class="mb-3">
+			<label class="form-label">Name</label>
+			<InputText @bind-Value="CustomerModel.Name" class="form-control"/>
+			<ValidationMessage For="@(() => CustomerModel.Name)"/>
+		</div>
+
+		<div class="mb-3">
+			<label class="form-label">Phone number</label>
+			<InputNumber TValue="long?" @bind-Value="CustomerModel.PhoneNumber" class="form-control"/>
+			<ValidationMessage For="@(() => CustomerModel.PhoneNumber)"/>
+		</div>
+
+		<button class="btn btn-primary" type="submit">Create</button>
+		<a class="btn btn-link" href="/bookings/create">Create booking</a>
+	</EditForm>
 }
 
-<EditForm Model="CustomerModel" OnValidSubmit="AddCustomer" FormName="CustomerForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="mb-3">
-        <label class="form-label">Name</label>
-        <InputText @bind-Value="CustomerModel.Name" class="form-control" />
-        <ValidationMessage For="@(() => CustomerModel.Name)" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Phone number</label>
-        <InputNumber TValue="long?" @bind-Value="CustomerModel.PhoneNumber" class="form-control" />
-        <ValidationMessage For="@(() => CustomerModel.PhoneNumber)" />
-    </div>
-
-    <button class="btn btn-primary" type="submit">Create</button>
-    <a class="btn btn-link" href="/bookings/create">Create booking</a>
-</EditForm>
-
 @code {
-	private bool redirectAfterSave;
     private Customer CustomerModel { get; set; } = new Customer();
+    private List<Customer>? customers;
     private string? ErrorMessage;
 
     private async Task AddCustomer()
     {
-	    Console.WriteLine($"Saving Customer: Name = '{CustomerModel.Name}', Phone = '{CustomerModel.PhoneNumber}'");
 	    using var ctx = DbFactory.CreateDbContext();
 	    ctx.Customers.Add(CustomerModel);
 	    await ctx.SaveChangesAsync();
+	    NavigationManager.NavigateTo("/customers");
+
     }
 
 }

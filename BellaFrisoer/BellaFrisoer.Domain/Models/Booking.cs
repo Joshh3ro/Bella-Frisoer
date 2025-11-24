@@ -19,36 +19,17 @@ public class Booking
     [ForeignKey(nameof(CustomerId))]
     public Customer? Customer { get; set; }
 
+    [Required]
+    public int EmployeeId { get; set; }
+
+    [ForeignKey(nameof(EmployeeId))]
+    public Employee? Employee { get; set; }
+
     public Booking() { }
 
-    public Booking(DateTime bookingDateTime, int customerId)
+    public Booking(DateTime bookingDateTime, int customerId, int employeeId)
     {
-<<<<<<< HEAD
-        [Key]
-        public int Id { get; set; }
-
-        [Required]
-        public DateTime BookingDateTime { get; set; }
-
-        public int CustomerId { get; set; }
-
-        [ForeignKey(nameof(CustomerId))]
-        public Customer Customer { get; set; }
-        // public string Customer { get; set; }
-
-        public Booking(DateTime bookingDateTime, Customer customer)
-        {
-            BookingDateTime = bookingDateTime;
-            Customer = customer;
-        }
-
-        public Booking()
-        {
-            
-        }
-=======
         BookingDateTime = bookingDateTime;
         CustomerId = customerId;
->>>>>>> Oskar
     }
 }

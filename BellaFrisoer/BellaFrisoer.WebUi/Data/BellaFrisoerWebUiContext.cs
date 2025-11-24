@@ -12,6 +12,8 @@ public class BellaFrisoerWebUiContext : DbContext
 
     public DbSet<Booking> Bookings { get; set; } = null!;
     public DbSet<Customer> Customers { get; set; } = null!;
+    public DbSet<Employee> Employees { get; set; } = null!;
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -21,6 +23,8 @@ public class BellaFrisoerWebUiContext : DbContext
         // Ensure table names / relationships are explicit and match migrations/snapshot
         modelBuilder.Entity<Booking>().ToTable("Bookings");
         modelBuilder.Entity<Customer>().ToTable("Customers");
+        modelBuilder.Entity<Employee>().ToTable("Employees");
+
 
         modelBuilder.Entity<Customer>()
             .HasMany(c => c.Bookings)
@@ -28,4 +32,6 @@ public class BellaFrisoerWebUiContext : DbContext
             .HasForeignKey(b => b.CustomerId) // use the scalar FK property
             .OnDelete(DeleteBehavior.Cascade);
     }
+
+public DbSet<Employee> Employee { get; set; } = default!;
 }

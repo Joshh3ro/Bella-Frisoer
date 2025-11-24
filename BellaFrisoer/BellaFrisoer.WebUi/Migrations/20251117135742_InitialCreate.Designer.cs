@@ -4,6 +4,7 @@ using BellaFrisoer.WebUi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BellaFrisoer.WebUi.Migrations
 {
     [DbContext(typeof(BellaFrisoerWebUiContext))]
-    partial class BellaFrisoerWebUiContextModelSnapshot : ModelSnapshot
+<<<<<<<< Updated upstream:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251118123058_InitialCreate.Designer.cs
+    [Migration("20251118123058_InitialCreate")]
+========
+    [Migration("20251117135742_InitialCreate")]
+>>>>>>>> Stashed changes:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251117135742_InitialCreate.Designer.cs
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,16 +41,25 @@ namespace BellaFrisoer.WebUi.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("CustomerId")
+<<<<<<<< Updated upstream:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251118123058_InitialCreate.Designer.cs
                         .HasColumnType("int");
 
                     b.Property<int>("EmployeeId")
+========
+>>>>>>>> Stashed changes:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251117135742_InitialCreate.Designer.cs
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
+<<<<<<<< Updated upstream:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251118123058_InitialCreate.Designer.cs
+                    b.HasIndex("EmployeeId");
+
                     b.ToTable("Bookings", (string)null);
+========
+                    b.ToTable("Bookings");
+>>>>>>>> Stashed changes:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251117135742_InitialCreate.Designer.cs
                 });
 
             modelBuilder.Entity("Customer", b =>
@@ -63,6 +79,7 @@ namespace BellaFrisoer.WebUi.Migrations
 
                     b.HasKey("Id");
 
+<<<<<<<< Updated upstream:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251118123058_InitialCreate.Designer.cs
                     b.ToTable("Customers", (string)null);
                 });
 
@@ -87,21 +104,31 @@ namespace BellaFrisoer.WebUi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Employees", (string)null);
+========
+                    b.ToTable("Customers");
+>>>>>>>> Stashed changes:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251117135742_InitialCreate.Designer.cs
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
                 {
+<<<<<<<< Updated upstream:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251118123058_InitialCreate.Designer.cs
                     b.HasOne("Customer", "Customer")
+========
+                    b.HasOne("BellaFrisoer.Domain.Models.Customer", "Customer")
+>>>>>>>> Stashed changes:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251117135742_InitialCreate.Designer.cs
                         .WithMany("Bookings")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+<<<<<<<< Updated upstream:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251118123058_InitialCreate.Designer.cs
 
                     b.HasOne("Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+========
+>>>>>>>> Stashed changes:BellaFrisoer/BellaFrisoer.WebUi/Migrations/20251117135742_InitialCreate.Designer.cs
 
                     b.Navigation("Customer");
 
@@ -115,40 +142,7 @@ namespace BellaFrisoer.WebUi.Migrations
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("BirthDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long?>("PhoneNumber")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Customer");
-                });
-
-            modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
-                {
-                    b.HasOne("BellaFrisoer.Domain.Models.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId");
-
-                    b.Navigation("Customer");
+                    b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618
         }
