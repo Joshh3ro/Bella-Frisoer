@@ -1,6 +1,6 @@
 ﻿@page "/employees/edit"
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -52,7 +52,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        Employee ??= await context.Employee.FirstOrDefaultAsync(m => m.Id == Id);
+        Employee ??= await context.Employees.FirstOrDefaultAsync(m => m.Id == Id);
 
         if (Employee is null)
         {
@@ -89,6 +89,6 @@ else
     private bool EmployeeExists(int id)
     {
         using var context = DbFactory.CreateDbContext();
-        return context.Employee.Any(e => e.Id == id);
+        return context.Employees.Any(e => e.Id == id);
     }
 }

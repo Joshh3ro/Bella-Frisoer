@@ -1,6 +1,6 @@
 ﻿@page "/customers/create"
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -42,7 +42,8 @@
     private async Task AddCustomer()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Customer.Add(Customer);
+        // Use the DbSet property name defined on the DbContext (plural)
+        context.Customers.Add(Customer);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/customers");
     }

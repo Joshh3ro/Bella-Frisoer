@@ -1,7 +1,8 @@
 ﻿@page "/bookings"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject BellaFrisoer.Domain.Interfaces.IBookingRepository BookingRepo
 
 <PageTitle>Bookings</PageTitle>
 
@@ -53,11 +54,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        using var ctx = DbFactory.CreateDbContext();
-        bookings = await ctx.Bookings
-            .Include(b => b.Customer)
-            .Include(b => b.Employee)
-            .OrderBy(b => b.BookingDateTime)
-            .ToListAsync();
+        bookings = await BookingRepo.GetAllAsync();
     }
 }

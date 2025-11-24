@@ -9,6 +9,7 @@
 
 @* Bring EF Core asynchronous query extensions (ToListAsync, OrderBy, Include) into scope *@
 @using Microsoft.EntityFrameworkCore
+@using System.Globalization
 
 @* Provide Blazor form components like EditForm, InputText, InputSelect, ValidationMessage *@
 @using Microsoft.AspNetCore.Components.Forms
@@ -17,7 +18,7 @@
 @using BellaFrisoer.Domain.Models
 
 @* Inject a factory for creating short-lived DbContext instances in Blazor Server safely *@
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 
 @* Inject NavigationManager to perform client navigation after saves *@
 @inject NavigationManager NavigationManager
@@ -54,34 +55,24 @@ else
         @* Displays a summary of validation errors *@
         <ValidationSummary />
 
-        @* Booking date input:
-           - InputDate binds to Booking.BookingDateTime (Date portion + time if present)
-           - ValidationMessage shows field-specific validation messages *@
         <div class="mb-3">
             <label class="form-label">Booking Dato</label>
-            <InputDate @bind-value="Booking.BookingDateTime" class="form-control" />
-            <ValidationMessage For="@(() => Booking.BookingDateTime)" />
+            <InputDate @bind-Value="Booking.BookingDate" class="form-control" />
+            <ValidationMessage For="@(() => Booking.BookingDate)" />
         </div>
 
-        @* Booking start time:
-           - HTML <input type="time"> binds to a string in browser; we use InputText with type="time"
-           - BookingStartTimeString converts between the string and Booking.BookingStartTime *@
         <div class="mb-3">
             <label class="form-label">Booking starttidspunkt</label>
-            <InputText type="time" @bind-value="BookingStartTimeString" class="form-control" />
+            <InputText type="time" @bind-Value="BookingStartTimeString" class="form-control" />
             <ValidationMessage For="@(() => Booking.BookingStartTime)" />
         </div>
 
-        @* Booking end time: same approach as start time *@
         <div class="mb-3">
-            <label class="form-label">Booking sluttidspunkt</label>
-            <InputText type="time" @bind-value="BookingEndTimeString" class="form-control" />
-            <ValidationMessage For="@(() => Booking.BookingEndTime)" />
+            <label class="form-label">Booking varighed</label>
+            <InputText type="time" @bind-Value="BookingEndTimeString" class="form-control" />
+            <ValidationMessage For="@(() => Booking.BookingDuration)" />
         </div>
 
-        @* Customer selection:
-           - If there are no customers, show a helpful message and a link to create one
-           - If customers exist, InputSelect binds the integer FK Booking.CustomerId *@
         <div class="mb-3">
 	        <label class="form-label">Kunde</label>
 	        @if (!customers.Any())
@@ -92,7 +83,7 @@ else
 	        }
 	        else
 	        {
-		        <InputSelect @bind-value="Booking.CustomerId" class="form-select">
+		        <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
 			        <option value="0">-- Vælg Kunde --</option>
 			        @foreach (var c in customers)
 			        {
@@ -103,8 +94,6 @@ else
 	        }
         </div>
 
-        @* Employee selection: same pattern as customers.
-           Note the null-check for employees to protect rendering. *@
         <div class="mb-3">
 	        <label class="form-label">Ansatte</label>
 	        @if (employees == null || !employees.Any())
@@ -115,7 +104,7 @@ else
 	        }
 	        else
 	        {
-		        <InputSelect @bind-value="Booking.EmployeeId" class="form-select">
+		        <InputSelect @bind-Value="Booking.EmployeeId" class="form-select">
 			        <option value="0"> -- Vælg Ansat --</option>
 			        @foreach (var e in employees)
 			        {
@@ -126,46 +115,37 @@ else
 	        }
         </div>
 
-        @* Submit button:
-           - Disabled when there are no customers to prevent saving an invalid booking
-           - Link to create a customer for convenience *@
         <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Create</button>
         <a class="btn btn-link" href="/customers/create">Create customer</a>
     </EditForm>
 }
 
 @code {
-    @* Booking model instance bound to the form.
-       Initialized with current date and no selected customer (CustomerId = 0). *@
-    private Booking Booking { get; set; } = new Booking { BookingDateTime = DateTime.Now, CustomerId = 0 };
+    private Booking Booking { get; set; } = new Booking { BookingDate = DateTime.Now, CustomerId = 0 };
 
-    @* Lists loaded from the database. customers is nullable to indicate "not loaded yet". *@
     private List<Customer>? customers;
-    private List<Employee> employees = new(); // initialize to avoid runtime null reference in UI
-    private string? ErrorMessage; // used to show non-field error messages in the UI
+    private List<Employee> employees = new();
+    private string? ErrorMessage;
 
-    @* 
-       Explanation of time string properties:
-       - HTML time inputs exchange strings like "14:30".
-       - Booking.BookingStartTime/BookingEndTime are DateTime instances.
-       - BookingStartTimeString and BookingEndTimeString translate between the two:
-         formatting DateTime to "HH:mm" for display and parsing the string back to a TimeSpan,
-         then storing a DateTime that combines the Booking date with the chosen time.
-    *@
     private string BookingStartTimeString
     {
         get
         {
-            var dt = Booking.BookingStartTime == default ? Booking.BookingDateTime : Booking.BookingStartTime;
-            return dt.ToString("HH:mm"); // present only hours and minutes
+            var dt = Booking.BookingStartTime == default ? Booking.BookingDate : Booking.BookingStartTime;
+            return dt.ToString("HH:mm", CultureInfo.InvariantCulture);
         }
         set
         {
-            if (TimeSpan.TryParse(value, out var ts))
+            // robust parsing: prefer TimeOnly (HH:mm from browser), fallback to TimeSpan
+            if (TimeOnly.TryParseExact(value, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var t))
             {
-                // Booking.CombineDateTime(date, time) should produce a DateTime that uses the date part and the parsed time
-                Booking.BookingStartTime = Booking.CombineDateTime(Booking.BookingDateTime.Date, ts);
+                Booking.BookingStartTime = Booking.CombineDateTime(Booking.BookingDate.Date, t.ToTimeSpan());
             }
+            else if (TimeSpan.TryParseExact(value, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var ts))
+            {
+                Booking.BookingStartTime = Booking.CombineDateTime(Booking.BookingDate.Date, ts);
+            }
+            // else ignore invalid input (UI validation should prevent this); you may set ErrorMessage if needed
         }
     }
 
@@ -173,20 +153,30 @@ else
     {
         get
         {
-            var dt = Booking.BookingEndTime == default ? Booking.BookingDateTime : Booking.BookingEndTime;
-            return dt.ToString("HH:mm");
+            // Prefer explicit duration if set; otherwise compute from start/end
+            var duration = Booking.BookingDuration;
+            if (duration == default && Booking.BookingEndTime != default && Booking.BookingStartTime != default)
+            {
+                duration = Booking.BookingEndTime - Booking.BookingStartTime;
+            }
+
+            return duration.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
         }
         set
         {
-            if (TimeSpan.TryParse(value, out var ts))
+            // user enters HH:mm representing a duration (hours:minutes)
+            if (TimeSpan.TryParseExact(value, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var ts))
             {
-                Booking.BookingEndTime = Booking.CombineDateTime(Booking.BookingDateTime.Date, ts);
+                Booking.BookingDuration = ts;
             }
+            else if (TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out ts))
+            {
+                Booking.BookingDuration = ts;
+            }
+            // No else: keep previous duration if parsing fails
         }
     }
 
-    @* Load lookup data (customers and employees) when the component initializes.
-       Using DbFactory.CreateDbContext() is recommended in Blazor Server to create short-lived contexts. *@
     protected override async Task OnInitializedAsync()
     {
         using var ctx = DbFactory.CreateDbContext();
@@ -194,18 +184,11 @@ else
         employees = await ctx.Employees.OrderBy(e => e.Name).ToListAsync();
     }
 
-    @* Handler for invalid form submission. Sets an overall error message; field errors are still displayed next to fields. *@
     private void OnInvalidSubmit(EditContext ctx)
     {
         ErrorMessage = "Form is invalid. Please fix validation errors.";
     }
 
-    @* Handler for valid form submission:
-       - Ensures a customer is selected (business rule).
-       - Adds the Booking to the DbContext and saves changes.
-       - Navigates back to the bookings list on success.
-       - Captures exceptions and shows a user-friendly error message.
-       In production consider logging the exception and surfacing less detail to users. *@
     private async Task AddBooking()
     {
         ErrorMessage = null;
@@ -225,7 +208,6 @@ else
         }
         catch (Exception ex)
         {
-            // Surface the error for debugging / user feedback; consider structured logging.
             ErrorMessage = $"Save failed: {ex.Message}";
         }
     }

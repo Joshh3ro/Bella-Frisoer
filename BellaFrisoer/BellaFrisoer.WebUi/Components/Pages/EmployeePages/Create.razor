@@ -1,6 +1,6 @@
 ﻿@page "/employees/create"
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -42,7 +42,7 @@
     private async Task AddEmployee()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Employee.Add(Employee);
+        context.Employees.Add(Employee);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/employees");
     }

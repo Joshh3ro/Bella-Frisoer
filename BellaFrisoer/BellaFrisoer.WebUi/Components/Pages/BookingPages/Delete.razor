@@ -1,7 +1,7 @@
 ﻿@page "/bookings/delete"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Delete</PageTitle>
@@ -18,8 +18,8 @@
     }
     else {
         <dl class="row">
-            <dt class="col-sm-2">BookingDateTime</dt>
-            <dd class="col-sm-10">@booking.BookingDateTime</dd>
+            <dt class="col-sm-2">BookingDate</dt>
+            <dd class="col-sm-10">@booking.BookingDate</dd>
         </dl>
         <dl class="row">
             <dt class="col-sm-2">CustomerName</dt>

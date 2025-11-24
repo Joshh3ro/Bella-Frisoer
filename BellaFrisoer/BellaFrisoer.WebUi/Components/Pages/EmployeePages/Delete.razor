@@ -1,6 +1,6 @@
 ﻿@page "/employees/delete"
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Delete</PageTitle>
@@ -44,7 +44,7 @@
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        employee = await context.Employee.FirstOrDefaultAsync(m => m.Id == Id);
+        employee = await context.Employees.FirstOrDefaultAsync(m => m.Id == Id);
 
         if (employee is null)
         {
@@ -55,7 +55,7 @@
     private async Task DeleteEmployee()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Employee.Remove(employee!);
+        context.Employees.Remove(employee!);
         await context.SaveChangesAsync();
         NavigationManager.NavigateTo("/employees");
     }

@@ -1,7 +1,7 @@
 ﻿@page "/bookings/details"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 
 <PageTitle>Details</PageTitle>
@@ -18,7 +18,7 @@
     else {
         <dl class="row">
             <dt class="col-sm-2">Tidspunkt</dt>
-            <dd class="col-sm-10">@booking.BookingDateTime</dd>
+            <dd class="col-sm-10">@booking.BookingDate</dd>
             <dt class="col-sm-2">Kunde</dt>
             <dd class="col-sm-10">@booking.Customer?.Name</dd>
             <dt class="col-sm-2">Ansat</dt>

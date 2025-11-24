@@ -1,18 +1,25 @@
 ﻿using BellaFrisoer.WebUi.Components;
+using BellaFrisoer.Infrastructure.Data;
+using BellaFrisoer.Infrastructure.Repositories;
+using BellaFrisoer.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using BellaFrisoer.WebUi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContextFactory<BellaFrisoerWebUiContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("BellaFrisoerWebUiContext")
-                         ?? throw new InvalidOperationException("Connection string 'BellaFrisoerWebUiContext' not found.")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("BellaFrisoerWebUiContext")
+            ?? throw new InvalidOperationException("Connection string not found."),
+        sql => sql.MigrationsAssembly("BellaFrisoer.Infrastructure") // important when migrations live in Infrastructure
+    ));
 
 builder.Services.AddQuickGridEntityFrameworkAdapter();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 
 var app = builder.Build();
