@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace BellaFrisoer.Application.Interfaces
 {
-    internal interface IBookingConflictChecker
+    public interface IBookingConflictChecker
     {
+        public bool HasBookingConflict(Domain.Models.Booking newBooking, IEnumerable<Domain.Models.Booking> existingBookings);
+
     }
 }

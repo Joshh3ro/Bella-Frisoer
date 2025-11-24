@@ -3,6 +3,9 @@ using BellaFrisoer.Infrastructure.Data;
 using BellaFrisoer.Infrastructure.Repositories;
 using BellaFrisoer.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using BellaFrisoer.Application.Interfaces;
+using BellaFrisoer.Application;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +23,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-
+builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
 
 var app = builder.Build();
 

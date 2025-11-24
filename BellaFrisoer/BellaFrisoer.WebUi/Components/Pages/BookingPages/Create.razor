@@ -17,11 +17,16 @@
 @* Domain model types used on this page: Booking, Customer, Employee *@
 @using BellaFrisoer.Domain.Models
 
+@using BellaFrisoer.Application.Interfaces
+@inject IBookingConflictChecker BookingConflictChecker
+
 @* Inject a factory for creating short-lived DbContext instances in Blazor Server safely *@
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 
 @* Inject NavigationManager to perform client navigation after saves *@
 @inject NavigationManager NavigationManager
+
+
 
 @* Render mode for Blazor Server with interactive prerendering (keeps component interactive) *@
 @rendermode InteractiveServer
@@ -197,6 +202,39 @@ else
         {
             ErrorMessage = "Vælg kunde...";
             return;
+        }
+
+        if (Booking.EmployeeId <= 0)
+        {
+            ErrorMessage = "Vælg ansat...";
+            return;
+        }
+
+        if (Booking.BookingStartTime == default)
+        {
+            ErrorMessage = "Ugyldigt starttidspunkt.";
+            return;
+        }
+        if (Booking.BookingDuration == default || Booking.BookingDuration.TotalMinutes <= 0)
+        {
+            ErrorMessage = "Ugyldig varighed.";
+            return;
+        }
+
+        // Fetch potentially conflicting bookings from the database for the same day
+        using (var ctx = DbFactory.CreateDbContext())
+        {
+            var existingBookings = await ctx.Bookings
+                .Where(b =>
+                    b.BookingDate.Date == Booking.BookingDate.Date &&
+                    (b.CustomerId == Booking.CustomerId || b.EmployeeId == Booking.EmployeeId))
+                .ToListAsync();
+
+            if (BookingConflictChecker.HasBookingConflict(Booking, existingBookings))
+            {
+                ErrorMessage = "Booking conflict: selected customer or employee already has a booking during this time.";
+                return;
+            }
         }
 
         try

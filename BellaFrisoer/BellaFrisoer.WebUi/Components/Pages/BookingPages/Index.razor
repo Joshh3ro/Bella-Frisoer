@@ -29,6 +29,9 @@ else
 			<th>Ansatte</th>
 			<th>Kunde</th>
 			<th>Dato/Tidspunkt</th>
+			<th>Varighed (minutter)</th>
+			<th>Slut tid</th>
+
 			<th></th>
 		</tr>
 		</thead>
@@ -39,6 +42,8 @@ else
 				<td>@(b.Employee?.Name ?? "—")</td>
 				<td>@(b.Customer?.Name ?? "-")</td>
 					<td>@(b.BookingDateTime.ToString() ?? "—")</td>
+					<td>@(b.BookingDuration.ToString() ?? "-")</td>
+					<td>@(b.BookingEndTime.ToString() ?? "-")</td>
 
 					<td>
 					<a href="/bookings/details?id=@b.Id" class="btn btn-sm btn-primary">Details</a>
