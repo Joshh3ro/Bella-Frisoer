@@ -1,37 +1,59 @@
 ﻿@page "/bookings"
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.AspNetCore.Components.QuickGrid
 @using BellaFrisoer.Domain.Models
-@using BellaFrisoer.WebUi.Data
-@implements IAsyncDisposable
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject BellaFrisoer.Domain.Interfaces.IBookingRepository BookingRepo
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Bookings</PageTitle>
 
-<h1>Index</h1>
+<h1>Bookings</h1>
 
 <p>
-    <a href="bookings/create">Create New</a>
+    <a class="btn btn-primary" href="/bookings/create">Create Booking</a>
+    <a class="btn btn-secondary" href="/customers">Customers</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Bookings">
-    <PropertyColumn Property="booking => booking.BookingDateTime" />
-    <PropertyColumn Property="booking => booking.Customer" />
+@if (bookings is null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!bookings.Any())
+{
+    <p>Ingen bookings endnu...</p>
+}
+else
+{
+	<table class="table table-striped table-hover">
+		<thead>
+		<tr>
+			<th>Ansatte</th>
+			<th>Kunde</th>
+			<th>Dato/Tidspunkt</th>
+			<th></th>
+		</tr>
+		</thead>
+		<tbody>
+		@foreach (var b in bookings)
+		{
+			<tr>
+				<td>@(b.Employee?.Name ?? "—")</td>
+				<td>@(b.Customer?.Name ?? "-")</td>
+					<td>@(b.BookingDateTime.ToString() ?? "—")</td>
 
-    <TemplateColumn Context="booking">
-        <a href="@($"bookings/edit?id={booking.Id}")">Edit</a> |
-        <a href="@($"bookings/details?id={booking.Id}")">Details</a> |
-        <a href="@($"bookings/delete?id={booking.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
+					<td>
+					<a href="/bookings/details?id=@b.Id" class="btn btn-sm btn-primary">Details</a>
+				</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+}
 
 @code {
-    private BellaFrisoerWebUiContext context = default!;
+    private List<Booking>? bookings;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        context = DbFactory.CreateDbContext();
+        bookings = await BookingRepo.GetAllAsync();
     }
-
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }

@@ -1,45 +1,63 @@
 ﻿@page "/"
-@using BellaFrisoer.WebUi.Data
+@using BellaFrisoer.Infrastructure.Data
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<BellaFrisoer.WebUi.Data.BellaFrisoerWebUiContext> DbFactory
-
 @rendermode InteractiveServer
+
+@inject BellaFrisoerWebUiContext Db
 
 <PageTitle>Kalender</PageTitle>
 
-<!--
-	<EditForm Model="@this">
-		Fortæller blazor at dette er en formular der kan modtage data.
--->
 <EditForm Model="@this">
 	<InputDate @bind-Value="myDate" />
 </EditForm>
 
+<select @bind="SelectedEmployeeId">
+	<option value="">-- Alle Ansatte --</option>
 
-<button @onclick="SortBookings">Sort Bookings</button>
-<p>@myDate.ToShortDateString()</p>
+	@foreach (var emp in Employees)
+	{
+		<option value="@emp.Id">@emp.Name</option>
+	}
+</select>
+
+<button @onclick="SortBookings">Sortér Bookings</button>
 
 @if (SortedBookings.Any())
 {
 	@foreach (Booking b in SortedBookings)
 	{
-		<p>@b.Customer</p>
-		<p> Har en tid kl. @b.BookingDateTime.TimeOfDay</p>
+		<p>@b.Customer?.Name Har en tid hos @b.Employee?.Name kl. @b.BookingDate.TimeOfDay</p>
 	}
 }
 
+@code
+{
+	public DateTime myDate = DateTime.Today;
 
-@code {
-	private DateTime myDate = DateTime.Today;
-	private List<Booking> SortedBookings { get; set; } = new List<Booking>();
+	public int? SelectedEmployeeId { get; set; }
+
+	public List<Employee> Employees { get; set; } = new();
+	public List<Booking> SortedBookings { get; set; } = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		Employees = await Db.Employees.OrderBy(e => e.Name).ToListAsync();
+	}
 
 	private async Task SortBookings()
 	{
-		using var context = DbFactory.CreateDbContext();
-		SortedBookings = await context.Bookings
+		var query = Db.Bookings
 			.Include(b => b.Customer)
-			.Where(b => b.BookingDateTime.Date == myDate.Date)
+			.Include(b => b.Employee)
+			.Where(b => b.BookingDate.Date == myDate.Date);
+
+		if (SelectedEmployeeId.HasValue)
+		{
+			query = query.Where(b => b.EmployeeId == SelectedEmployeeId.Value);
+		}
+
+		SortedBookings = await query
+			.OrderBy(b => b.BookingDate)
 			.ToListAsync();
 	}
-
 }

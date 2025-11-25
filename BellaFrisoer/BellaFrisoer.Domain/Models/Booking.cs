@@ -2,31 +2,56 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BellaFrisoer.Domain.Models
+namespace BellaFrisoer.Domain.Models;
+
+public class Booking
 {
-    public class Booking
+    [Key]
+    public int Id { get; set; }
+
+    public DateTime BookingDateTime 
     {
-        [Key]
-        public int Id { get; set; }
+        get { return CombineDateTime(BookingDate, BookingStartTime.TimeOfDay); } 
+    }
 
-        [Required]
-        public DateTime BookingDateTime { get; set; }
+    [Required]
+    public DateTime BookingDate { get; set; }
 
-        public int CustomerId { get; set; }
+    public DateTime BookingStartTime { get; set; }
 
-        [ForeignKey(nameof(CustomerId))]
-        public Customer Customer { get; set; }
-        // public string Customer { get; set; }
+    public TimeSpan BookingDuration { get; set; }
 
-        public Booking(DateTime bookingDateTime, Customer customer)
-        {
-            BookingDateTime = bookingDateTime;
-            Customer = customer;
-        }
+    public DateTime BookingEndTime
+    {
+        get { return BookingStartTime + BookingDuration; }
+    }
 
-        public Booking()
-        {
-            
-        }
+    // scalar FK: what EF uses & what forms bind to
+    [Required]
+    public int CustomerId { get; set; }
+
+    [ForeignKey(nameof(CustomerId))]
+    public Customer? Customer { get; set; }
+
+    [Required]
+    public int EmployeeId { get; set; }
+
+    [ForeignKey(nameof(EmployeeId))]
+    public Employee? Employee { get; set; }
+
+    public Booking() { }
+
+    public Booking(DateTime bookingDate,DateTime bookingStartTime, TimeSpan bookingDuration, int customerId, int employeeId)
+    {
+        BookingDate = bookingDate;
+        BookingStartTime = bookingStartTime;
+        BookingDuration = bookingDuration;
+        CustomerId = customerId;
+        EmployeeId = employeeId;
+    }
+
+    public DateTime CombineDateTime(DateTime date, TimeSpan time)
+    {
+        return date.Date + time;
     }
 }

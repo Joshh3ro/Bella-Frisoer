@@ -1,16 +1,16 @@
-﻿@page "/bookings/edit"
+﻿@page "/employees/edit"
 @using Microsoft.EntityFrameworkCore
-@using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Edit</PageTitle>
 
 <h1>Edit</h1>
 
-<h2>Booking</h2>
+<h2>Employee</h2>
 <hr />
-@if (Booking is null)
+@if (Employee is null)
 {
     <p><em>Loading...</em></p>
 }
@@ -18,19 +18,19 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm method="post" Model="Booking" OnValidSubmit="UpdateBooking" FormName="edit">
+            <EditForm method="post" Model="Employee" OnValidSubmit="UpdateEmployee" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
                 <ValidationSummary role="alert"/>
-                <input type="hidden" name="Booking.Id" value="@Booking.Id" />
+                <input type="hidden" name="Employee.Id" value="@Employee.Id" />
                 <div class="mb-3">
-                    <label for="BookingDate" class="form-label">BookingDate:</label>
-                    <InputDate id="BookingDate" @bind-Value="Booking.BookingDate" class="form-control" />
-                    <ValidationMessage For="() => Booking.BookingDate" class="text-danger" />
+                    <label for="name" class="form-label">Name:</label>
+                    <InputText id="name" @bind-Value="Employee.Name" class="form-control" />
+                    <ValidationMessage For="() => Employee.Name" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="Name" class="form-label">Name:</label>
-                    <InputText id="Name" @bind-Value="Booking.Customer.Name" class="form-control" />
-                    <ValidationMessage For="() => Booking.Customer.Name" class="text-danger" />
+                    <label for="phonenumber" class="form-label">PhoneNumber:</label>
+                    <InputNumber id="phonenumber" @bind-Value="Employee.PhoneNumber" class="form-control" />
+                    <ValidationMessage For="() => Employee.PhoneNumber" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
@@ -39,7 +39,7 @@ else
 }
 
 <div>
-    <a href="/bookings">Back to List</a>
+    <a href="/employees">Back to List</a>
 </div>
 
 @code {
@@ -47,17 +47,14 @@ else
     private int Id { get; set; }
 
     [SupplyParameterFromForm]
-    private Booking? Booking { get; set; }
+    private Employee? Employee { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        // Ensure the Customer navigation property is loaded to avoid null dereference in the UI
-        Booking ??= await context.Bookings
-                                 .Include(b => b.Customer)
-                                 .FirstOrDefaultAsync(m => m.Id == Id);
+        Employee ??= await context.Employees.FirstOrDefaultAsync(m => m.Id == Id);
 
-        if (Booking is null)
+        if (Employee is null)
         {
             NavigationManager.NavigateTo("notfound");
         }
@@ -65,10 +62,10 @@ else
 
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
-    private async Task UpdateBooking()
+    private async Task UpdateEmployee()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Attach(Booking!).State = EntityState.Modified;
+        context.Attach(Employee!).State = EntityState.Modified;
 
         try
         {
@@ -76,7 +73,7 @@ else
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!BookingExists(Booking!.Id))
+            if (!EmployeeExists(Employee!.Id))
             {
                 NavigationManager.NavigateTo("notfound");
             }
@@ -86,12 +83,12 @@ else
             }
         }
 
-        NavigationManager.NavigateTo("/bookings");
+        NavigationManager.NavigateTo("/employees");
     }
 
-    private bool BookingExists(int id)
+    private bool EmployeeExists(int id)
     {
         using var context = DbFactory.CreateDbContext();
-        return context.Bookings.Any(e => e.Id == id);
+        return context.Employees.Any(e => e.Id == id);
     }
 }
