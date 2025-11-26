@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BellaFrisoer.Domain.Interfaces;
 
 namespace BellaFrisoer.Domain.Models;
 
@@ -17,7 +18,7 @@ public class Booking
     public int CustomerId { get; set; }
 
     [ForeignKey(nameof(CustomerId))]
-    public Customer? Customer { get; set; }
+    public ICustomer? Customer { get; set; }
 
     [Required]
     public int EmployeeId { get; set; }
