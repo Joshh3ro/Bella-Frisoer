@@ -225,9 +225,7 @@ else
         using (var ctx = DbFactory.CreateDbContext())
         {
             var existingBookings = await ctx.Bookings
-                .Where(b =>
-                    b.BookingDate.Date == Booking.BookingDate.Date &&
-                    (b.CustomerId == Booking.CustomerId || b.EmployeeId == Booking.EmployeeId))
+                .Where(b => b.EmployeeId == Booking.EmployeeId)
                 .ToListAsync();
 
             if (BookingConflictChecker.HasBookingConflict(Booking, existingBookings))
