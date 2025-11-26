@@ -1,14 +1,17 @@
 using BellaFrisoer.Domain.Interfaces;
-
 namespace BellaFrisoer.Domain.Models;
 
 public class Discount
 {
-    private IDiscountStrategy _strategy;
+    public IDiscountStrategy Strategy { get; set; }
+
     public Discount(IDiscountStrategy strategy)
-    { _strategy = strategy; }
-    public void SetStrategy(IDiscountStrategy strategy)
-    { _strategy = strategy; }
+    {
+        Strategy = strategy;
+    }
+
     public decimal Apply(decimal amount)
-    { return _strategy.Apply(amount); }
+    {
+        return Strategy.Apply(amount);
+    }
 }

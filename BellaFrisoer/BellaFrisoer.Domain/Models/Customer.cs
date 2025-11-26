@@ -14,4 +14,7 @@ public class Customer : IPerson
     public long? PhoneNumber { get; set; }
 
     public Customer() { }
+    
+    //TODO: add customer visits that counts how many times they visited the site
+    
 }
