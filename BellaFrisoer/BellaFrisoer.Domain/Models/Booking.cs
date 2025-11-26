@@ -23,7 +23,11 @@ public class Booking
 
     public DateTime BookingEndTime
     {
-        get { return BookingStartTime + BookingDuration; }
+        get 
+        { 
+            // Ensure end time is computed from the BookingDate + time-of-day, not from any stray date component in BookingStartTime
+            return CombineDateTime(BookingDate, BookingStartTime.TimeOfDay).Add(BookingDuration);
+        }
     }
 
     // scalar FK: what EF uses & what forms bind to
@@ -39,7 +43,9 @@ public class Booking
     [ForeignKey(nameof(EmployeeId))]
     public Employee? Employee { get; set; }
 
-    public Booking() { }
+    public Booking()
+    {
+    }
 
     public Booking(DateTime bookingDate,DateTime bookingStartTime, TimeSpan bookingDuration, int customerId, int employeeId)
     {
