@@ -22,8 +22,9 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
+builder.Services.AddSingleton<IBookingRepository, BookingRepository>();
+builder.Services.AddSingleton<IBookingConflictChecker, BookingConflictChecker>();
+builder.Services.AddSingleton<IBookingService, BookingService>();
 
 var app = builder.Build();
 
