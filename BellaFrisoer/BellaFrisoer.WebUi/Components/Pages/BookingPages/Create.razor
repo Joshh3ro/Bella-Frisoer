@@ -16,6 +16,7 @@
 
 @* Domain model types used on this page: Booking, Customer, Employee *@
 @using BellaFrisoer.Domain.Models
+@using BellaFrisoer.Domain.Interfaces
 
 @using BellaFrisoer.Application.Interfaces
 @inject IBookingConflictChecker BookingConflictChecker
@@ -92,7 +93,7 @@ else
 			        <option value="0">-- Vælg Kunde --</option>
 			        @foreach (var c in customers)
 			        {
-				        <option value="@c.Id">@c.Name (@(c.PhoneNumber?.ToString() ?? "Intet tlf nummer..."))</option>
+				        <option value="@c.Id">@c.FirstName (@(c.PhoneNumber.ToString() ?? "Intet tlf nummer..."))</option>
 			        }
 		        </InputSelect>
 		        <ValidationMessage For="@(() => Booking.CustomerId)" />
@@ -113,7 +114,7 @@ else
 			        <option value="0"> -- Vælg Ansat --</option>
 			        @foreach (var e in employees)
 			        {
-				        <option value="@e.Id">@e.Name (@(e.PhoneNumber?.ToString() ?? "Intet tlf nummer..."))</option>
+				        <option value="@e.Id">@e.FirstName (@(e.PhoneNumber.ToString() ?? "Intet tlf nummer..."))</option>
 			        }
 		        </InputSelect>
 		        <ValidationMessage For="@(() => Booking.EmployeeId)" />
@@ -128,8 +129,8 @@ else
 @code {
     private Booking Booking { get; set; } = new Booking { BookingDate = DateTime.Now, CustomerId = 0 };
 
-    private List<Customer>? customers;
-    private List<Employee> employees = new();
+    private List<ICustomer>? customers;
+    private List<IEmployee> employees;
     private string? ErrorMessage;
 
     private string BookingStartTimeString
@@ -185,8 +186,8 @@ else
     protected override async Task OnInitializedAsync()
     {
         using var ctx = DbFactory.CreateDbContext();
-        customers = await ctx.Customers.OrderBy(c => c.Name).ToListAsync();
-        employees = await ctx.Employees.OrderBy(e => e.Name).ToListAsync();
+        customers = await ctx.Customers.OrderBy(c => c.FirstName).ToListAsync();
+        employees = await ctx.Employees.OrderBy(e => e.LastName).ToListAsync();
     }
 
     private void OnInvalidSubmit(EditContext ctx)

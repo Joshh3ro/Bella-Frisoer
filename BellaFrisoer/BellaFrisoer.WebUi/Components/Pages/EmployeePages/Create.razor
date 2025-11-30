@@ -15,10 +15,15 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert"/>
             <div class="mb-3">
-                <label for="name" class="form-label">Name:</label> 
-                <InputText id="name" @bind-Value="Employee.Name" class="form-control" /> 
-                <ValidationMessage For="() => Employee.Name" class="text-danger" /> 
+                <label for="name" class="form-label">First Name:</label> 
+                <InputText id="name" @bind-Value="Employee.FirstName" class="form-control" /> 
+                <ValidationMessage For="() => Employee.FirstName" class="text-danger" /> 
             </div>        
+            <div class="mb-3">
+	            <label for="name" class="form-label">Last Name:</label> 
+	            <InputText id="name" @bind-Value="Employee.LastName" class="form-control" /> 
+	            <ValidationMessage For="() => Employee.LastName" class="text-danger" /> 
+            </div>     
    
             <div class="mb-3">
                 <label for="phonenumber" class="form-label">PhoneNumber:</label> 

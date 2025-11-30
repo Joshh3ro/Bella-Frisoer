@@ -47,15 +47,6 @@ public class Booking
     {
     }
 
-    public Booking(DateTime bookingDate,DateTime bookingStartTime, TimeSpan bookingDuration, int customerId, int employeeId)
-    {
-        BookingDate = bookingDate;
-        BookingStartTime = bookingStartTime;
-        BookingDuration = bookingDuration;
-        CustomerId = customerId;
-        EmployeeId = employeeId;
-    }
-
     public DateTime CombineDateTime(DateTime date, TimeSpan time)
     {
         return date.Date + time;

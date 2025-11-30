@@ -3,14 +3,17 @@ using System.ComponentModel.DataAnnotations.Schema;
 using BellaFrisoer.Domain.Interfaces;
 using BellaFrisoer.Domain.Models;
 
-public class Employee : IPerson
+public class Employee : IEmployee
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; }
+    public long PhoneNumber { get; set; }
+    public string? Email { get; set; }
+    public double HourlyPrice { get; set; }
     public ICollection<String>? Treatments { get; set; } = new List<String>();
-    public long? PhoneNumber { get; set; }
 
     public Employee() { }
 }
