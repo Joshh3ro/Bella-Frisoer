@@ -28,6 +28,7 @@ else
 			<th>Navn</th>
 			<th>Tlf Nummer</th>
 			<th>Id</th>
+			<th>Handling</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -35,11 +36,12 @@ else
 		{
 			<tr>
 				<td>@(c.Name ?? "—")</td>
-				<td>@(c.PhoneNumber.ToString() ?? "—")</td>
+				<td>@(c.PhoneNumber?.ToString() ?? "—")</td>
 				<td>@(c.Id.ToString() ?? "—")</td>
 
 				<td>
-					<a href="/bookings/details?id=@c.Id" class="btn btn-sm btn-primary">Detajler</a>
+					<a href="/employees/details?id=@c.Id" class="btn btn-sm btn-primary">Detaljer</a>
+					<a href="/employees/edit?id=@c.Id" class="btn btn-sm btn-secondary ms-1">Rediger</a>
 				</td>
 			</tr>
 		}

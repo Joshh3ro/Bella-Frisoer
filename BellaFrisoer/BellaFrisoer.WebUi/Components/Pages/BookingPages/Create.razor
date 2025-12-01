@@ -25,8 +25,6 @@
 @inject IDbContextFactory<BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 
-
-
 @* Render mode for Blazor Server with interactive prerendering (keeps component interactive) *@
 @rendermode InteractiveServer
 
@@ -53,7 +51,7 @@ else
        - Model: the object bound to inputs and validated by DataAnnotations
        - OnValidSubmit: handler when validation passes
        - OnInvalidSubmit: handler when validation fails *@
-    <EditForm Model="Booking" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit" FormName="BookingForm">
+    <EditForm Model="@Booking" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit">
         @* Enables data-annotation validation on the model *@
         <DataAnnotationsValidator />
         @* Displays a summary of validation errors *@
@@ -78,45 +76,45 @@ else
         </div>
 
         <div class="mb-3">
-	        <label class="form-label">Kunde</label>
-	        @if (!customers.Any())
-	        {
-		        <div>
-			        <p>Ingen kunder endnu... <a href="/customers/create">Opret Kunde</a></p>
-		        </div>
-	        }
-	        else
-	        {
-		        <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
-			        <option value="0">-- Vælg Kunde --</option>
-			        @foreach (var c in customers)
-			        {
-				        <option value="@c.Id">@c.Name (@(c.PhoneNumber?.ToString() ?? "Intet tlf nummer..."))</option>
-			        }
-		        </InputSelect>
-		        <ValidationMessage For="@(() => Booking.CustomerId)" />
-	        }
+            <label class="form-label">Kunde</label>
+            @if (!customers.Any())
+            {
+                <div>
+                    <p>Ingen kunder endnu... <a href="/customers/create">Opret Kunde</a></p>
+                </div>
+            }
+            else
+            {
+                <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
+                    <option value="0">-- Vælg Kunde --</option>
+                    @foreach (var c in customers)
+                    {
+                        <option value="@c.Id">@c.Name (@(c.PhoneNumber?.ToString() ?? "Intet tlf nummer..."))</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Booking.CustomerId)" />
+            }
         </div>
 
         <div class="mb-3">
-	        <label class="form-label">Ansatte</label>
-	        @if (employees == null || !employees.Any())
-	        {
-		        <div>
-			        <p>Ingen registrerede ansatte... <a href="/customers/create">Opret Ansat</a></p>
-		        </div>
-	        }
-	        else
-	        {
-		        <InputSelect @bind-Value="Booking.EmployeeId" class="form-select">
-			        <option value="0"> -- Vælg Ansat --</option>
-			        @foreach (var e in employees)
-			        {
-				        <option value="@e.Id">@e.Name (@(e.PhoneNumber?.ToString() ?? "Intet tlf nummer..."))</option>
-			        }
-		        </InputSelect>
-		        <ValidationMessage For="@(() => Booking.EmployeeId)" />
-	        }
+            <label class="form-label">Ansatte</label>
+            @if (employees == null || !employees.Any())
+            {
+                <div>
+                    <p>Ingen registrerede ansatte... <a href="/customers/create">Opret Ansat</a></p>
+                </div>
+            }
+            else
+            {
+                <InputSelect @bind-Value="Booking.EmployeeId" class="form-select">
+                    <option value="0"> -- Vælg Ansat --</option>
+                    @foreach (var e in employees)
+                    {
+                        <option value="@e.Id">@e.Name (@(e.PhoneNumber?.ToString() ?? "Intet tlf nummer..."))</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Booking.EmployeeId)" />
+            }
         </div>
 
         <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Create</button>
@@ -125,7 +123,11 @@ else
 }
 
 @code {
-    private Booking Booking { get; set; } = new Booking { BookingDate = DateTime.Now, CustomerId = 0 };
+    private Booking Booking { get; set; } = new Booking
+    {
+        BookingDate = DateTime.Now,
+        CustomerId = 0
+    };
 
     private List<Customer>? customers;
     private List<Employee> employees = new();
@@ -135,7 +137,10 @@ else
     {
         get
         {
-            var dt = Booking.BookingStartTime == default ? Booking.BookingDate : Booking.BookingStartTime;
+            var dt = Booking.BookingStartTime == default
+                ? Booking.BookingDate
+                : Booking.BookingStartTime;
+
             return dt.ToString("HH:mm", CultureInfo.InvariantCulture);
         }
         set
@@ -214,6 +219,7 @@ else
             ErrorMessage = "Ugyldigt starttidspunkt.";
             return;
         }
+
         if (Booking.BookingDuration == default || Booking.BookingDuration.TotalMinutes <= 0)
         {
             ErrorMessage = "Ugyldig varighed.";
