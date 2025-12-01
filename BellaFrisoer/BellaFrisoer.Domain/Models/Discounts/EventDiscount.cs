@@ -15,5 +15,11 @@ public class EventDiscount : IDiscountStrategy
     { return amount - (amount * _percentage); }
     
     //TODO: Compare current discounts applied to the user to see if they qualify for this discount and if their discount is better or worse if better then dont apply
-    
+
+    public bool IsBetterThan(IDiscountStrategy? currentDiscount)
+    {
+        if (currentDiscount == null ) return true;
+        const decimal testAmount = 100;
+        return Apply(testAmount) < currentDiscount.Apply(testAmount);
+    }
 }
