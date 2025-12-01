@@ -1,4 +1,3 @@
-csharp BellaFrisoer.Application\Interfaces\IBookingService.cs
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BellaFrisoer.Domain.Models;

@@ -18,12 +18,11 @@
 @using BellaFrisoer.Domain.Models
 
 @using BellaFrisoer.Application.Interfaces
+@using BellaFrisoer.Infrastructure.Data
+
 @inject IBookingConflictChecker BookingConflictChecker
-
-@* Inject a factory for creating short-lived DbContext instances in Blazor Server safely *@
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
-
-@* Inject NavigationManager to perform client navigation after saves *@
+@inject IBookingService BookingService
+@inject IDbContextFactory<BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 
 
@@ -221,25 +220,17 @@ else
             return;
         }
 
-        // Fetch potentially conflicting bookings from the database for the same day
-        using (var ctx = DbFactory.CreateDbContext())
+        // Use the application service to check conflict and to add the booking
+        var canCreate = await BookingService.CanCreateBookingAsync(Booking);
+        if (!canCreate)
         {
-            var existingBookings = await ctx.Bookings
-                .Where(b => b.EmployeeId == Booking.EmployeeId)
-                .ToListAsync();
-
-            if (BookingConflictChecker.HasBookingConflict(Booking, existingBookings))
-            {
-                ErrorMessage = "Booking conflict: selected customer or employee already has a booking during this time.";
-                return;
-            }
+            ErrorMessage = "Booking conflict: selected customer or employee already has a booking during this time.";
+            return;
         }
 
         try
         {
-            using var ctx = DbFactory.CreateDbContext();
-            ctx.Bookings.Add(Booking);
-            await ctx.SaveChangesAsync();
+            await BookingService.AddBookingAsync(Booking);
             NavigationManager.NavigateTo("/bookings");
         }
         catch (Exception ex)

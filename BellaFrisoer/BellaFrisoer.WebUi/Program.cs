@@ -5,6 +5,8 @@ using BellaFrisoer.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using BellaFrisoer.Application.Interfaces;
 using BellaFrisoer.Application;
+using Microsoft.AspNetCore.Builder;
+using BellaFrisoer.Application.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);

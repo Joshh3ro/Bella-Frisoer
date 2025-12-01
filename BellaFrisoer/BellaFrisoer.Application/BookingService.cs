@@ -1,4 +1,3 @@
-csharp BellaFrisoer.Application\Services\BookingService.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
