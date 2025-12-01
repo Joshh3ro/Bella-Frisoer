@@ -20,9 +20,9 @@
             <dt class="col-sm-2">Tidspunkt</dt>
             <dd class="col-sm-10">@booking.BookingDate</dd>
             <dt class="col-sm-2">Kunde</dt>
-            <dd class="col-sm-10">@booking.Customer?.Name</dd>
+            <dd class="col-sm-10">@booking.Customer?.FirstName @booking.Customer?.LastName</dd>
             <dt class="col-sm-2">Ansat</dt>
-            <dd class="col-sm-10">@booking.Employee?.Name</dd>
+            <dd class="col-sm-10">@booking.Employee?.FirstName @booking.Employee?.LastName</dd>
         </dl>
         <div>
             <a href="@($"/bookings/edit?id={booking.Id}")">Edit</a> |

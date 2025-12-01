@@ -24,9 +24,13 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddSingleton<IBookingRepository, BookingRepository>();
-builder.Services.AddSingleton<IBookingConflictChecker, BookingConflictChecker>();
-builder.Services.AddSingleton<IBookingService, BookingService>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
+builder.Services.AddScoped<IBookingService, BookingServsice>();
+
+// DON'T register domain entity types or entity interfaces as DI services
+// builder.Services.AddScoped<ICustomer, Customer>();   <-- remove
+// builder.Services.AddScoped<IEmployee, Employee>();   <-- remove
 
 var app = builder.Build();
 

@@ -9,7 +9,10 @@ namespace BellaFrisoer.Domain.Interfaces
     public interface IPerson
     {
         int Id { get; set; }
-        string Name { get; set; }
-        long? PhoneNumber { get; set; }
+        string FirstName { get; set; }
+        string LastName { get; set; }
+        long PhoneNumber { get; set; }
+        string? Email { get; set; }
+
     }
 }

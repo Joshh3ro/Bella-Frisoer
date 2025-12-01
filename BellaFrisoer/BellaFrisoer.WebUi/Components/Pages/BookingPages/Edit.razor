@@ -28,9 +28,14 @@ else
                     <ValidationMessage For="() => Booking.BookingDate" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="Name" class="form-label">Name:</label>
-                    <InputText id="Name" @bind-Value="Booking.Customer.Name" class="form-control" />
-                    <ValidationMessage For="() => Booking.Customer.Name" class="text-danger" />
+	                <label for="FirstName" class="form-label">First Name:</label>
+	                <InputText id="Name" @bind-Value="Booking.Customer.FirstName" class="form-control" />
+	                <ValidationMessage For="() => Booking.Customer.FirstName" class="text-danger" />
+                </div>
+                <div class="mb-3">
+	                <label for="LastName" class="form-label">Last Name:</label>
+	                <InputText id="Name" @bind-Value="Booking.Customer.LastName" class="form-control" />
+	                <ValidationMessage For="() => Booking.Customer.LastName" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>

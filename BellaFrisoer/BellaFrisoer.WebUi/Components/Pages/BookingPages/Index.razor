@@ -39,8 +39,8 @@ else
 		@foreach (var b in bookings)
 		{
 			<tr>
-				<td>@(b.Employee?.Name ?? "—")</td>
-				<td>@(b.Customer?.Name ?? "-")</td>
+				<td>@(b.Employee?.FirstName ?? "—")</td>
+				<td>@(b.Customer?.FirstName ?? "-")</td>
 					<td>@(b.BookingDateTime.ToString() ?? "—")</td>
 					<td>@(b.BookingDuration.ToString() ?? "-")</td>
 					<td>@(b.BookingEndTime.ToString() ?? "-")</td>

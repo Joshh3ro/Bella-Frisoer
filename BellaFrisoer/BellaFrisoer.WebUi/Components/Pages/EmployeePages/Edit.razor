@@ -1,4 +1,5 @@
 ﻿@page "/employees/edit"
+@using BellaFrisoer.Domain.Interfaces
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
@@ -24,8 +25,8 @@ else
                 <input type="hidden" name="Employee.Id" value="@Employee.Id" />
                 <div class="mb-3">
                     <label for="name" class="form-label">Name:</label>
-                    <InputText id="name" @bind-Value="Employee.Name" class="form-control" />
-                    <ValidationMessage For="() => Employee.Name" class="text-danger" />
+                    <InputText id="name" @bind-Value="Employee.FirstName" class="form-control" />
+                    <ValidationMessage For="() => Employee.FirstName" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="phonenumber" class="form-label">PhoneNumber:</label>
@@ -47,7 +48,7 @@ else
     private int Id { get; set; }
 
     [SupplyParameterFromForm]
-    private Employee? Employee { get; set; }
+    private IEmployee? Employee { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

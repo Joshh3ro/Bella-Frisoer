@@ -1,4 +1,5 @@
 ﻿@page "/customers/details"
+@using BellaFrisoer.Domain.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
@@ -18,7 +19,7 @@
     else {
         <dl class="row">
             <dt class="col-sm-2">Name</dt>
-            <dd class="col-sm-10">@customer.Name</dd>
+            <dd class="col-sm-10">@customer.FirstName</dd>
             <dt class="col-sm-2">PhoneNumber</dt>
             <dd class="col-sm-10">@customer.PhoneNumber</dd>
         </dl>
@@ -30,7 +31,7 @@
 </div>
 
 @code {
-    private Customer? customer;
+    private ICustomer? customer;
 
     [SupplyParameterFromQuery]
     private int Id { get; set; }

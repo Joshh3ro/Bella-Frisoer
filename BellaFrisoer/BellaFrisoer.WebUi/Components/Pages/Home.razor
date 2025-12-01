@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using BellaFrisoer.Domain.Interfaces
 @using BellaFrisoer.Infrastructure.Data
 @using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
@@ -16,7 +17,7 @@
 
 	@foreach (var emp in Employees)
 	{
-		<option value="@emp.Id">@emp.Name</option>
+		<option value="@emp.Id">@emp.FirstName</option>
 	}
 </select>
 
@@ -26,7 +27,7 @@
 {
 	@foreach (Booking b in SortedBookings)
 	{
-		<p>@b.Customer?.Name Har en tid hos @b.Employee?.Name kl. @b.BookingDate.TimeOfDay</p>
+		<p>@b.Customer?.FirstName Har en tid hos @b.Employee?.FirstName kl. @b.BookingDate.TimeOfDay</p>
 	}
 }
 
@@ -36,12 +37,12 @@
 
 	public int? SelectedEmployeeId { get; set; }
 
-	public List<Employee> Employees { get; set; } = new();
+	public List<IEmployee> Employees { get; set; } = new();
 	public List<Booking> SortedBookings { get; set; } = new();
 
 	protected override async Task OnInitializedAsync()
 	{
-		Employees = await Db.Employees.OrderBy(e => e.Name).ToListAsync();
+		Employees = await Db.Employees.OrderBy(e => e.FirstName).ToListAsync();
 	}
 
 	private async Task SortBookings()
