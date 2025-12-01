@@ -3,7 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using BellaFrisoer.Domain.Interfaces;
 using BellaFrisoer.Domain.Models;
 
-public class Customer 
+namespace BellaFrisoer.Domain.Models;
+
+public class Customer : ICustomer
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

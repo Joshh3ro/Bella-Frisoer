@@ -3,6 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using BellaFrisoer.Domain.Interfaces;
 using BellaFrisoer.Domain.Models;
 
+namespace BellaFrisoer.Domain.Models;
+
 public class Employee : IEmployee
 {
     [Key]

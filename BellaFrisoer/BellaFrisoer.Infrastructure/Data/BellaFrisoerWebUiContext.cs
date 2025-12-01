@@ -16,8 +16,8 @@ public class BellaFrisoerWebUiContext : DbContext
     }
 
     public DbSet<Booking> Bookings { get; set; } = null!;
-    public DbSet<ICustomer> Customers { get; set; } = null!;
-    public DbSet<IEmployee> Employees { get; set; } = null!;
+    public DbSet<Customer> Customers { get; set; } = null!;
+    public DbSet<Employee> Employees { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
