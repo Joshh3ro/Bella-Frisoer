@@ -4,7 +4,6 @@ using BellaFrisoer.Infrastructure.Repositories;
 using BellaFrisoer.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using BellaFrisoer.Application.Interfaces;
-using BellaFrisoer.Application;
 using Microsoft.AspNetCore.Builder;
 using BellaFrisoer.Application.Services;
 
@@ -24,13 +23,18 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Register repositories and application services by interface
+// Use Scoped lifetime for request/component-scoped services in Blazor Server
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
-builder.Services.AddScoped<IBookingService, BookingServsice>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
-// DON'T register domain entity types or entity interfaces as DI services
-// builder.Services.AddScoped<ICustomer, Customer>();   <-- remove
-// builder.Services.AddScoped<IEmployee, Employee>();   <-- remove
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
+
+// DO NOT register domain entity types as DI services
+// e.g. don't do: builder.Services.AddScoped<ICustomer, Customer>();
 
 var app = builder.Build();
 

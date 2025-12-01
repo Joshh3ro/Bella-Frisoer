@@ -4,7 +4,7 @@ using System.Linq;
 using BellaFrisoer.Application.Interfaces;
 using BellaFrisoer.Domain.Models;
 
-namespace BellaFrisoer.Application
+namespace BellaFrisoer.Application.Services
 {
     public class BookingConflictChecker : IBookingConflictChecker
     {
