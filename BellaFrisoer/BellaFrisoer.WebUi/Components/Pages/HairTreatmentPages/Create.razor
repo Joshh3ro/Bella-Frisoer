@@ -1,0 +1,59 @@
+﻿@page "/treatments/create"
+@using Microsoft.EntityFrameworkCore
+@using BellaFrisoer.Domain.Models
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Treatment</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Treatment" OnValidSubmit="AddTreatment" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label> 
+                <InputText id="name" @bind-Value="Treatment.Name" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Treatment.Name" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="productnumber" class="form-label">ProductNumber:</label> 
+                <InputText id="productnumber" @bind-Value="Treatment.ProductNumber" class="form-control" aria-required="true"/> 
+                <ValidationMessage For="() => Treatment.ProductNumber" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="durationminutes" class="form-label">DurationMinutes:</label> 
+                <InputNumber id="durationminutes" @bind-Value="Treatment.DurationMinutes" class="form-control" /> 
+                <ValidationMessage For="() => Treatment.DurationMinutes" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="hourlyrate" class="form-label">HourlyRate:</label> 
+                <InputNumber id="hourlyrate" @bind-Value="Treatment.HourlyRate" class="form-control" /> 
+                <ValidationMessage For="() => Treatment.HourlyRate" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/Treatments">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Treatment Treatment { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddTreatment()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Treatments.Add(Treatment);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/Treatments");
+    }
+}

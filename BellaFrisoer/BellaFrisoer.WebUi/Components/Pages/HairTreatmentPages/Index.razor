@@ -1,0 +1,39 @@
+﻿@page "/treatments"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BellaFrisoer.Domain.Models
+@using BellaFrisoer.Infrastructure.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="Treatments/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Treatments">
+    <PropertyColumn Property="Treatment => Treatment.Name" />
+    <PropertyColumn Property="Treatment => Treatment.ProductNumber" />
+    <PropertyColumn Property="Treatment => Treatment.DurationMinutes" />
+    <PropertyColumn Property="Treatment => Treatment.HourlyRate" />
+
+    <TemplateColumn Context="Treatment">
+        <a href="@($"Treatments/edit?id={Treatment.Id}")">Edit</a> |
+        <a href="@($"Treatments/details?id={Treatment.Id}")">Details</a> |
+        <a href="@($"Treatments/delete?id={Treatment.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private BellaFrisoerWebUiContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

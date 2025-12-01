@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BellaFrisoer.Domain.Models;
 
-public class HairTreatment
+public class Treatment
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
