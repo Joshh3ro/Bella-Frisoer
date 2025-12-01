@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BellaFrisoer.Infrastructure.Migrations
 {
     [DbContext(typeof(BellaFrisoerWebUiContext))]
-    [Migration("20251126113034_AddHairTreatment")]
-    partial class AddHairTreatment
+    [Migration("20251126113034_AddTreatment")]
+    partial class AddTreatment
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

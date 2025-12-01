@@ -5,7 +5,7 @@
 namespace BellaFrisoer.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTreatment : Migration
+    public partial class FixTreatment : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
