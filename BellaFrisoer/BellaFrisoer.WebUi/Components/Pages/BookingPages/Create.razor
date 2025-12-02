@@ -132,7 +132,7 @@ else
         get
         {
             var dt = Booking.BookingStartTime == default ? Booking.BookingDate : Booking.BookingStartTime;
-            return dt.ToString("HH:mm", CultureInfo.InvariantCulture);
+            return dt.ToString("HH:mm");
         }
         set
         {
@@ -160,7 +160,7 @@ else
                 duration = Booking.BookingEndTime - Booking.BookingStartTime;
             }
 
-            return duration.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
+            return duration.ToString(@"hh\:mm");
         }
         set
         {

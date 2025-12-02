@@ -1,59 +1,84 @@
 ﻿@page "/bookings"
+@using System.ComponentModel.DataAnnotations
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject BellaFrisoer.Domain.Interfaces.IBookingRepository BookingRepo
+@rendermode InteractiveServer
 
 <PageTitle>Bookings</PageTitle>
 
 <h1>Bookings</h1>
 
 <p>
-    <a class="btn btn-primary" href="/bookings/create">Create Booking</a>
-    <a class="btn btn-secondary" href="/customers">Customers</a>
+	<a class="btn btn-primary" href="/bookings/create">Create Booking</a>
+	<a class="btn btn-secondary" href="/customers">Customers</a>
 </p>
 
 @if (bookings is null)
 {
-    <p><em>Loading...</em></p>
+	<p><em>Loading...</em></p>
 }
 else if (!bookings.Any())
 {
-    <p>Ingen bookings endnu...</p>
+	<p>Ingen bookings endnu...</p>
 }
 else
 {
 	<table class="table table-striped table-hover">
 		<thead>
-		<tr>
-			<th>Ansatte</th>
-			<th>Kunde</th>
-			<th>Dato/Tidspunkt</th>
-			<th></th>
-		</tr>
+			<tr>
+				<th>Ansatte</th>
+				<th>Kunde</th>
+				<th>Dato/Tidspunkt</th>
+				<th></th>
+			</tr>
 		</thead>
 		<tbody>
-		@foreach (var b in bookings)
-		{
-			<tr>
-				<td>@(b.Employee?.Name ?? "—")</td>
-				<td>@(b.Customer?.Name ?? "-")</td>
+			@foreach (var b in bookings)
+			{
+				<tr>
+					<td>@(b.Employee?.Name ?? "—")</td>
+					<td>@(b.Customer?.Name ?? "-")</td>
 					<td>@(b.BookingDateTime.ToString() ?? "—")</td>
 
 					<td>
-					<a href="/bookings/details?id=@b.Id" class="btn btn-sm btn-primary">Details</a>
-				</td>
-			</tr>
-		}
+						<a href="/bookings/details?id=@b.Id" class="btn btn-sm btn-primary">Details</a>
+						<button class="btn btn-primary" @onclick="() => DownloadInvoice(b)"> 
+							Download Faktura
+						</button>
+					</td>
+				</tr>
+			}
 		</tbody>
 	</table>
 }
 
 @code {
-    private List<Booking>? bookings;
+	private List<Booking>? bookings;
 
-    protected override async Task OnInitializedAsync()
-    {
-        bookings = await BookingRepo.GetAllAsync();
-    }
+	[Inject][Required]
+	IJSRuntime JS { get; set; }
+
+	private async Task DownloadInvoice(Booking b)
+	{
+		var text =$@"------------------------------
+		    Bella Frisør
+			------------------------------
+			Kunde:    {b.Customer?.Name}
+			Ansat:    {b.Employee?.Name}
+			Tidspunkt:     {b.BookingDateTime:dd-MM-yyyy HH:mm}
+			------------------------------
+			";
+		var bytes = System.Text.Encoding.UTF8.GetBytes(text);
+		var base64 = Convert.ToBase64String(bytes);
+
+		await JS.InvokeVoidAsync("downloadFileFromBytes", $"{b.Customer.Name}{b.BookingDate:dd-MM-yyyy}.txt", base64);
+	}
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		bookings = await BookingRepo.GetAllAsync();
+	}
 }

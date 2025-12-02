@@ -1,10 +1,16 @@
-﻿using BellaFrisoer.WebUi.Components;
+﻿using BellaFrisoer.Domain.Interfaces;
 using BellaFrisoer.Infrastructure.Data;
 using BellaFrisoer.Infrastructure.Repositories;
-using BellaFrisoer.Domain.Interfaces;
+using BellaFrisoer.WebUi.Components;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var culture = new CultureInfo("da-DK");
+
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 builder.Services.AddDbContextFactory<BellaFrisoerWebUiContext>(options =>
     options.UseSqlServer(
