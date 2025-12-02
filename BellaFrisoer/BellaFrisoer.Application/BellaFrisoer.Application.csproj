@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BellaFrisoer.Domain\BellaFrisoer.Domain.csproj" />
+	  <ProjectReference Include ="..\Bellafrisoer.Infrastructure\Bellafrisoer.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

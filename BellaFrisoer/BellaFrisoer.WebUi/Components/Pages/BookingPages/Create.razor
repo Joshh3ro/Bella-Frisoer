@@ -23,7 +23,13 @@
 
 @inject IBookingConflictChecker BookingConflictChecker
 @inject IBookingService BookingService
-@inject IDbContextFactory<BellaFrisoerWebUiContext> DbFactory
+
+@inject ICustomerService CustomerService
+
+@inject IEmployeeService EmployeeService
+
+@inject ITreatmentService TreatmentService
+
 @inject NavigationManager NavigationManager
 
 
@@ -128,8 +134,9 @@ else
 @code {
     private Booking Booking { get; set; } = new Booking { BookingDate = DateTime.Now, CustomerId = 0 };
 
-    private List<ICustomer>? customers;
-    private List<IEmployee> employees;
+    // Use concrete domain models in the UI boundary to avoid variance/covariance issues
+    private List<Customer>? customers;
+    private List<Employee>? employees;
     private string? ErrorMessage;
 
     private string BookingStartTimeString
@@ -184,9 +191,16 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        using var ctx = DbFactory.CreateDbContext();
-        customers = await ctx.Customers.OrderBy(c => c.FirstName).ToListAsync();
-        employees = await ctx.Employees.OrderBy(e => e.LastName).ToListAsync();
+        try
+        {
+            // Retrieve concrete domain models from services and keep UI-bound types concrete
+            customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
+            employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Load failed: {ex.Message}";
+        }
     }
 
     private void OnInvalidSubmit(EditContext ctx)

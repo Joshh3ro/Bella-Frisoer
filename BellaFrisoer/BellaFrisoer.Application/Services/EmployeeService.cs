@@ -10,27 +10,30 @@ namespace BellaFrisoer.Application.Services
 {
     public class EmployeeService : IEmployeeService
     {
-        private readonly IBookingRepository _repository;
-        private readonly IBookingConflictChecker _conflictChecker;
+        private readonly IEmployeeRepository _repository;
 
-        public EmployeeService(IBookingRepository repository, IBookingConflictChecker conflictChecker)
+        public EmployeeService(IEmployeeRepository repository)
         {
-            _repository = repository;
-            _conflictChecker = conflictChecker;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public async Task<bool> CanCreateBookingAsync(Booking newBooking)
+        public Task<bool> CanCreateEmployeeAsync(Employee newEmployee)
         {
-            var all = await _repository.GetAllAsync();
-            var relevant = all.Where(b => b.EmployeeId == newBooking.EmployeeId).ToList();
-            return !_conflictChecker.HasBookingConflict(newBooking, relevant);
+            // Example business rule: require a first name. Adjust as needed.
+            var canCreate = newEmployee is not null && !string.IsNullOrWhiteSpace(newEmployee.FirstName);
+            return Task.FromResult(canCreate);
         }
 
-        public async Task AddBookingAsync(Booking booking)
+        public async Task AddEmployeeAsync(Employee employee)
         {
-            await _repository.AddAsync(booking);
+            if (employee is null) throw new ArgumentNullException(nameof(employee));
+            await _repository.AddAsync(employee);
         }
 
-        public async Task<List<Booking>> GetAllAsync() => await _repository.GetAllAsync();
+        public async Task<List<Employee>> GetAllAsync()
+        {
+            var employees = await _repository.GetAllAsync();
+            return employees.ToList();
+        }
     }
 }

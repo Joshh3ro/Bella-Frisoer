@@ -7,9 +7,14 @@ using System.Threading.Tasks;
 
 namespace BellaFrisoer.Domain.Interfaces
 {
-    public interface ICustomer : IPerson
+    public interface ICustomer
     {
-        public ICollection<Booking>? Bookings { get; set; }
-        public string Note { get; set; }
+        int Id { get; set; }
+        string FirstName { get; set; }
+        string LastName { get; set; }
+        long PhoneNumber { get; set; }
+        string? Email { get; set; }
+        string? Note { get; set; }
+        ICollection<Booking>? Bookings { get; set; }
     }
 }

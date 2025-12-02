@@ -11,26 +11,28 @@ namespace BellaFrisoer.Application.Services
     public class CustomerService : ICustomerService
     {
         private readonly ICustomerRepository _repository;
-        private readonly ICustomerConflictChecker _conflictChecker;
 
-        public CustomerService(ICustomerRepository repository, ICustomerConflictChecker conflictChecker)
+        public CustomerService(ICustomerRepository repository)
         {
             _repository = repository;
-            _conflictChecker = conflictChecker;
         }
 
-        public async Task<bool> CanCreateCustomerAsync(Customer newCustomer)
+        public Task<bool> CanCreateCustomerAsync(Customer newCustomer)
         {
-            var all = await _repository.GetAllAsync();
-            var relevant = all.Where(b => b.EmployeeId == newCustomer.EmployeeId).ToList();
-            return !_conflictChecker.HasCustomerConflict(newCustomer, relevant);
+            // Simple example: always allow creation.
+            // Replace with real business logic if needed.
+            return Task.FromResult(true);
         }
 
-        public async Task AddCustomerAsync(Customer Customer)
+        public async Task AddCustomerAsync(Customer customer)
         {
-            await _repository.AddAsync(Customer);
+            await _repository.AddAsync(customer);
         }
 
-        public async Task<List<Customer>> GetAllAsync() => await _repository.GetAllAsync();
+        public async Task<List<Customer>> GetAllAsync()
+        {
+            var customers = await _repository.GetAllAsync();
+            return customers.ToList();
+        }
     }
 }

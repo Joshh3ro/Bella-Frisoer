@@ -1,8 +1,13 @@
 ﻿@page "/customers/create"
 @using BellaFrisoer.Domain.Interfaces
 @using Microsoft.EntityFrameworkCore
+@using BellaFrisoer.Application.Interfaces;
+
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
+
+@inject ICustomerService CustomerService
+
 @rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>

@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BellaFrisoer.Domain.Interfaces;
 
 namespace BellaFrisoer.Domain.Models;
 
-public class Treatment
+public class Treatment : ITreatment
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using BellaFrisoer.Application.Services;
 
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContextFactory<BellaFrisoerWebUiContext>(options =>
@@ -30,8 +31,13 @@ builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
 builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
+builder.Services.AddScoped<ITreatmentService, TreatmentService>();
 
 // DO NOT register domain entity types as DI services
 // e.g. don't do: builder.Services.AddScoped<ICustomer, Customer>();

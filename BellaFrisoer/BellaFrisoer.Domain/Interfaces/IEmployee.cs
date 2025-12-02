@@ -6,9 +6,14 @@ using System.Threading.Tasks;
 
 namespace BellaFrisoer.Domain.Interfaces
 {
-    public interface IEmployee :IPerson
+    public interface IEmployee
     {
-        public ICollection<String>? Treatments { get; set; }
-        public double HourlyPrice { get; set; }
+        int Id { get; set; }
+        string FirstName { get; set; }
+        string LastName { get; set; }
+        long PhoneNumber { get; set; }
+        string? Email { get; set; }
+        double HourlyPrice { get; set; }
+        ICollection<String>? Treatments { get; set; }
     }
 }

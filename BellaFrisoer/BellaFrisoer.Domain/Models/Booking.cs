@@ -1,10 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BellaFrisoer.Domain.Interfaces;
 
 namespace BellaFrisoer.Domain.Models;
 
-public class Booking
+public class Booking : IBooking
 {
     [Key]
     public int Id { get; set; }
