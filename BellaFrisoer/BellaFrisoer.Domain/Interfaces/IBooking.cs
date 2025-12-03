@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BellaFrisoer.Domain.Interfaces
 {
-    internal interface IBooking
+    public interface IBooking
     {
         int Id { get; set; }
         DateTime BookingDateTime { get; }

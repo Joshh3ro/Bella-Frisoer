@@ -1,6 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Compile Remove="Repositories\CustomerRepository.cs" />
+    <Compile Remove="Repositories\EmployeeRepository.cs" />
+    <Compile Remove="Repositories\TreatmentRepostiory.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BellaFrisoer.Domain\BellaFrisoer.Domain.csproj" />
   </ItemGroup>
 

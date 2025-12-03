@@ -6,4 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Interfaces\ICustomerRepository.cs" />
+    <Compile Remove="Interfaces\IEmployeeRepository.cs" />
+    <Compile Remove="Interfaces\ITreatmentRepository.cs" />
+  </ItemGroup>
+
 </Project>

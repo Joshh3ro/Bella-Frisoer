@@ -35,9 +35,6 @@ public class Booking : IBooking
     [Required]
     public int CustomerId { get; set; }
 
-    [ForeignKey(nameof(CustomerId))]
-    public Customer? Customer { get; set; }
-
     [Required]
     public int EmployeeId { get; set; }
 

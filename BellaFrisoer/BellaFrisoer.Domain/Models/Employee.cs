@@ -5,7 +5,7 @@ using BellaFrisoer.Domain.Models;
 
 namespace BellaFrisoer.Domain.Models;
 
-public class Employee : IEmployee
+public class Employee
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

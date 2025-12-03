@@ -4,7 +4,7 @@ using BellaFrisoer.Domain.Interfaces;
 
 namespace BellaFrisoer.Domain.Models;
 
-public class Treatment : ITreatment
+public class Treatment
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

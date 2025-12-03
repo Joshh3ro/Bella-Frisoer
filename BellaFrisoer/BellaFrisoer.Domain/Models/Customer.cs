@@ -5,7 +5,7 @@ using BellaFrisoer.Domain.Models;
 
 namespace BellaFrisoer.Domain.Models;
 
-public class Customer : ICustomer
+public class Customer
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

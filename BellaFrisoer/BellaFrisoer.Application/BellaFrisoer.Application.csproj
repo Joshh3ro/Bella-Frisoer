@@ -1,8 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Compile Remove="Interfaces\ICustomerService.cs" />
+    <Compile Remove="Interfaces\IEmployeeService.cs" />
+    <Compile Remove="Interfaces\ITreatmentService.cs" />
+    <Compile Remove="Services\CustomerService.cs" />
+    <Compile Remove="Services\EmployeeService.cs" />
+    <Compile Remove="Services\TreatmentService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BellaFrisoer.Domain\BellaFrisoer.Domain.csproj" />
-	  <ProjectReference Include ="..\Bellafrisoer.Infrastructure\Bellafrisoer.Infrastructure.csproj" />
+	  <ProjectReference Include="..\Bellafrisoer.Infrastructure\Bellafrisoer.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
