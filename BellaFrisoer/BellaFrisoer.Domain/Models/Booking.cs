@@ -1,11 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using BellaFrisoer.Domain.Interfaces;
 
 namespace BellaFrisoer.Domain.Models;
 
-public class Booking : IBooking
+public class Booking
 {
     [Key]
     public int Id { get; set; }
@@ -34,6 +33,8 @@ public class Booking : IBooking
     // scalar FK: what EF uses & what forms bind to
     [Required]
     public int CustomerId { get; set; }
+
+    public Customer? Customer { get; set; }
 
     [Required]
     public int EmployeeId { get; set; }

@@ -1,11 +1,10 @@
 ﻿using BellaFrisoer.WebUi.Components;
-using BellaFrisoer.Infrastructure.Data;
-using BellaFrisoer.Infrastructure.Repositories;
-using BellaFrisoer.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using BellaFrisoer.Application.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using BellaFrisoer.Application.Services;
+using BellaFrisoer.Infrastructure.Data;
+using BellaFrisoer.Infrastructure.Repositories;
 
 
 
@@ -39,8 +38,6 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
 builder.Services.AddScoped<ITreatmentService, TreatmentService>();
 
-// DO NOT register domain entity types as DI services
-// e.g. don't do: builder.Services.AddScoped<ICustomer, Customer>();
 
 var app = builder.Build();
 

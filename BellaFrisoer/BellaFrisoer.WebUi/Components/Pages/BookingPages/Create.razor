@@ -16,10 +16,8 @@
 
 @* Domain model types used on this page: Booking, Customer, Employee *@
 @using BellaFrisoer.Domain.Models
-@using BellaFrisoer.Domain.Interfaces
 
 @using BellaFrisoer.Application.Interfaces
-@using BellaFrisoer.Infrastructure.Data
 
 @inject IBookingConflictChecker BookingConflictChecker
 @inject IBookingService BookingService
@@ -194,8 +192,8 @@ else
         try
         {
             // Retrieve concrete domain models from services and keep UI-bound types concrete
-            customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
-            employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
+            customers = (await ICustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
+            employees = (await IEmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
         }
         catch (Exception ex)
         {

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using BellaFrisoer.Domain.Interfaces;
 using BellaFrisoer.Domain.Models;
 
 namespace BellaFrisoer.Domain.Models;
@@ -15,7 +14,7 @@ public class Employee
     public long PhoneNumber { get; set; }
     public string? Email { get; set; }
     public double HourlyPrice { get; set; }
-    public ICollection<String>? Treatments { get; set; } = new List<String>();
+    public ICollection<Treatment>? Treatments { get; set; } = new List<Treatment>();
 
     public Employee() { }
 }

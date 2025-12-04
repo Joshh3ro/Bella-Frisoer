@@ -6,7 +6,7 @@ using BellaFrisoer.Domain.Interfaces;
 
 namespace BellaFrisoer.Infrastructure.Data
 {
-    internal class SeedDate
+    internal class SeedData
     {
         public static void Initialize(IServiceProvider serviceProvider)
         {

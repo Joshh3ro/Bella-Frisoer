@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BellaFrisoer.WebUi", "BellaFrisoer.WebUi\BellaFrisoer.WebUi.csproj", "{105EE3F3-A1D5-42EF-A548-8A02BE522060}"
+	ProjectSection(ProjectDependencies) = postProject
+		{685D1228-F536-4ECF-BA0A-0A6B558B8EBE} = {685D1228-F536-4ECF-BA0A-0A6B558B8EBE}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BellaFrisoer.Application", "BellaFrisoer.Application\BellaFrisoer.Application.csproj", "{13BD4CDE-09A3-486E-B0E0-F331851B22C6}"
 EndProject
@@ -12,6 +15,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BellaFrisoer.Domain.Test", "BellaFrisoer.Domain.Test\BellaFrisoer.Domain.Test.csproj", "{3FB40F88-B6C8-428A-8B7E-01C5FD1B0DC9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BellaFrisoer.Infrastructure", "BellaFrisoer.Infrastructure\BellaFrisoer.Infrastructure.csproj", "{685D1228-F536-4ECF-BA0A-0A6B558B8EBE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{13BD4CDE-09A3-486E-B0E0-F331851B22C6} = {13BD4CDE-09A3-486E-B0E0-F331851B22C6}
+		{1E670FEA-3BD6-46A5-BB26-C3E7FB2FFEAE} = {1E670FEA-3BD6-46A5-BB26-C3E7FB2FFEAE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

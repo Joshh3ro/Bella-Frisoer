@@ -1,7 +1,7 @@
 using BellaFrisoer.Application.Interfaces;
 using BellaFrisoer.Domain.Models;
-using BellaFrisoer.Infrastructure;
-using BellaFrisoer.Domain.Interfaces;
+
+//NOTE: Services bruges som vores logik til vores UI.
 
 namespace BellaFrisoer.Application.Services
 {

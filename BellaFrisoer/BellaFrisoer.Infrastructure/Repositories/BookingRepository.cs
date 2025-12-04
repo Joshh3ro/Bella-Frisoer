@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using BellaFrisoer.Domain.Interfaces;
 using BellaFrisoer.Infrastructure.Data;
-
-// 
+using BellaFrisoer.Application.Interfaces;
+using BellaFrisoer.Domain.Models;
+// NOTE: Repository er vores database logik,
 
 namespace BellaFrisoer.Infrastructure.Repositories
 {
@@ -20,7 +15,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
             _dbFactory = dbFactory ?? throw new ArgumentNullException(nameof(dbFactory));
         }
 
-        public async Task<IReadOnlyList<IBooking>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
             // Read-only query: AsNoTracking increases performance when not updating entities.
@@ -34,7 +29,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
             return bookings;
         }
 
-        public async Task<IReadOnlyList<IBooking>> GetByEmployeeIdAsync(int employeeId, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Booking>> GetByEmployeeIdAsync(int employeeId, CancellationToken cancellationToken = default)
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
 
@@ -50,7 +45,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
         }
 
         // New: efficient retrieval for bookings of an employee on a particular date.
-        public async Task<IReadOnlyList<IBooking>> GetByEmployeeIdAndDateAsync(int employeeId, DateTime bookingDate, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Booking>> GetByEmployeeIdAndDateAsync(int employeeId, DateTime bookingDate, CancellationToken cancellationToken = default)
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
 
@@ -67,7 +62,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
             return bookings;
         }
 
-        public async Task<IBooking?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
 
@@ -78,7 +73,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
                 .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
         }
 
-        public async Task AddAsync(IBooking booking, CancellationToken cancellationToken = default)
+        public async Task AddAsync(Booking booking, CancellationToken cancellationToken = default)
         {
             if (booking is null) throw new ArgumentNullException(nameof(booking));
 
