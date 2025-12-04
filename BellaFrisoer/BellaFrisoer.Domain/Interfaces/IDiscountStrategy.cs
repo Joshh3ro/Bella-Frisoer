@@ -1,4 +1,4 @@
-namespace BellaFrisoer.Domain.Interfaces;
+namespace BellaFrisoer.Domain.Interfaces; 
 
 public interface IDiscountStrategy
 {
