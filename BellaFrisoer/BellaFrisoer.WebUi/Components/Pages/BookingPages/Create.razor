@@ -21,6 +21,8 @@
 
 @inject IBookingConflictChecker BookingConflictChecker
 @inject IBookingService BookingService
+@inject ICustomerService CustomerService
+@inject IEmployeeService EmployeeService
 
 @* @inject ICustomerService CustomerService
 
@@ -192,8 +194,8 @@ else
         try
         {
             // Retrieve concrete domain models from services and keep UI-bound types concrete
-            customers = (await ICustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
-            employees = (await IEmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
+            customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
+            employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
         }
         catch (Exception ex)
         {
@@ -234,6 +236,7 @@ else
         }
 
         // Use the application service to check conflict and to add the booking
+        //TODO: Implementer Booking ind i vores service
         var canCreate = await BookingService.CanCreateBookingAsync(Booking);
         if (!canCreate)
         {

@@ -1,5 +1,5 @@
 ﻿@page "/employees/edit"
-@using BellaFrisoer.Domain.Interfaces
+@using BellaFrisoer.Application.Interfaces
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
@@ -48,7 +48,7 @@ else
     private int Id { get; set; }
 
     [SupplyParameterFromForm]
-    private IEmployee? Employee { get; set; }
+    private Employee? Employee { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

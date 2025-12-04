@@ -1,5 +1,5 @@
 ﻿@page "/customers"
-@using BellaFrisoer.Domain.Interfaces
+@using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
@@ -51,7 +51,7 @@ else
 
 @code {
 
-	private List<ICustomer>? customers;
+	private List<Customer>? customers;
 
 	protected override async Task OnInitializedAsync()
 	{

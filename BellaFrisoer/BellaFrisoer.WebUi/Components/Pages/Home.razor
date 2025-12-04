@@ -1,5 +1,5 @@
 ﻿@page "/"
-@using BellaFrisoer.Domain.Interfaces
+@using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Infrastructure.Data
 @using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
@@ -37,7 +37,7 @@
 
 	public int? SelectedEmployeeId { get; set; }
 
-	public List<IEmployee> Employees { get; set; } = new();
+	public List<Employee> Employees { get; set; } = new();
 	public List<Booking> SortedBookings { get; set; } = new();
 
 	protected override async Task OnInitializedAsync()

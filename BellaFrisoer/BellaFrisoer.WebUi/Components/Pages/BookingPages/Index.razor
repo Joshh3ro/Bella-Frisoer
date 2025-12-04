@@ -1,8 +1,7 @@
 ﻿@page "/bookings"
 @using Microsoft.EntityFrameworkCore
-@using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
-@inject BellaFrisoer.Domain.Interfaces.IBookingRepository BookingRepo
+@inject BellaFrisoer.Application.Interfaces.IBookingService BookingService
 
 
 <PageTitle>Bookings</PageTitle>
@@ -56,10 +55,10 @@ else
 }
 
 @code {
-    private List<Booking>? bookings;
+    private IReadOnlyList<Booking> bookings;
 
     protected override async Task OnInitializedAsync()
     {
-        bookings = await BookingRepo.GetAllAsync();
+        bookings = await BookingService.GetAllAsync();
     }
 }

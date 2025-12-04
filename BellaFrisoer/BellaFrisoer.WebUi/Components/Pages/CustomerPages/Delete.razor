@@ -1,5 +1,5 @@
 ﻿@page "/customers/delete"
-@using BellaFrisoer.Domain.Interfaces
+@using BellaFrisoer.Application.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
@@ -34,7 +34,7 @@
 </div>
 
 @code {
-    private ICustomer? customer;
+    private Customer? customer;
 
     [SupplyParameterFromQuery]
     private int Id { get; set; }

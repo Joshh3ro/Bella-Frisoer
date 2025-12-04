@@ -1,7 +1,6 @@
 ﻿@page "/customers/create"
-@using BellaFrisoer.Domain.Interfaces
+@using BellaFrisoer.Application.Interfaces
 @using Microsoft.EntityFrameworkCore
-@using BellaFrisoer.Application.Interfaces;
 
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
@@ -42,7 +41,7 @@
 
 @code {
     [SupplyParameterFromForm]
-    private ICustomer Customer { get; set; }
+    private Customer Customer { get; set; }
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddCustomer()

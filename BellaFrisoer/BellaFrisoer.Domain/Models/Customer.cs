@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using BellaFrisoer.Domain.Interfaces;
+// using BellaFrisoer.Domain.Interfaces;
 using BellaFrisoer.Domain.Models;
 
 namespace BellaFrisoer.Domain.Models;

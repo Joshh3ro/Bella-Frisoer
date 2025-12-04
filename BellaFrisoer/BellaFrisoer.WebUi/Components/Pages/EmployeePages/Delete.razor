@@ -1,5 +1,5 @@
 ﻿@page "/employees/delete"
-@using BellaFrisoer.Domain.Interfaces
+@using BellaFrisoer.Application.Interfaces
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
@@ -41,7 +41,7 @@
 </div>
 
 @code {
-    private IEmployee? employee;
+    private Employee? employee;
 
     [SupplyParameterFromQuery]
     private int Id { get; set; }
