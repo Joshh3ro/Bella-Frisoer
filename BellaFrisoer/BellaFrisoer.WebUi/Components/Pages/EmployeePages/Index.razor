@@ -2,7 +2,7 @@
 @using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IEmployeeService EmployeeService
 
 <PageTitle>Ansatte</PageTitle>
 
@@ -55,8 +55,6 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		using var ctx = DbFactory.CreateDbContext();
-		var list = await ctx.Employees.OrderBy(c => c.FirstName).ToListAsync();
-		employees = list;
+		employees = await EmployeeService.GetAllAsync();
 	}
 }
