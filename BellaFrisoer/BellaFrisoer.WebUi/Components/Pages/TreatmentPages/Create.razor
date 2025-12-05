@@ -1,8 +1,9 @@
 ﻿@page "/treatments/create"
+@using BellaFrisoer.Application.Services
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject TreatmentService TreatmentService
 
 <PageTitle>Create</PageTitle>
 
@@ -51,9 +52,7 @@
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddTreatment()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Treatments.Add(Treatment);
-        await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/Treatments");
+	    TreatmentService.AddTreatmentAsync(Treatment);
+        NavigationManager.NavigateTo("/treatments");
     }
 }
