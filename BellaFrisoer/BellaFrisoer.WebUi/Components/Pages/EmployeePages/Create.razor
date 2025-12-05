@@ -1,7 +1,9 @@
 ﻿@page "/employees/create"
+@using BellaFrisoer.Application.Interfaces
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IEmployeeService EmployeeService
 @inject NavigationManager NavigationManager
+
 @rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
@@ -46,9 +48,7 @@
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddEmployee()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Employees.Add(Employee);
-        await context.SaveChangesAsync();
+        await EmployeeService.AddEmployeeAsync(Employee);
         NavigationManager.NavigateTo("/employees");
     }
 }

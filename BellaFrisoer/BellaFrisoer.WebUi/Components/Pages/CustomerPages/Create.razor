@@ -1,17 +1,13 @@
 ﻿@page "/customers/create"
 @using BellaFrisoer.Application.Interfaces
 @using Microsoft.EntityFrameworkCore
-
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
-
 @inject ICustomerService CustomerService
-
 @rendermode InteractiveServer
 
 <PageTitle>Create</PageTitle>
 
-<h1>Opret Ansatte</h1>
+<h1>Opret Kunder</h1>
 
 <hr />
 <div class="row">
@@ -23,6 +19,12 @@
                 <label for="name" class="form-label">Name:</label>
                 <InputText id="name" @bind-Value="Customer.FirstName" class="form-control" />
                 <ValidationMessage For="() => Customer.FirstName" class="text-danger" />
+            </div>
+            
+            <div class="mb-3">
+                <label for="lastname" class="form-label">Last Name:</label>
+                <InputText id="lastname" @bind-Value="Customer.LastName" class="form-control" />
+                <ValidationMessage For="() => Customer.LastName" class="text-danger" />
             </div>
 
             <div class="mb-3">
@@ -40,16 +42,12 @@
 </div>
 
 @code {
-    [SupplyParameterFromForm]
-    private Customer Customer { get; set; }
+    [SupplyParameterFromForm] private Customer Customer { get; set; } = new();
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddCustomer()
     {
-        using var context = DbFactory.CreateDbContext();
-        // Use the DbSet property name defined on the DbContext (plural)
-        context.Customers.Add(Customer);
-        await context.SaveChangesAsync();
+        await CustomerService.AddCustomerAsync(Customer);
         NavigationManager.NavigateTo("/customers");
     }
 }
