@@ -12,10 +12,10 @@ namespace BellaFrisoer.Domain.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        // single valid Name property with a default
+        
         public string Name { get; set; } = string.Empty;
 
-        // single initialized collection
+        
         public ICollection<Booking>? Bookings { get; set; } = new List<Booking>();
 
         public long? PhoneNumber { get; set; }

@@ -79,7 +79,6 @@ else
     {
         using var context = DbFactory.CreateDbContext();
 
-        // Load tracked booking including customer so EF can detect changes on related entity
         var tracked = await context.Bookings
                                    .Include(b => b.Customer)
                                    .FirstOrDefaultAsync(b => b.Id == Booking!.Id);
@@ -90,15 +89,12 @@ else
             return;
         }
 
-        // Update booking scalar properties that should change
         tracked.BookingDate = Booking.BookingDate;
 
-        // Update related customer's editable fields and mark them modified
         if (tracked.Customer is null)
         {
             if (Booking.Customer is not null)
             {
-                // Attach new/detached customer and set value
                 tracked.Customer = Booking.Customer;
                 context.Attach(tracked.Customer);
                 context.Entry(tracked.Customer).Property(c => c.Name).IsModified = true;
