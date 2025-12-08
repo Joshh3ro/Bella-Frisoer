@@ -28,10 +28,25 @@ namespace BellaFrisoer.Application.Services
             await _repository.AddAsync(customer);
         }
 
+        public async Task DeleteCustomerAsync(Customer customer)
+        {
+            await _repository.DeleteAsync(customer.Id);
+        }
+
         public async Task<List<Customer>> GetAllAsync()
         {
             var customers = await _repository.GetAllAsync();
             return customers.ToList();
         }
+        public async Task<Customer?> GetCustomerByIdAsync(int id)
+        {
+            return await _repository.GetByIdAsync(id);
+        }
+        public async Task<Customer?> UpdateCustomerAsync(Customer customer)
+        {
+            await _repository.UpdateAsync(customer);
+            return await _repository.GetByIdAsync(customer.Id);
+        }
+
     }
 }

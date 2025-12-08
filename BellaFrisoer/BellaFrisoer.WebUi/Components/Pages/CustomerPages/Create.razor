@@ -1,13 +1,13 @@
-﻿@page "/customers/create"
+﻿@page "/kunder/opret"
 @using BellaFrisoer.Application.Interfaces
 @using Microsoft.EntityFrameworkCore
 @inject NavigationManager NavigationManager
 @inject ICustomerService CustomerService
 @rendermode InteractiveServer
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Opret Kunde</PageTitle>
 
-<h1>Opret Kunder</h1>
+<h1>Opret Kunde</h1>
 
 <hr />
 <div class="row">
@@ -16,38 +16,38 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
             <div class="mb-3">
-                <label for="name" class="form-label">Name:</label>
+                <label for="name" class="form-label">Fornavn:</label>
                 <InputText id="name" @bind-Value="Customer.FirstName" class="form-control" />
                 <ValidationMessage For="() => Customer.FirstName" class="text-danger" />
             </div>
             
             <div class="mb-3">
-                <label for="lastname" class="form-label">Last Name:</label>
+                <label for="lastname" class="form-label">Efternavn:</label>
                 <InputText id="lastname" @bind-Value="Customer.LastName" class="form-control" />
                 <ValidationMessage For="() => Customer.LastName" class="text-danger" />
             </div>
 
             <div class="mb-3">
-                <label for="phonenumber" class="form-label">PhoneNumber:</label>
+                <label for="phonenumber" class="form-label">Telefon Nummer:</label>
                 <InputNumber id="phonenumber" @bind-Value="Customer.PhoneNumber" class="form-control" />
                 <ValidationMessage For="() => Customer.PhoneNumber" class="text-danger" />
             </div>
-            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-primary">Opret</button>
         </EditForm>
     </div>
 </div>
 
 <div>
-    <a href="/customers">Back to List</a>
+    <a href="/kunder">Tilbage</a>
 </div>
 
 @code {
-    [SupplyParameterFromForm] private Customer Customer { get; set; } = new();
+	[SupplyParameterFromForm] private Customer Customer { get; set; } = new();
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddCustomer()
     {
         await CustomerService.AddCustomerAsync(Customer);
-        NavigationManager.NavigateTo("/customers");
+        NavigationManager.NavigateTo("/kunder");
     }
 }

@@ -8,6 +8,9 @@ namespace BellaFrisoer.Application.Interfaces
     {
         Task<bool> CanCreateCustomerAsync(Customer newCustomer);
         Task AddCustomerAsync(Customer customer);
+        Task DeleteCustomerAsync(Customer customer);
         Task<List<Customer>> GetAllAsync();
+        Task<Customer> GetCustomerByIdAsync(int id);
+        Task<Customer> UpdateCustomerAsync(Customer customer);
     }
 }
