@@ -1,15 +1,22 @@
-﻿@page "/treatments/details"
+﻿@page "/behandlinger/detaljer"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@using BellaFrisoer.Application.Interfaces
+@inject ITreatmentService TreatmentService
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
-<PageTitle>Details</PageTitle>
+<PageTitle>Behandslings Detaljer</PageTitle>
 
-<h1>Details</h1>
+<h1>Detaljer for behandlinger</h1>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">@ErrorMessage</div>
+}
 
 <div>
-    <h2>Treatment</h2>
+    <h2>Behandlinger</h2>
     <hr />
     @if (Treatment is null)
     {
@@ -27,26 +34,34 @@
             <dd class="col-sm-10">@Treatment.HourlyRate</dd>
         </dl>
         <div>
-            <a href="@($"/Treatments/edit?id={Treatment.Id}")">Edit</a> |
-            <a href="@($"/Treatments")">Back to List</a>
+            <a href="@($"/behandlinger/rediger?id={Treatment.Id}")">Rediger</a>
+            <a href="@($"/behandlinger")">Tilbage til liste</a>
+            <a href="@($"/behandlinger/slet?id={Treatment.Id}")">Slet behandling</a> 
         </div>
     }
 </div>
 
 @code {
     private Treatment? Treatment;
+    private string? ErrorMessage;
 
     [SupplyParameterFromQuery]
     private int Id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        Treatment = await context.Treatments.FirstOrDefaultAsync(m => m.Id == Id);
-
-        if (Treatment is null)
+        try
         {
-            NavigationManager.NavigateTo("notfound");
+            Treatment ??= await TreatmentService.GetByIdAsync(Id);
+
+            if (Treatment is null)
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Load failed: {ex.Message}";
         }
     }
 }

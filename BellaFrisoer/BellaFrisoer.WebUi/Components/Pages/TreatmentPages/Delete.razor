@@ -1,16 +1,17 @@
-﻿@page "/treatments/delete"
+﻿@page "/behandlinger/slet"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@using BellaFrisoer.Application.Interfaces
+@inject ITreatmentService TreatmentService
 @inject NavigationManager NavigationManager
 
-<PageTitle>Delete</PageTitle>
+<PageTitle>Slet behandlinger</PageTitle>
 
-<h1>Delete</h1>
+<h1>Slet behandlinger</h1>
 
-<p>Are you sure you want to delete this?</p>
+<p>Er du sikker på at du vil slette?</p>
 <div>
-    <h2>Treatment</h2>
+    <h2>Behandlinger</h2>
     <hr />
     @if (Treatment is null)
     {
@@ -35,7 +36,7 @@
         </dl>
         <EditForm method="post" Model="Treatment" OnValidSubmit="DeleteTreatment" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(Treatment is null)">Delete</button> |
-            <a href="/Treatments">Back to List</a>
+            <a href="/behandlinger">Back to List</a>
         </EditForm>
     }
 </div>
@@ -48,8 +49,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        Treatment = await context.Treatments.FirstOrDefaultAsync(m => m.Id == Id);
+        Treatment = await TreatmentService.GetByIdAsync(Id);
 
         if (Treatment is null)
         {
@@ -59,9 +59,7 @@
 
     private async Task DeleteTreatment()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Treatments.Remove(Treatment!);
-        await context.SaveChangesAsync();
-        NavigationManager.NavigateTo("/Treatments");
+        await TreatmentService.DeleteTreatmentAsync(Treatment);
+        NavigationManager.NavigateTo("/behandlinger");
     }
 }

@@ -1,15 +1,21 @@
-﻿@page "/treatments/edit"
-@using Microsoft.EntityFrameworkCore
+﻿@page "/behandlinger/rediger"
+@using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject ITreatmentService TreatmentService
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Rediger behandlinger</PageTitle>
 
-<h1>Edit</h1>
+<h1>Rediger behandlinger</h1>
 
-<h2>Treatment</h2>
+<h2>Behandling</h2>
 <hr />
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">@ErrorMessage</div>
+}
+
 @if (Treatment is null)
 {
     <p><em>Loading...</em></p>
@@ -18,29 +24,29 @@ else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm method="post" Model="Treatment" OnValidSubmit="UpdateTreatment" FormName="edit" Enhance>
+            <EditForm Model="Treatment" OnValidSubmit="UpdateTreatment" OnInvalidSubmit="OnInvalidSubmit" FormName="edit" Enhance>
                 <DataAnnotationsValidator />
                 <ValidationSummary role="alert"/>
                 <input type="hidden" name="Treatment.Id" value="@Treatment.Id" />
                 <div class="mb-3">
                     <label for="name" class="form-label">Name:</label>
                     <InputText id="name" @bind-Value="Treatment.Name" class="form-control" aria-required="true"/>
-                    <ValidationMessage For="() => Treatment.Name" class="text-danger" />
+                    <ValidationMessage For="@(() => Treatment.Name)" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="productnumber" class="form-label">ProductNumber:</label>
                     <InputText id="productnumber" @bind-Value="Treatment.ProductNumber" class="form-control" aria-required="true"/>
-                    <ValidationMessage For="() => Treatment.ProductNumber" class="text-danger" />
+                    <ValidationMessage For="@(() => Treatment.ProductNumber)" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="durationminutes" class="form-label">DurationMinutes:</label>
                     <InputNumber id="durationminutes" @bind-Value="Treatment.DurationMinutes" class="form-control" />
-                    <ValidationMessage For="() => Treatment.DurationMinutes" class="text-danger" />
+                    <ValidationMessage For="@(() => Treatment.DurationMinutes)" class="text-danger" />
                 </div>
                 <div class="mb-3">
                     <label for="hourlyrate" class="form-label">HourlyRate:</label>
                     <InputNumber id="hourlyrate" @bind-Value="Treatment.HourlyRate" class="form-control" />
-                    <ValidationMessage For="() => Treatment.HourlyRate" class="text-danger" />
+                    <ValidationMessage For="@(() => Treatment.HourlyRate)" class="text-danger" />
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
@@ -49,7 +55,7 @@ else
 }
 
 <div>
-    <a href="/Treatments">Back to List</a>
+    <a href="/treatments">Back to List</a>
 </div>
 
 @code {
@@ -59,46 +65,56 @@ else
     [SupplyParameterFromForm]
     private Treatment? Treatment { get; set; }
 
+    private string? ErrorMessage;
+
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        Treatment ??= await context.Treatments.FirstOrDefaultAsync(m => m.Id == Id);
-
-        if (Treatment is null)
-        {
-            NavigationManager.NavigateTo("notfound");
-        }
-    }
-
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
-    private async Task UpdateTreatment()
-    {
-        using var context = DbFactory.CreateDbContext();
-        context.Attach(Treatment!).State = EntityState.Modified;
-
         try
         {
-            await context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!TreatmentExists(Treatment!.Id))
+            Treatment ??= await TreatmentService.GetByIdAsync(Id);
+
+            if (Treatment is null)
             {
                 NavigationManager.NavigateTo("notfound");
             }
-            else
-            {
-                throw;
-            }
         }
-
-        NavigationManager.NavigateTo("/Treatments");
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Load failed: {ex.Message}";
+        }
     }
 
-    private bool TreatmentExists(int id)
+    private void OnInvalidSubmit(EditContext ctx)
     {
-        using var context = DbFactory.CreateDbContext();
-        return context.Treatments.Any(e => e.Id == id);
+        ErrorMessage = "Form is invalid. Please fix validation errors.";
+    }
+
+    // Use service to update instead of DbFactory
+    private async Task UpdateTreatment()
+    {
+        try
+        {
+            await TreatmentService.UpdateTreatmentAsync(Treatment!);
+            NavigationManager.NavigateTo("/behandlinger");
+        }
+        catch (Exception ex)
+        {
+            // If record no longer exists, navigate to notfound; otherwise rethrow so error surfaces
+            try
+            {
+                var exists = await TreatmentService.GetByIdAsync(Treatment!.Id);
+                if (exists is null)
+                {
+                    NavigationManager.NavigateTo("notfound");
+                    return;
+                }
+            }
+            catch
+            {
+                // ignore lookup errors and rethrow original
+            }
+
+            ErrorMessage = $"Save failed: {ex.Message}";
+        }
     }
 }

@@ -41,5 +41,24 @@ namespace BellaFrisoer.Application.Services
             var all = await _repository.GetAllAsync();
             return (all as List<Treatment>) ?? all.ToList();
         }
+
+        // New: retrieve single treatment by id
+        public async Task<Treatment?> GetByIdAsync(int id)
+        {
+            return await _repository.GetByIdAsync(id);
+        }
+
+        // New: update treatment
+        public async Task UpdateTreatmentAsync(Treatment treatment)
+        {
+            if (treatment is null) throw new ArgumentNullException(nameof(treatment));
+            await _repository.UpdateAsync(treatment);
+        }
+
+        public async Task DeleteTreatmentAsync(Treatment treatment)
+        {
+            if (treatment is null) throw new ArgumentNullException(nameof(treatment));
+            await _repository.DeleteAsync(treatment.Id);
+        }
     }
 }

@@ -1,39 +1,61 @@
-﻿@page "/treatments"
-@using Microsoft.EntityFrameworkCore
-@using Microsoft.AspNetCore.Components.QuickGrid
+﻿@page "/behandlinger"
+@using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
-@using BellaFrisoer.Infrastructure.Data
-@implements IAsyncDisposable
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@using Microsoft.EntityFrameworkCore
+@inject ITreatmentService TreatmentService
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Behandlinger</PageTitle>
 
-<h1>Index</h1>
+<h1>Behandlinger</h1>
 
 <p>
-    <a href="Treatments/create">Create New</a>
+	<a class="btn btn-primary" href="/behandlinger/opret">Opret behandling</a>
+	<a class="btn btn-secondary" href="/behandlinger">Behandlinger</a>
 </p>
 
-<QuickGrid Class="table" Items="context.Treatments">
-    <PropertyColumn Property="Treatment => Treatment.Name" />
-    <PropertyColumn Property="Treatment => Treatment.ProductNumber" />
-    <PropertyColumn Property="Treatment => Treatment.DurationMinutes" />
-    <PropertyColumn Property="Treatment => Treatment.HourlyRate" />
+@if (treatments is null)
+{
+	<p><em>Loading...</em></p>
+}
+else if (!treatments.Any())
+{
+	<p>Ingen Behandlinger endnu...</p>
+}
+else
+{
+	<table class="table table-striped table-hover">
+		<thead>
+			<tr>
+				<th>Navn</th>
+				<th>Produkt nummer</th>
+				<th>Varighed i minutter.</th>
+				<th>Timepris i kr. </th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var t in treatments)
+			{
+				<tr>
+					<td>@(t.Name ?? "—")</td>
+					<td>@(t.ProductNumber ?? "—")</td>
+					<td>@(t.DurationMinutes.ToString() ?? "—")</td>
+					<td>@(t.HourlyRate.ToString() ?? "—")</td>
+					<td>
+						<a href="/behandlinger/detaljer?id=@t.Id" class="btn btn-sm btn-primary">Detajler</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
 
-    <TemplateColumn Context="Treatment">
-        <a href="@($"Treatments/edit?id={Treatment.Id}")">Edit</a> |
-        <a href="@($"Treatments/details?id={Treatment.Id}")">Details</a> |
-        <a href="@($"Treatments/delete?id={Treatment.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
 
 @code {
-    private BellaFrisoerWebUiContext context = default!;
 
-    protected override void OnInitialized()
-    {
-        context = DbFactory.CreateDbContext();
-    }
+	private IReadOnlyList<Treatment>? treatments;
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+	protected override async Task OnInitializedAsync()
+	{
+		treatments = await TreatmentService.GetAllAsync();
+	}
 }
