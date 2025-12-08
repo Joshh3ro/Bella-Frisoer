@@ -68,13 +68,13 @@ else
 
         <div class="mb-3">
             <label class="form-label">Booking starttidspunkt</label>
-            <InputText type="time" @bind-Value="BookingStartTimeString" class="form-control" />
+            <InputText @bind-Value="bookingStartTimeString" class="form-control" type="time" />
             <ValidationMessage For="@(() => Booking.BookingStartTime)" />
         </div>
 
         <div class="mb-3">
             <label class="form-label">Booking varighed</label>
-            <InputText type="time" @bind-Value="BookingEndTimeString" class="form-control" />
+            <InputNumber @bind-Value="Booking.BookingDuration" class="form-control" />
             <ValidationMessage For="@(() => Booking.BookingDuration)" />
         </div>
 
@@ -127,67 +127,18 @@ else
 
 @code {
     private Booking Booking { get; set; } = new Booking { BookingDate = DateTime.Now, CustomerId = 0 };
+    private string bookingStartTimeString = "";
 
-    // Use concrete domain models in the UI boundary to avoid variance/covariance issues
     private List<Customer>? customers;
     private List<Employee>? employees;
     private string? ErrorMessage;
 
-    private string BookingStartTimeString
-    {
-        get
-        {
-            var dt = Booking.BookingStartTime == default ? Booking.BookingDate : Booking.BookingStartTime;
-            return dt.ToString("HH:mm", CultureInfo.InvariantCulture);
-        }
-        set
-        {
-            // robust parsing: prefer TimeOnly (HH:mm from browser), fallback to TimeSpan
-            if (TimeOnly.TryParseExact(value, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var t))
-            {
-                Booking.BookingStartTime = Booking.CombineDateTime(Booking.BookingDate.Date, t.ToTimeSpan());
-            }
-            else if (TimeSpan.TryParseExact(value, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var ts))
-            {
-                Booking.BookingStartTime = Booking.CombineDateTime(Booking.BookingDate.Date, ts);
-            }
-            // else ignore invalid input (UI validation should prevent this); you may set ErrorMessage if needed
-        }
-    }
-
-    private string BookingEndTimeString
-    {
-        get
-        {
-            // Prefer explicit duration if set; otherwise compute from start/end
-            var duration = Booking.BookingDuration;
-            if (duration == default && Booking.BookingEndTime != default && Booking.BookingStartTime != default)
-            {
-                duration = Booking.BookingEndTime - Booking.BookingStartTime;
-            }
-
-            return duration.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
-        }
-        set
-        {
-            // user enters HH:mm representing a duration (hours:minutes)
-            if (TimeSpan.TryParseExact(value, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var ts))
-            {
-                Booking.BookingDuration = ts;
-            }
-            else if (TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out ts))
-            {
-                Booking.BookingDuration = ts;
-            }
-            // No else: keep previous duration if parsing fails
-        }
-    }
+    // These are now just backing fields for the form
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // Retrieve concrete domain models from services and keep UI-bound types concrete
             customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
             employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
         }
@@ -206,6 +157,17 @@ else
     {
         ErrorMessage = null;
 
+        // Parse the time string to TimeOnly
+        if (!TimeOnly.TryParse(bookingStartTimeString, out var startTime))
+        {
+            ErrorMessage = "Ugyldigt starttidspunkt.";
+            return;
+        }
+        Booking.BookingStartTime = startTime;
+
+        // Use BookingService to parse and set times
+        BookingService.ParseAndSetBookingTimes(Booking, Booking.BookingStartTime.ToString("HH:mm"), Booking.BookingDuration.ToString());
+
         if (Booking.CustomerId <= 0)
         {
             ErrorMessage = "Vælg kunde...";
@@ -223,14 +185,12 @@ else
             ErrorMessage = "Ugyldigt starttidspunkt.";
             return;
         }
-        if (Booking.BookingDuration == default || Booking.BookingDuration.TotalMinutes <= 0)
+        if (Booking.BookingDuration == default || Booking.BookingDuration <= 0)
         {
             ErrorMessage = "Ugyldig varighed.";
             return;
         }
 
-        // Use the application service to check conflict and to add the booking
-        //TODO: Implementer Booking ind i vores service
         var canCreate = await BookingService.CanCreateBookingAsync(Booking);
         if (!canCreate)
         {

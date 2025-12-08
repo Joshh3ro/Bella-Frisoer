@@ -11,22 +11,22 @@ public class Booking
 
     public DateTime BookingDateTime 
     {
-        get { return CombineDateTime(BookingDate, BookingStartTime.TimeOfDay); } 
+        get { return CombineDateTime(BookingDate, BookingStartTime); } 
     }
 
     [Required]
     public DateTime BookingDate { get; set; }
 
-    public DateTime BookingStartTime { get; set; }
+    public TimeOnly BookingStartTime { get; set; }
 
-    public TimeSpan BookingDuration { get; set; }
+    public int BookingDuration { get; set; }
 
     public DateTime BookingEndTime
     {
         get 
         { 
-            // Ensure end time is computed from the BookingDate + time-of-day, not from any stray date component in BookingStartTime
-            return CombineDateTime(BookingDate, BookingStartTime.TimeOfDay).Add(BookingDuration);
+            // BookingDuration is now in minutes, so use AddMinutes
+            return CombineDateTime(BookingDate, BookingStartTime).AddMinutes(BookingDuration);
         }
     }
 
@@ -46,8 +46,8 @@ public class Booking
     {
     }
 
-    public DateTime CombineDateTime(DateTime date, TimeSpan time)
+    public DateTime CombineDateTime(DateTime date, TimeOnly time)
     {
-        return date.Date + time;
+        return date.Date.Add(time.ToTimeSpan());
     }
 }

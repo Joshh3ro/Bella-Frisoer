@@ -60,5 +60,29 @@ namespace BellaFrisoer.Infrastructure.Repositories
             ctx.Customers.Remove(entity);
             await ctx.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task<IReadOnlyList<Customer>> FilterCustomersAsync(string searchTerm, CancellationToken cancellationToken = default)
+        {
+            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return await ctx.Customers
+                    .AsNoTracking()
+                    .Include(c => c.Bookings)
+                    .ToListAsync(cancellationToken);
+            }
+
+            return await ctx.Customers
+                .AsNoTracking()
+                .Include(c => c.Bookings)
+                .Where(c =>
+                    (c.FirstName != null && c.FirstName.Contains(searchTerm)) ||
+                    (c.LastName != null && c.LastName.Contains(searchTerm)) ||
+                    c.PhoneNumber.ToString().Contains(searchTerm) ||
+                    c.Id.ToString().Contains(searchTerm)
+                )
+                .ToListAsync(cancellationToken);
+        }
     }
 }

@@ -48,5 +48,14 @@ namespace BellaFrisoer.Application.Services
             return await _repository.GetByIdAsync(customer.Id);
         }
 
+        public async Task<List<Customer>> FilterCustomersAsync(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return await GetAllAsync();
+
+        var filtered = await _repository.FilterCustomersAsync(searchTerm);
+        return filtered.ToList();
+        }
+
     }
 }

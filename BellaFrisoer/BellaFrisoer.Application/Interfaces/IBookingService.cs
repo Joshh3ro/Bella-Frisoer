@@ -11,5 +11,6 @@ namespace BellaFrisoer.Application.Interfaces
         Task AddBookingAsync(Booking booking, CancellationToken cancellationToken = default);
         Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default);
         Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+        void ParseAndSetBookingTimes(Booking booking, string startTimeString, string durationString);
     }
 }

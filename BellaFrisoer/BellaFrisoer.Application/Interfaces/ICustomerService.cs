@@ -12,5 +12,7 @@ namespace BellaFrisoer.Application.Interfaces
         Task<List<Customer>> GetAllAsync();
         Task<Customer> GetCustomerByIdAsync(int id);
         Task<Customer> UpdateCustomerAsync(Customer customer);
+
+        Task<List<Customer>> FilterCustomersAsync(string searchTerm);
     }
 }

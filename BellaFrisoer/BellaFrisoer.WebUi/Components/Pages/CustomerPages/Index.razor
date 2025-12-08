@@ -1,6 +1,5 @@
 ﻿@page "/kunder"
 @using BellaFrisoer.Application.Interfaces
-@using BellaFrisoer.Application.Services
 @using BellaFrisoer.Domain.Models
 @using Microsoft.EntityFrameworkCore
 @inject ICustomerService CustomerService
@@ -15,6 +14,8 @@
     <a class="btn btn-secondary" href="/bookings">Bookings</a>
 </p>
 
+<input @oninput="OnSearchChanged" class="form-control mb-3" placeholder="Søg Kunder..." />
+
 @if (customers is null)
 {
     <p><em>Loading...</em></p>
@@ -25,7 +26,7 @@ else if (!customers.Any())
 }
 else
 {
-	<table class="table table-striped table-hover">
+	<quickgrid class="table table-striped table-hover" items="FilteredCustomers">
 		<thead>
 		<tr>
 			<th>Fornavn:</th>
@@ -49,16 +50,23 @@ else
 			</tr>
 		}
 		</tbody>
-	</table>
+	</quickgrid>
 }
 
 
 @code {
 
 	private List<Customer>? customers;
+	private string searchString = string.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
 		customers = await CustomerService.GetAllAsync();
+	}
+
+	private async Task OnSearchChanged(ChangeEventArgs e)
+	{
+        searchString = e.Value?.ToString() ?? string.Empty;
+        customers = await CustomerService.FilterCustomersAsync(searchString);
 	}
 }
