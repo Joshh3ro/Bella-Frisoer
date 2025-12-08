@@ -1,49 +1,53 @@
-﻿@page "/customers/details"
+﻿@page "/kunder/detaljer"
 @using BellaFrisoer.Application.Interfaces
+@using BellaFrisoer.Application.Services
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ICustomerService CustomerService
+@rendermode InteractiveServer
 
-<PageTitle>Details</PageTitle>
+<PageTitle>Detaljer</PageTitle>
 
-<h1>Details</h1>
+<h1>Detaljer</h1>
 
 <div>
-    <h2>Customer</h2>
+    <h2>Kunder</h2>
     <hr />
-    @if (customer is null)
+    @if (customer == null)
     {
         <p><em>Loading...</em></p>
     }
     else {
         <dl class="row">
-            <dt class="col-sm-2">Name</dt>
+            <dt class="col-sm-2">Fornavn:</dt>
             <dd class="col-sm-10">@customer.FirstName</dd>
-            <dt class="col-sm-2">PhoneNumber</dt>
+            <dt class="col-sm-2">Telefon Nummer:</dt>
             <dd class="col-sm-10">@customer.PhoneNumber</dd>
         </dl>
         <div>
-            <a href="@($"/customers/edit?id={customer.Id}")">Edit</a> |
-            <a href="@($"/customers")">Back to List</a>
+	        <a href="@($"/kunder/rediger?id={customer.Id}")">Redigér</a>
+            <hr/>
+            <a href="@($"/kunder/slet?id={customer.Id}")">Slet</a>
+            <hr/>
+            <a href="@($"/kunder")">Tilbage</a>
+            <hr/>
         </div>
     }
 </div>
 
 @code {
-    private Customer? customer;
+    [SupplyParameterFromForm] private Customer customer { get; set; } = new();
 
     [SupplyParameterFromQuery]
     private int Id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        customer = await context.Customers.FirstOrDefaultAsync(m => m.Id == Id);
-
-        if (customer is null)
-        {
-            NavigationManager.NavigateTo("/customers/details");
-        }
+        customer = await CustomerService.GetCustomerByIdAsync(Id);
+        // if (customer is null)
+        // {
+        //     NavigationManager.NavigateTo("/kunder/detaljer");
+        // }
     }
 }
