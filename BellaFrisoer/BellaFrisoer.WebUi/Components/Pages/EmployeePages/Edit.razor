@@ -4,15 +4,15 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Rediger medarbejder</PageTitle>
 
-<h1>Edit</h1>
+<h1>Rediger</h1>
 
-<h2>Employee</h2>
+<h2>Medarbejder</h2>
 <hr />
 @if (Employee is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Indlæser...</em></p>
 }
 else
 {
@@ -23,23 +23,23 @@ else
                 <ValidationSummary role="alert"/>
                 <input type="hidden" name="Employee.Id" value="@Employee.Id" />
                 <div class="mb-3">
-                    <label for="name" class="form-label">Name:</label>
+                    <label for="name" class="form-label">Navn:</label>
                     <InputText id="name" @bind-Value="Employee.Name" class="form-control" />
                     <ValidationMessage For="() => Employee.Name" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="phonenumber" class="form-label">PhoneNumber:</label>
+                    <label for="phonenumber" class="form-label">Telefonnummer:</label>
                     <InputNumber id="phonenumber" @bind-Value="Employee.PhoneNumber" class="form-control" />
                     <ValidationMessage For="() => Employee.PhoneNumber" class="text-danger" />
                 </div>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="submit" class="btn btn-primary">Gem</button>
             </EditForm>
         </div>
     </div>
 }
 
 <div>
-    <a href="/employees">Back to List</a>
+    <a href="/employees">Tilbage til ansatte</a>
 </div>
 
 @code {
@@ -60,8 +60,6 @@ else
         }
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateEmployee()
     {
         using var context = DbFactory.CreateDbContext();

@@ -8,26 +8,27 @@
 <PageTitle>Kalender</PageTitle>
 
 <EditForm Model="@this">
-	<InputDate @bind-Value="myDate" />
+    <label for="datePicker" class="form-label">Vælg dato</label>
+    <InputDate id="datePicker" @bind-Value="myDate" class="form-control" />
 </EditForm>
 
-<select @bind="SelectedEmployeeId">
-	<option value="">-- Alle Ansatte --</option>
+<select @bind="SelectedEmployeeId" class="form-select my-2">
+    <option value="">-- Alle ansatte --</option>
 
-	@foreach (var emp in Employees)
-	{
-		<option value="@emp.Id">@emp.Name</option>
-	}
+    @foreach (var emp in Employees)
+    {
+        <option value="@emp.Id">@emp.Name</option>
+    }
 </select>
 
-<button @onclick="SortBookings">Sortér Bookings</button>
+<button class="btn btn-primary" @onclick="SortBookings">Sortér bookinger</button>
 
 @if (SortedBookings.Any())
 {
-	@foreach (Booking b in SortedBookings)
-	{
-		<p>@b.Customer?.Name Har en tid hos @b.Employee?.Name kl. @b.BookingDate.TimeOfDay</p>
-	}
+    @foreach (Booking b in SortedBookings)
+    {
+        <p>@(b.Customer?.Name ?? "Ukendt kunde") har en tid hos @(b.Employee?.Name ?? "Ukendt ansat") kl. @b.BookingDate.ToString("HH:mm")</p>
+    }
 }
 
 @code
