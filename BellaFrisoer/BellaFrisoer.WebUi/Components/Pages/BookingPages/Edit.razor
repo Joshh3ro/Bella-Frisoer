@@ -5,9 +5,9 @@
 @inject IBookingService BookingService
 @inject NavigationManager NavigationManager
 
-<PageTitle>Rediger Bookings</PageTitle>
+<PageTitle>Redigér Booking</PageTitle>
 
-<h1>Rediger Bookings</h1>
+<h1>Redigér</h1>
 
 <h2>Booking</h2>
 <hr />
@@ -24,12 +24,12 @@ else
                 <ValidationSummary role="alert"/>
                 <input type="hidden" name="Booking.Id" value="@Booking.Id" />
                 <div class="mb-3">
-                    <label for="BookingDate" class="form-label">Booking Dato:</label>
+                    <label for="BookingDate" class="form-label">Dato:</label>
                     <InputDate id="BookingDate" @bind-Value="Booking.BookingDate" class="form-control" />
                     <ValidationMessage For="() => Booking.BookingDate" class="text-danger" />
                 </div>
                 <div class="mb-3">
-	                <label for="FirstName" class="form-label"> Fornavn:</label>
+	                <label for="FirstName" class="form-label">Fornavn:</label>
 	                <InputText id="Name" @bind-Value="Booking.Customer.FirstName" class="form-control" />
 	                <ValidationMessage For="() => Booking.Customer.FirstName" class="text-danger" />
                 </div>
@@ -45,7 +45,7 @@ else
 }
 
 <div>
-    <a href="/bookings">Tilbage til listen</a>
+    <a href="/bookings">Tilbage</a>
 </div>
 
 @code {

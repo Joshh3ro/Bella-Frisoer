@@ -40,6 +40,8 @@ public class Booking
 
     [ForeignKey(nameof(EmployeeId))]
     public Employee? Employee { get; set; }
+    [Required]
+    public List<Treatment> Treatments { get; set; }
 
     public Booking()
     {
@@ -49,4 +51,5 @@ public class Booking
     {
         return date.Date.Add(time.ToTimeSpan());
     }
+
 }

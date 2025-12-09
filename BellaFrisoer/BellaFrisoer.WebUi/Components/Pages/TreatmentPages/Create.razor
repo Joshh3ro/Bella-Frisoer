@@ -1,53 +1,40 @@
 ﻿@page "/behandlinger/opret"
 @using BellaFrisoer.Application.Interfaces
-@using Microsoft.EntityFrameworkCore
-@using BellaFrisoer.Domain.Models;
+@using BellaFrisoer.Application.Services
+@using BellaFrisoer.Domain.Models
 @inject NavigationManager NavigationManager
 @inject ITreatmentService TreatmentService
-
 @rendermode InteractiveServer
 
-<PageTitle>Opret behandlinger</PageTitle>
-
-<h1>Opret behandlinger</h1>
-
+<PageTitle>Opret Behandling</PageTitle>
+<h1>Opret Behandling</h1>
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <EditForm method="post" Model="treatment" OnValidSubmit="AddTreatment" FormName="create" Enhance>
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="mb-3">
-                <label for="name" class="form-label">Name:</label>
-                <InputText id="name" @bind-Value="treatment.Name" class="form-control" />
-                <ValidationMessage For="() => treatment.Name" class="text-danger" />
-            </div>
-            
-            <div class="mb-3">
-                <label for="productNumber" class="form-label">Product Number:</label>
-                <InputText id="productNumber" @bind-Value="treatment.ProductNumber" class="form-control" />
-                <ValidationMessage For="() => treatment.ProductNumber" class="text-danger" />
-            </div>
-
-            <div class="mb-3">
-                <label for="durationMinutes" class="form-label">Varighed i min:</label>
-                <InputNumber id="durationMinutes" @bind-Value="treatment.DurationMinutes" class="form-control" />
-                <ValidationMessage For="() => treatment.DurationMinutes" class="text-danger" />
-            </div>
-
-            <div class="mb-3">
-                <label for="hourlyRate" class="form-label">Timepris i kr:</label>
-                <InputNumber id="durationMinutes" @bind-Value="treatment.HourlyRate" class="form-control" />
-                <ValidationMessage For="() => treatment.HourlyRate" class="text-danger" />
-            </div>
-
-            <button type="submit" class="btn btn-primary">Opret</button>
-        </EditForm>
-    </div>
+	<div class="col-md-4">
+		<EditForm method="post" Model="Treatment" OnValidSubmit="AddTreatment" FormName="create" Enhance>
+			<DataAnnotationsValidator />
+			<ValidationSummary class="text-danger" role="alert" />
+			<div class="mb-3">
+				<label for="treatmentName" class="form-label">Navn:</label>
+				<InputText id="treatmentName" @bind-Value="Treatment.Name" class="form-control" />
+				<ValidationMessage For="() => Treatment.Name" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="treatmentPrice" class="form-label">Pris:</label>
+				<InputNumber id="treatmentPrice" @bind-Value="Treatment.Price" class="form-control" />
+				<ValidationMessage For="() => Treatment.Price" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="treatmentDuration" class="form-label">Varighed (minutter):</label>
+				<InputNumber id="treatmentDuration" @bind-Value="Treatment.Duration" class="form-control" />
+				<ValidationMessage For="() => Treatment.Duration" class="text-danger" />
+			</div>
+			<button type="submit" class="btn btn-primary">Opret</button>
+		</EditForm>
+	</div>
 </div>
-
 <div>
-    <a href="/Behandlinger">Tilbage til liste</a>
+    <a href="/behandlinger">Tilbage</a>
 </div>
 
 @code {

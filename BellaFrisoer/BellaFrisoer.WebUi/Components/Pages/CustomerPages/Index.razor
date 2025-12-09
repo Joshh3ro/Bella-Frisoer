@@ -45,7 +45,10 @@ else
 				<td>@(c.Id.ToString() ?? "—")</td>
 
 				<td>
-					<a href="/kunder/detaljer?id=@c.Id" class="btn btn-sm btn-primary">Detaljer</a>
+						<a href="/kunder/detaljer?id=@c.Id" class="btn btn-sm btn-primary">Detaljer</a>
+						<a href="/kunder/rediger?id=@c.Id" class="btn btn-sm btn-warning">Rediger</a>
+						<a href="/kunder/delete?id=@c.Id" class="btn btn-sm btn-danger">Slet</a>
+
 				</td>
 			</tr>
 		}

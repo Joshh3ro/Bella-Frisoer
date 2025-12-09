@@ -1,65 +1,62 @@
 ﻿@page "/behandlinger/slet"
-@using Microsoft.EntityFrameworkCore
-@using BellaFrisoer.Domain.Models
+
 @using BellaFrisoer.Application.Interfaces
-@inject ITreatmentService TreatmentService
+@using BellaFrisoer.Application.Services
+@using BellaFrisoer.Domain.Models
 @inject NavigationManager NavigationManager
+@inject ITreatmentService TreatmentService
+@rendermode InteractiveServer
 
-<PageTitle>Slet behandlinger</PageTitle>
+<PageTitle>Slet Behandling</PageTitle>
+<h1>Slet Behandling</h1>
+<p>Er du sikker på at du vil slette denne behandling?</p>
 
-<h1>Slet behandlinger</h1>
-
-<p>Er du sikker på at du vil slette?</p>
 <div>
-    <h2>Behandlinger</h2>
-    <hr />
-    @if (Treatment is null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else {
-        <dl class="row">
-            <dt class="col-sm-2">Name</dt>
-            <dd class="col-sm-10">@Treatment.Name</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">ProductNumber</dt>
-            <dd class="col-sm-10">@Treatment.ProductNumber</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">DurationMinutes</dt>
-            <dd class="col-sm-10">@Treatment.DurationMinutes</dd>
-        </dl>
-        <dl class="row">
-            <dt class="col-sm-2">HourlyRate</dt>
-            <dd class="col-sm-10">@Treatment.HourlyRate</dd>
-        </dl>
-        <EditForm method="post" Model="Treatment" OnValidSubmit="DeleteTreatment" FormName="delete" Enhance>
-            <button type="submit" class="btn btn-danger" disabled="@(Treatment is null)">Delete</button> |
-            <a href="/behandlinger">Back to List</a>
-        </EditForm>
-    }
+	<hr />
+	@if (treatment is null)
+	{
+		<p><em>Indlæser...</em></p>
+	}
+	else
+	{
+		<dl class="row">
+			<dt class="col-sm-2">Navn:</dt>
+			<dd class="col-sm-10">@treatment.Name</dd>
+		</dl>
+		<dl class="row">
+			<dt class="col-sm-2">Varighed (minutter):</dt>
+			<dd class="col-sm-10">@treatment.Duration</dd>
+		</dl>
+		<dl class="row">
+			<dt class="col-sm-2">Pris:</dt>
+			<dd class="col-sm-10">@treatment.Price</dd>
+		</dl>
+
+		<EditForm method="post" Model="treatment" OnValidSubmit="DeleteTreatment" FormName="delete" Enhance>
+			<button type="submit" class="btn btn-danger" disabled="@(treatment is null)">Slet</button> |
+			<a href="/behandlinger">Tilbage</a>
+		</EditForm>
+	}
 </div>
 
 @code {
-    private Treatment? Treatment;
+	private Treatment? treatment;
+	[SupplyParameterFromQuery]
+	private int Id { get; set; }
 
-    [SupplyParameterFromQuery]
-    private int Id { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        Treatment = await TreatmentService.GetByIdAsync(Id);
-
-        if (Treatment is null)
-        {
-            NavigationManager.NavigateTo("notfound");
-        }
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		treatment = await TreatmentService.GetTreatmentByIdAsync(Id);
+		if (treatment == null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
 
     private async Task DeleteTreatment()
     {
-        await TreatmentService.DeleteTreatmentAsync(Treatment);
+        await TreatmentService.DeleteTreatmentAsync(treatment);
         NavigationManager.NavigateTo("/behandlinger");
     }
 }
+
