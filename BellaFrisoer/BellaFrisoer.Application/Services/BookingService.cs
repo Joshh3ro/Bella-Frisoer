@@ -21,7 +21,7 @@ namespace BellaFrisoer.Application.Services
         public async Task<bool> CanCreateBookingAsync(Booking newBooking, CancellationToken cancellationToken = default)
         {
             if (newBooking is null) throw new ArgumentNullException(nameof(newBooking));
-            if (newBooking.BookingDuration <= 0) return false; // validate early
+            if (newBooking.BookingDuration <= TimeSpan.Zero) return false; // validate early
 
             var relevant = (await _repository.GetByEmployeeIdAndDateAsync(newBooking.EmployeeId, newBooking.BookingDate, cancellationToken)).ToList();
             return !_conflictChecker.HasBookingConflict(newBooking, relevant);
@@ -30,7 +30,7 @@ namespace BellaFrisoer.Application.Services
         public async Task AddBookingAsync(Booking booking, CancellationToken cancellationToken = default)
         {
             if (booking is null) throw new ArgumentNullException(nameof(booking));
-            if (booking.BookingDuration <= 0) throw new ArgumentException("Booking duration must be positive.", nameof(booking));
+            if (booking.BookingDuration <= TimeSpan.Zero) throw new ArgumentException("Booking duration must be positive.", nameof(booking));
 
             if (!await CanCreateBookingAsync(booking, cancellationToken))
             {
@@ -49,31 +49,31 @@ namespace BellaFrisoer.Application.Services
         /// <summary>
         /// Parses and sets BookingStartTime and BookingDuration (in minutes) from time strings.
         /// </summary>
-        public void ParseAndSetBookingTimes(Booking booking, string startTimeString, string durationString)
-        {
-            // Parse start time
-            if (TimeOnly.TryParseExact(startTimeString, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var t))
-            {
-                booking.BookingStartTime = t;
-            }
-            else if (TimeSpan.TryParseExact(startTimeString, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var tsStart))
-            {
-                booking.BookingStartTime = TimeOnly.FromTimeSpan(tsStart);
-            }
+        //public void ParseAndSetBookingTimes(Booking booking, string startTimeString, string durationString)
+        //{
+        //    // Parse start time
+        //    if (TimeOnly.TryParseExact(startTimeString, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var t))
+        //    {
+        //        booking.BookingStartTime = t;
+        //    }
+        //    else if (TimeSpan.TryParseExact(startTimeString, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var tsStart))
+        //    {
+        //        booking.BookingStartTime = TimeOnly.FromTimeSpan(tsStart);
+        //    }
 
-            // Parse duration (in minutes)
-            if (int.TryParse(durationString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var minutes))
-            {
-                booking.BookingDuration = minutes;
-            }
-            else if (TimeSpan.TryParseExact(durationString, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var tsDuration))
-            {
-                booking.BookingDuration = (int)tsDuration.TotalMinutes;
-            }
-            else if (TimeSpan.TryParse(durationString, CultureInfo.InvariantCulture, out tsDuration))
-            {
-                booking.BookingDuration = (int)tsDuration.TotalMinutes;
-            }
-        }
+        //    // Parse duration (in minutes)
+        //    if (TimeSpan.TryParse(durationString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var ts))
+        //    {
+        //        booking.BookingDuration = ts;
+        //    }
+        //    else if (TimeSpan.TryParseExact(durationString, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var tsDuration))
+        //    {
+        //        booking.BookingDuration = (int)tsDuration.TotalMinutes;
+        //    }
+        //    else if (TimeSpan.TryParse(durationString, CultureInfo.InvariantCulture, out tsDuration))
+        //    {
+        //        booking.BookingDuration = (int)tsDuration.TotalMinutes;
+        //    }
+        //}
     }
 }

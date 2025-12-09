@@ -19,14 +19,13 @@ public class Booking
 
     public TimeOnly BookingStartTime { get; set; }
 
-    public int BookingDuration { get; set; }
+    public TimeSpan BookingDuration { get; set; }
 
     public DateTime BookingEndTime
     {
         get 
         { 
-            // BookingDuration is now in minutes, so use AddMinutes
-            return CombineDateTime(BookingDate, BookingStartTime).AddMinutes(BookingDuration);
+            return CombineDateTime(BookingDate, BookingStartTime).Add(BookingDuration);
         }
     }
 

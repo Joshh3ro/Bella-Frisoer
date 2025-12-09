@@ -74,7 +74,7 @@ else
 
         <div class="mb-3">
             <label class="form-label">Booking varighed</label>
-            <InputNumber @bind-Value="Booking.BookingDuration" class="form-control" />
+            <InputText type="time" @bind-Value="BookingDurationString" class="form-control" />
             <ValidationMessage For="@(() => Booking.BookingDuration)" />
         </div>
 
@@ -128,6 +128,7 @@ else
 @code {
     private Booking Booking { get; set; } = new Booking { BookingDate = DateTime.Now, CustomerId = 0 };
     private string bookingStartTimeString = "";
+	private string BookingDurationString = "";
 
     private List<Customer>? customers;
     private List<Employee>? employees;
@@ -165,8 +166,16 @@ else
         }
         Booking.BookingStartTime = startTime;
 
+        // Parse the duration string to TimeSpan
+        if (!TimeSpan.TryParse(BookingDurationString, out var duration))
+        {
+            ErrorMessage = "Ugyldig varighed.";
+            return;
+        }
+        Booking.BookingDuration = duration;
+
         // Use BookingService to parse and set times
-        BookingService.ParseAndSetBookingTimes(Booking, Booking.BookingStartTime.ToString("HH:mm"), Booking.BookingDuration.ToString());
+        // BookingService.ParseAndSetBookingTimes(Booking, Booking.BookingStartTime.ToString("HH:mm"), Booking.BookingDuration.ToString());
 
         if (Booking.CustomerId <= 0)
         {
@@ -185,7 +194,7 @@ else
             ErrorMessage = "Ugyldigt starttidspunkt.";
             return;
         }
-        if (Booking.BookingDuration == default || Booking.BookingDuration <= 0)
+        if (Booking.BookingDuration == default || Booking.BookingDuration <= TimeSpan.Zero)
         {
             ErrorMessage = "Ugyldig varighed.";
             return;
