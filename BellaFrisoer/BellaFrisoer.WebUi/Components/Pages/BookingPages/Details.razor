@@ -1,7 +1,7 @@
 ﻿@page "/bookings/details"
-@using Microsoft.EntityFrameworkCore
+@using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@inject IBookingService BookingService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Details</PageTitle>
@@ -39,10 +39,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        booking = await context.Bookings
-            .Include(b => b.Customer)
-            .FirstOrDefaultAsync(m => m.Id == Id);
+        booking = await BookingService.GetByIdAsync(Id);
 
         if (booking is null)
         {

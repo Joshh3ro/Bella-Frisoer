@@ -40,6 +40,20 @@ namespace BellaFrisoer.Application.Services
             await _repository.AddAsync(booking, cancellationToken);
         }
 
+        public async Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default)
+        {
+            if (booking is null) throw new ArgumentNullException(nameof(booking));
+                
+            // Optional: You could add conflict checking logic here for updates as well
+                
+            await _repository.UpdateAsync(booking, cancellationToken);
+        }
+
+        public async Task DeleteBookingAsync(int id, CancellationToken cancellationToken = default)
+        {
+            await _repository.DeleteAsync(id, cancellationToken);
+        }
+
         public async Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default)
             => await _repository.GetAllAsync(cancellationToken);
 
