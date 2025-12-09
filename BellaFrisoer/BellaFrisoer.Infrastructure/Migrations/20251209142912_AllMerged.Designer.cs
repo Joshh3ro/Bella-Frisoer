@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BellaFrisoer.Infrastructure.Migrations
 {
     [DbContext(typeof(BellaFrisoerWebUiContext))]
-    [Migration("20251209132348_InitCreate")]
-    partial class InitCreate
+    [Migration("20251209142912_AllMerged")]
+    partial class AllMerged
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,8 +39,8 @@ namespace BellaFrisoer.Infrastructure.Migrations
                     b.Property<TimeSpan>("BookingDuration")
                         .HasColumnType("time");
 
-                    b.Property<DateTime>("BookingStartTime")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeOnly>("BookingStartTime")
+                        .HasColumnType("time");
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");

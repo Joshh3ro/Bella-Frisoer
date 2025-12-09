@@ -70,10 +70,5 @@ namespace BellaFrisoer.Application.Services
             await _repository.UpdateAsync(treatment);
         }
 
-        public async Task DeleteTreatmentAsync(Treatment treatment)
-        {
-            if (treatment is null) throw new ArgumentNullException(nameof(treatment));
-            await _repository.DeleteAsync(treatment.Id);
-        }
     }
 }

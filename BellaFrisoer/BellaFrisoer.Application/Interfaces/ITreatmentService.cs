@@ -15,6 +15,5 @@ namespace BellaFrisoer.Application.Interfaces
         Task<Treatment?> GetByIdAsync(int id);
         Task UpdateTreatmentAsync(Treatment treatment);
 
-        Task DeleteTreatmentAsync(Treatment treatment);
     }
 }

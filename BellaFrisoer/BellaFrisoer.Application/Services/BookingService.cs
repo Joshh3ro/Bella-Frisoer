@@ -60,34 +60,5 @@ namespace BellaFrisoer.Application.Services
         public async Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
             => await _repository.GetByIdAsync(id, cancellationToken);
 
-        /// <summary>
-        /// Parses and sets BookingStartTime and BookingDuration (in minutes) from time strings.
-        /// </summary>
-        //public void ParseAndSetBookingTimes(Booking booking, string startTimeString, string durationString)
-        //{
-        //    // Parse start time
-        //    if (TimeOnly.TryParseExact(startTimeString, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var t))
-        //    {
-        //        booking.BookingStartTime = t;
-        //    }
-        //    else if (TimeSpan.TryParseExact(startTimeString, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var tsStart))
-        //    {
-        //        booking.BookingStartTime = TimeOnly.FromTimeSpan(tsStart);
-        //    }
-
-        //    // Parse duration (in minutes)
-        //    if (TimeSpan.TryParse(durationString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var ts))
-        //    {
-        //        booking.BookingDuration = ts;
-        //    }
-        //    else if (TimeSpan.TryParseExact(durationString, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var tsDuration))
-        //    {
-        //        booking.BookingDuration = (int)tsDuration.TotalMinutes;
-        //    }
-        //    else if (TimeSpan.TryParse(durationString, CultureInfo.InvariantCulture, out tsDuration))
-        //    {
-        //        booking.BookingDuration = (int)tsDuration.TotalMinutes;
-        //    }
-        //}
     }
 }

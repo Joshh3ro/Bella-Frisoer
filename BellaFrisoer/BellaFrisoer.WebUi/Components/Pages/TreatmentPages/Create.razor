@@ -11,23 +11,23 @@
 <hr />
 <div class="row">
 	<div class="col-md-4">
-		<EditForm method="post" Model="Treatment" OnValidSubmit="AddTreatment" FormName="create" Enhance>
+		<EditForm method="post" Model="treatment" OnValidSubmit="AddTreatment" FormName="create" Enhance>
 			<DataAnnotationsValidator />
 			<ValidationSummary class="text-danger" role="alert" />
 			<div class="mb-3">
 				<label for="treatmentName" class="form-label">Navn:</label>
-				<InputText id="treatmentName" @bind-Value="Treatment.Name" class="form-control" />
-				<ValidationMessage For="() => Treatment.Name" class="text-danger" />
+				<InputText id="treatmentName" @bind-Value="treatment.Name" class="form-control" />
+				<ValidationMessage For="() => treatment.Name" class="text-danger" />
 			</div>
 			<div class="mb-3">
 				<label for="treatmentPrice" class="form-label">Pris:</label>
-				<InputNumber id="treatmentPrice" @bind-Value="Treatment.Price" class="form-control" />
-				<ValidationMessage For="() => Treatment.Price" class="text-danger" />
+				<InputNumber id="treatmentPrice" @bind-Value="treatment.Price" class="form-control" />
+				<ValidationMessage For="() => treatment.Price" class="text-danger" />
 			</div>
 			<div class="mb-3">
 				<label for="treatmentDuration" class="form-label">Varighed (minutter):</label>
-				<InputNumber id="treatmentDuration" @bind-Value="Treatment.Duration" class="form-control" />
-				<ValidationMessage For="() => Treatment.Duration" class="text-danger" />
+				<InputNumber id="treatmentDuration" @bind-Value="treatment.Duration" class="form-control" />
+				<ValidationMessage For="() => treatment.Duration" class="text-danger" />
 			</div>
 			<button type="submit" class="btn btn-primary">Opret</button>
 		</EditForm>
