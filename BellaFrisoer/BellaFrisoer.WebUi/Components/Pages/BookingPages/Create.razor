@@ -5,7 +5,7 @@
 *@
 
 @* Route for the page: component is accessible at /bookings/create *@
-@page "/bookings/create"
+@page "/bookings/opret"
 
 @* Bring EF Core asynchronous query extensions (ToListAsync, OrderBy, Include) into scope *@
 @using Microsoft.EntityFrameworkCore
@@ -173,9 +173,6 @@ else
             return;
         }
         Booking.BookingDuration = duration;
-
-        // Use BookingService to parse and set times
-        // BookingService.ParseAndSetBookingTimes(Booking, Booking.BookingStartTime.ToString("HH:mm"), Booking.BookingDuration.ToString());
 
         if (Booking.CustomerId <= 0)
         {

@@ -8,8 +8,8 @@
 <h1>Bookings</h1>
 
 <p>
-    <a class="btn btn-primary" href="/bookings/create">Create Booking</a>
-    <a class="btn btn-secondary" href="/customers">Customers</a>
+    <a class="btn btn-primary" href="/bookings/opret">Opret Booking</a>
+    <a class="btn btn-secondary" href="/kunder">Kunder</a>
 </p>
 
 @if (bookings is null)
@@ -45,7 +45,7 @@ else
 					<td>@(b.BookingEndTime.ToString() ?? "-")</td>
 
 					<td>
-					<a href="/bookings/details?id=@b.Id" class="btn btn-sm btn-primary">Details</a>
+					<a href="/bookings/detaljer?id=@b.Id" class="btn btn-sm btn-primary">Details</a>
 				</td>
 			</tr>
 		}
