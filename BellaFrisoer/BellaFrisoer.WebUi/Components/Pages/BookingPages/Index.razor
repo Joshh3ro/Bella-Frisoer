@@ -1,8 +1,7 @@
 ﻿@page "/bookings"
 @using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
-@inject BellaFrisoer.Application.Interfaces.IBookingService BookingService
-
+@using BellaFrisoer.Application.Interfaces
+@inject IBookingService BookingService
 
 <PageTitle>Bookings</PageTitle>
 

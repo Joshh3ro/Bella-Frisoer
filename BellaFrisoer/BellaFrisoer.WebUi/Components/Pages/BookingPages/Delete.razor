@@ -1,7 +1,7 @@
 ﻿@page "/bookings/delete"
-@using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@using BellaFrisoer.Application.Interfaces
+@inject IBookingService BookingService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Delete</PageTitle>
@@ -23,11 +23,11 @@
         </dl>
         <dl class="row">
 	        <dt class="col-sm-2">CustomerFirstName</dt>
-	        <dd class="col-sm-10">@booking.Customer.FirstName</dd>
+	        <dd class="col-sm-10">@booking.Customer?.FirstName</dd>
         </dl>
         <dl class="row">
 	        <dt class="col-sm-2">CustomerLastName</dt>
-	        <dd class="col-sm-10">@booking.Customer.LastName</dd>
+	        <dd class="col-sm-10">@booking.Customer?.LastName</dd>
         </dl>
         <EditForm method="post" Model="booking" OnValidSubmit="DeleteBooking" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(booking is null)">Delete</button> |
@@ -44,8 +44,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        booking = await context.Bookings.FirstOrDefaultAsync(m => m.Id == Id);
+        booking = await BookingService.GetByIdAsync(Id);
 
         if (booking is null)
         {
@@ -55,9 +54,7 @@
 
     private async Task DeleteBooking()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Bookings.Remove(booking!);
-        await context.SaveChangesAsync();
+        await BookingService.DeleteBookingAsync(Id);
         NavigationManager.NavigateTo("/bookings");
     }
 }

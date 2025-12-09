@@ -18,6 +18,7 @@ namespace BellaFrisoer.Application.Interfaces
 
         Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         Task AddAsync(Booking booking, CancellationToken cancellationToken = default);
-        // Add additional focused methods here instead of forcing consumers to retrieve everything.
+        Task UpdateAsync(Booking booking, CancellationToken cancellationToken = default);
+        Task DeleteAsync(int id, CancellationToken cancellationToken = default);
     }
 }

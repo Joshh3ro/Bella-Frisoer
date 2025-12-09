@@ -93,5 +93,23 @@ namespace BellaFrisoer.Infrastructure.Repositories
             ctx.Bookings.Add(booking);
             await ctx.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task UpdateAsync(Booking booking, CancellationToken cancellationToken = default)
+        {
+            if (booking is null) throw new ArgumentNullException(nameof(booking));
+
+            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
+            ctx.Attach(booking).State = EntityState.Modified;
+            
+            await ctx.SaveChangesAsync(cancellationToken);
+        }
+        
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        {
+            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
+            var entity = await ctx.Bookings.FindAsync(new object[] { id }, cancellationToken);
+            if (entity is null) return;
+            ctx.Bookings.Remove(entity);
+        }
     }
 }

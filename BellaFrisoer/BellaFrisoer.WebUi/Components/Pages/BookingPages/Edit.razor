@@ -1,7 +1,8 @@
 ﻿@page "/bookings/edit"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
+@using BellaFrisoer.Application.Interfaces
+@inject IBookingService BookingService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Edit</PageTitle>
@@ -56,11 +57,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        // Ensure the Customer navigation property is loaded to avoid null dereference in the UI
-        Booking ??= await context.Bookings
-                                 .Include(b => b.Customer)
-                                 .FirstOrDefaultAsync(m => m.Id == Id);
+        Booking ??= await BookingService.GetByIdAsync(Id);
 
         if (Booking is null)
         {
@@ -72,16 +69,13 @@ else
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateBooking()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Attach(Booking!).State = EntityState.Modified;
-
         try
         {
-            await context.SaveChangesAsync();
+            await BookingService.UpdateBookingAsync(Booking!);
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!BookingExists(Booking!.Id))
+            if (!await BookingExists(Booking!.Id))
             {
                 NavigationManager.NavigateTo("notfound");
             }
@@ -94,9 +88,9 @@ else
         NavigationManager.NavigateTo("/bookings");
     }
 
-    private bool BookingExists(int id)
+    private async Task<bool> BookingExists(int id)
     {
-        using var context = DbFactory.CreateDbContext();
-        return context.Bookings.Any(e => e.Id == id);
+        var booking = await BookingService.GetByIdAsync(id);
+        return booking != null;
     }
 }
