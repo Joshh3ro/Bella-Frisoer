@@ -1,12 +1,12 @@
-﻿@page "/bookings/edit"
+﻿@page "/bookings/rediger"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Rediger Booking</PageTitle>
 
-<h1>Edit</h1>
+<h1>Redigér</h1>
 
 <h2>Booking</h2>
 <hr />
@@ -23,17 +23,17 @@ else
                 <ValidationSummary role="alert"/>
                 <input type="hidden" name="Booking.Id" value="@Booking.Id" />
                 <div class="mb-3">
-                    <label for="BookingDate" class="form-label">BookingDate:</label>
+                    <label for="BookingDate" class="form-label">Dato:</label>
                     <InputDate id="BookingDate" @bind-Value="Booking.BookingDate" class="form-control" />
                     <ValidationMessage For="() => Booking.BookingDate" class="text-danger" />
                 </div>
                 <div class="mb-3">
-	                <label for="FirstName" class="form-label">First Name:</label>
+	                <label for="FirstName" class="form-label">Fornavn:</label>
 	                <InputText id="Name" @bind-Value="Booking.Customer.FirstName" class="form-control" />
 	                <ValidationMessage For="() => Booking.Customer.FirstName" class="text-danger" />
                 </div>
                 <div class="mb-3">
-	                <label for="LastName" class="form-label">Last Name:</label>
+	                <label for="LastName" class="form-label">Efternavn:</label>
 	                <InputText id="Name" @bind-Value="Booking.Customer.LastName" class="form-control" />
 	                <ValidationMessage For="() => Booking.Customer.LastName" class="text-danger" />
                 </div>
@@ -44,7 +44,7 @@ else
 }
 
 <div>
-    <a href="/bookings">Back to List</a>
+    <a href="/bookings">Tilbage</a>
 </div>
 
 @code {

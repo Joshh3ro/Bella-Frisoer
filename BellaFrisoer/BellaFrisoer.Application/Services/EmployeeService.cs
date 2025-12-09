@@ -34,5 +34,19 @@ namespace BellaFrisoer.Application.Services
             var employees = await _repository.GetAllAsync();
             return employees.ToList();
         }
+
+        public async Task<Employee> GetEmployeeByIdAsync(int id)
+        {
+            return await _repository.GetByIdAsync(id);
+        }
+        public async Task DeleteEmployeeAsync(int id)
+        {
+            _repository.DeleteAsync(id);
+        }
+        public async Task<Employee?> UpdateEmployeeAsync(Employee employee)
+        {
+            await _repository.UpdateAsync(employee);
+            return await _repository.GetByIdAsync(employee.Id);
+        }
     }
 }

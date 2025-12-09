@@ -18,28 +18,43 @@ namespace BellaFrisoer.Application.Services
 
         public async Task<bool> CanCreateTreatmentAsync(Treatment newTreatment)
         {
-            if (newTreatment is null) throw new ArgumentNullException(nameof(newTreatment));
+            if (newTreatment is null)
+                throw new ArgumentNullException(nameof(newTreatment));
 
             // Basic business rules: must have a name and positive duration
-            if (string.IsNullOrWhiteSpace(newTreatment.Name) || newTreatment.DurationMinutes <= 0)
+            if (string.IsNullOrWhiteSpace(newTreatment.Name) || newTreatment.Duration <= 0)
                 return false;
 
-            // Ensure product number uniqueness (simple example)
+            // Ensure product number uniqueness
             var all = await _repository.GetAllAsync();
-            var list = (all as List<Treatment>) ?? all.ToList();
-            return !list.Any(t => string.Equals(t.ProductNumber?.Trim(), newTreatment.ProductNumber?.Trim(), StringComparison.OrdinalIgnoreCase));
+            return !all.Any(t => string.Equals(newTreatment.Id, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task AddTreatmentAsync(Treatment treatment)
         {
-            if (treatment is null) throw new ArgumentNullException(nameof(treatment));
+            if (treatment is null)
+                throw new ArgumentNullException(nameof(treatment));
+
             await _repository.AddAsync(treatment);
         }
 
         public async Task<List<Treatment>> GetAllAsync()
         {
             var all = await _repository.GetAllAsync();
-            return (all as List<Treatment>) ?? all.ToList();
+            return all.ToList(); // Konverter til liste for sikkerhed
+        }
+
+        public async Task<Treatment?> GetTreatmentByIdAsync(int id)
+        {
+            return await _repository.GetByIdAsync(id); // Brug repository-metoden
+        }
+
+        public async Task DeleteTreatmentAsync(Treatment treatment)
+        {
+            if (treatment is null)
+                throw new ArgumentNullException(nameof(treatment));
+
+            await _repository.DeleteAsync(treatment.Id); // Brug repository-metoden
         }
     }
 }

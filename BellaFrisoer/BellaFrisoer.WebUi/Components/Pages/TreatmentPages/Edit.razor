@@ -1,18 +1,20 @@
-﻿@page "/treatments/edit"
+﻿@page "/behandlinger/rediger"
+@using BellaFrisoer.Application.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
 @inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ITreatmentService TreatmentService
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Rediger</PageTitle>
 
-<h1>Edit</h1>
+<h1>Rediger</h1>
 
-<h2>Treatment</h2>
+<h2>Behandlinger</h2>
 <hr />
 @if (Treatment is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Indlæser...</em></p>
 }
 else
 {
@@ -23,33 +25,29 @@ else
                 <ValidationSummary role="alert"/>
                 <input type="hidden" name="Treatment.Id" value="@Treatment.Id" />
                 <div class="mb-3">
-                    <label for="name" class="form-label">Name:</label>
+                    <label for="name" class="form-label">Behandlingsnavn:</label>
                     <InputText id="name" @bind-Value="Treatment.Name" class="form-control" aria-required="true"/>
                     <ValidationMessage For="() => Treatment.Name" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="productnumber" class="form-label">ProductNumber:</label>
-                    <InputText id="productnumber" @bind-Value="Treatment.ProductNumber" class="form-control" aria-required="true"/>
-                    <ValidationMessage For="() => Treatment.ProductNumber" class="text-danger" />
+	                <label for="pris" class="form-label">Pris:</label>
+	                <InputNumber id="price" @bind-Value="Treatment.Price" class="form-control" />
+	                <ValidationMessage For="() => Treatment.Price" class="text-danger" />
                 </div>
                 <div class="mb-3">
-                    <label for="durationminutes" class="form-label">DurationMinutes:</label>
-                    <InputNumber id="durationminutes" @bind-Value="Treatment.DurationMinutes" class="form-control" />
-                    <ValidationMessage For="() => Treatment.DurationMinutes" class="text-danger" />
+	                <label for="duration" class="form-label">Varighed:</label>
+	                <InputNumber id="duration" @bind-Value="Treatment.Duration" class="form-control" />
+	                <ValidationMessage For="() => Treatment.Duration" class="text-danger" />
                 </div>
-                <div class="mb-3">
-                    <label for="hourlyrate" class="form-label">HourlyRate:</label>
-                    <InputNumber id="hourlyrate" @bind-Value="Treatment.HourlyRate" class="form-control" />
-                    <ValidationMessage For="() => Treatment.HourlyRate" class="text-danger" />
-                </div>
-                <button type="submit" class="btn btn-primary">Save</button>
+
+                <button type="submit" class="btn btn-primary">Gem</button>
             </EditForm>
         </div>
     </div>
 }
 
 <div>
-    <a href="/Treatments">Back to List</a>
+    <a href="/behandlinger">Tilbage</a>
 </div>
 
 @code {
@@ -93,7 +91,7 @@ else
             }
         }
 
-        NavigationManager.NavigateTo("/Treatments");
+        NavigationManager.NavigateTo("/Behandlinger");
     }
 
     private bool TreatmentExists(int id)

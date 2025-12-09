@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BellaFrisoer.Infrastructure.Migrations
 {
     [DbContext(typeof(BellaFrisoerWebUiContext))]
-    [Migration("20251126122819_Bookingschanged")]
-    partial class Bookingschanged
+    [Migration("20251209132348_InitCreate")]
+    partial class InitCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,7 +57,7 @@ namespace BellaFrisoer.Infrastructure.Migrations
                     b.ToTable("Bookings", (string)null);
                 });
 
-            modelBuilder.Entity("Customer", b =>
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -65,11 +65,21 @@ namespace BellaFrisoer.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("PhoneNumber")
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("PhoneNumber")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -77,7 +87,7 @@ namespace BellaFrisoer.Infrastructure.Migrations
                     b.ToTable("Customers", (string)null);
                 });
 
-            modelBuilder.Entity("Employee", b =>
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Employee", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,30 +95,71 @@ namespace BellaFrisoer.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("PhoneNumber")
-                        .HasColumnType("bigint");
+                    b.Property<double>("HourlyPrice")
+                        .HasColumnType("float");
 
-                    b.PrimitiveCollection<string>("Treatments")
+                    b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("PhoneNumber")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.ToTable("Employees", (string)null);
                 });
 
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Treatment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("Treatments", (string)null);
+                });
+
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
                 {
-                    b.HasOne("Customer", "Customer")
+                    b.HasOne("BellaFrisoer.Domain.Models.Customer", "Customer")
                         .WithMany("Bookings")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Employee", "Employee")
+                    b.HasOne("BellaFrisoer.Domain.Models.Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -119,9 +170,30 @@ namespace BellaFrisoer.Infrastructure.Migrations
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("Customer", b =>
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Treatment", b =>
+                {
+                    b.HasOne("BellaFrisoer.Domain.Models.Booking", null)
+                        .WithMany("Treatments")
+                        .HasForeignKey("BookingId");
+
+                    b.HasOne("BellaFrisoer.Domain.Models.Employee", null)
+                        .WithMany("Treatments")
+                        .HasForeignKey("EmployeeId");
+                });
+
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
+                {
+                    b.Navigation("Treatments");
+                });
+
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
                 {
                     b.Navigation("Bookings");
+                });
+
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Employee", b =>
+                {
+                    b.Navigation("Treatments");
                 });
 #pragma warning restore 612, 618
         }

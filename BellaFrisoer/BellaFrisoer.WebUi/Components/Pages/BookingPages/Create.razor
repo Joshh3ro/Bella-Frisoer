@@ -149,11 +149,11 @@ else
         set
         {
             // robust parsing: prefer TimeOnly (HH:mm from browser), fallback to TimeSpan
-            if (TimeOnly.TryParseExact(value, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var t))
+            if (TimeOnly.TryParseExact(value, "h:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var t))
             {
                 Booking.BookingStartTime = Booking.CombineDateTime(Booking.BookingDate.Date, t.ToTimeSpan());
             }
-            else if (TimeSpan.TryParseExact(value, new[] { "h\\:mm", "hh\\:mm", "hh\\:mm\\:ss" }, CultureInfo.InvariantCulture, out var ts))
+            else if (TimeSpan.TryParseExact(value, new[] { "h\\:mm"}, CultureInfo.InvariantCulture, out var ts))
             {
                 Booking.BookingStartTime = Booking.CombineDateTime(Booking.BookingDate.Date, ts);
             }

@@ -122,26 +122,26 @@ namespace BellaFrisoer.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DurationMinutes")
+                    b.Property<int?>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Duration")
                         .HasColumnType("int");
 
                     b.Property<int?>("EmployeeId")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("HourlyRate")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("ProductNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
 
                     b.HasIndex("EmployeeId");
 
@@ -169,9 +169,18 @@ namespace BellaFrisoer.Infrastructure.Migrations
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Treatment", b =>
                 {
+                    b.HasOne("BellaFrisoer.Domain.Models.Booking", null)
+                        .WithMany("Treatments")
+                        .HasForeignKey("BookingId");
+
                     b.HasOne("BellaFrisoer.Domain.Models.Employee", null)
                         .WithMany("Treatments")
                         .HasForeignKey("EmployeeId");
+                });
+
+            modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
+                {
+                    b.Navigation("Treatments");
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>

@@ -1,7 +1,6 @@
-﻿@page "/employees"
+﻿@page "/ansatte"
 @using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
-@using Microsoft.EntityFrameworkCore
 @inject IEmployeeService EmployeeService
 
 <PageTitle>Ansatte</PageTitle>
@@ -9,38 +8,42 @@
 <h1>Ansatte</h1>
 
 <p>
-	<a class="btn btn-primary" href="/employees/create">Opret Ansatte</a>
+	<a class="btn btn-primary" href="/ansatte/opret">Opret Ansat</a>
 	<a class="btn btn-secondary" href="/bookings">Bookings</a>
 </p>
 
 @if (employees is null)
 {
-	<p><em>Loading...</em></p>
+	<p><em>Indlæser...</em></p>
 }
 else if (!employees.Any())
 {
-	<p>Ingen Ansatte endnu...</p>
+	<p>Ingen ansatte endnu...</p>
 }
 else
 {
 	<table class="table table-striped table-hover">
 		<thead>
 		<tr>
-			<th>Navn</th>
-			<th>Tlf Nummer</th>
 			<th>Id</th>
+			<th>Navn</th>
+			<th>Telefon</th>
+			<th></th>
 		</tr>
 		</thead>
+
 		<tbody>
-		@foreach (var c in employees)
+		@foreach (var e in employees)
 		{
 			<tr>
-				<td>@(c.FirstName ?? "—")</td>
-				<td>@(c.PhoneNumber.ToString() ?? "—")</td>
-				<td>@(c.Id.ToString() ?? "—")</td>
+				<td>@e.Id</td>
+				<td>@($"{e.FirstName} {e.LastName}")</td>
+				<td>@e.PhoneNumber</td>
 
 				<td>
-					<a href="/employees/details?id=@c.Id" class="btn btn-sm btn-primary">Detajler</a>
+					<a href="/ansatte/detaljer?id=@e.Id" class="btn btn-sm btn-primary">Detaljer</a>
+					<a href="/ansatte/rediger?id=@e.Id" class="btn btn-sm btn-warning">Rediger</a>
+					<a href="/ansatte/delete?id=@e.Id" class="btn btn-sm btn-danger">Slet</a>
 				</td>
 			</tr>
 		}
@@ -48,9 +51,7 @@ else
 	</table>
 }
 
-
 @code {
-
 	private List<Employee>? employees;
 
 	protected override async Task OnInitializedAsync()

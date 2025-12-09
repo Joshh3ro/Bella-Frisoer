@@ -6,7 +6,8 @@ namespace BellaFrisoer.Application.Interfaces
 {
     public interface ITreatmentService
     {
-        Task<bool> CanCreateTreatmentAsync(Treatment newTreatment);
+        Task<Treatment?> GetTreatmentByIdAsync(int id);
+        Task DeleteTreatmentAsync(Treatment treatment);
         Task AddTreatmentAsync(Treatment treatment);
         Task<List<Treatment>> GetAllAsync();
     }

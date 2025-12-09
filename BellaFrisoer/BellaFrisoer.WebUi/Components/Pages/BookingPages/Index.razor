@@ -9,56 +9,58 @@
 <h1>Bookings</h1>
 
 <p>
-    <a class="btn btn-primary" href="/bookings/create">Create Booking</a>
-    <a class="btn btn-secondary" href="/customers">Customers</a>
+	<a class="btn btn-primary" href="/bookings/opret">Opret Booking</a>
+	<a class="btn btn-secondary" href="/Kunder">Customers</a>
 </p>
 
 @if (bookings is null)
 {
-    <p><em>Loading...</em></p>
+	<p><em>Loading...</em></p>
 }
 else if (!bookings.Any())
 {
-    <p>Ingen bookings endnu...</p>
+	<p>Ingen bookings endnu...</p>
 }
 else
 {
 	<table class="table table-striped table-hover">
 		<thead>
-		<tr>
-			<th>Ansatte</th>
-			<th>Kunde</th>
-			<th>Dato/Tidspunkt</th>
-			<th>Varighed (minutter)</th>
-			<th>Slut tid</th>
+			<tr>
+				<th>Ansatte</th>
+				<th>Kunde</th>
+				<th>Dato/Tidspunkt</th>
+				<th>Varighed (minutter)</th>
+				<th>Slut tid</th>
 
-			<th></th>
-		</tr>
+				<th></th>
+			</tr>
 		</thead>
 		<tbody>
-		@foreach (var b in bookings)
-		{
-			<tr>
-				<td>@(b.Employee?.FirstName ?? "—")</td>
-				<td>@(b.Customer?.FirstName ?? "-")</td>
+			@foreach (var b in bookings)
+			{
+				<tr>
+					<td>@(b.Employee?.FirstName ?? "—")</td>
+					<td>@(b.Customer?.FirstName ?? "-")</td>
 					<td>@(b.BookingDateTime.ToString() ?? "—")</td>
 					<td>@(b.BookingDuration.ToString() ?? "-")</td>
 					<td>@(b.BookingEndTime.ToString() ?? "-")</td>
 
 					<td>
-					<a href="/bookings/details?id=@b.Id" class="btn btn-sm btn-primary">Details</a>
-				</td>
-			</tr>
-		}
+						<a href="/bookings/detaljer?id=@b.Id" class="btn btn-sm btn-primary">Detaljer</a>
+						<a href="/bookings/rediger?id=@b.Id" class="btn btn-sm btn-warning">Rediger</a>
+						<a href="/bookings/delete?id=@b.Id" class="btn btn-sm btn-danger">Slet</a>
+					</td>
+				</tr>
+			}
 		</tbody>
 	</table>
 }
 
 @code {
-    private IReadOnlyList<Booking> bookings;
+	private IReadOnlyList<Booking> bookings;
 
-    protected override async Task OnInitializedAsync()
-    {
-        bookings = await BookingService.GetAllAsync();
-    }
+	protected override async Task OnInitializedAsync()
+	{
+		bookings = await BookingService.GetAllAsync();
+	}
 }

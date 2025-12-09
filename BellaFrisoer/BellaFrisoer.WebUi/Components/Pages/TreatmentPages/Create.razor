@@ -1,58 +1,49 @@
-﻿@page "/treatments/create"
+﻿@page "/behandlinger/opret"
+@using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Application.Services
-@using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
 @inject NavigationManager NavigationManager
-@inject TreatmentService TreatmentService
+@inject ITreatmentService TreatmentService
+@rendermode InteractiveServer
 
-<PageTitle>Create</PageTitle>
-
-<h1>Create</h1>
-
-<h2>Treatment</h2>
+<PageTitle>Opret Behandling</PageTitle>
+<h1>Opret Behandling</h1>
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <EditForm method="post" Model="Treatment" OnValidSubmit="AddTreatment" FormName="create" Enhance>
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert"/>
-            <div class="mb-3">
-                <label for="name" class="form-label">Name:</label> 
-                <InputText id="name" @bind-Value="Treatment.Name" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Treatment.Name" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="productnumber" class="form-label">ProductNumber:</label> 
-                <InputText id="productnumber" @bind-Value="Treatment.ProductNumber" class="form-control" aria-required="true"/> 
-                <ValidationMessage For="() => Treatment.ProductNumber" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="durationminutes" class="form-label">DurationMinutes:</label> 
-                <InputNumber id="durationminutes" @bind-Value="Treatment.DurationMinutes" class="form-control" /> 
-                <ValidationMessage For="() => Treatment.DurationMinutes" class="text-danger" /> 
-            </div>        
-            <div class="mb-3">
-                <label for="hourlyrate" class="form-label">HourlyRate:</label> 
-                <InputNumber id="hourlyrate" @bind-Value="Treatment.HourlyRate" class="form-control" /> 
-                <ValidationMessage For="() => Treatment.HourlyRate" class="text-danger" /> 
-            </div>        
-            <button type="submit" class="btn btn-primary">Create</button>
-        </EditForm>
-    </div>
+	<div class="col-md-4">
+		<EditForm method="post" Model="Treatment" OnValidSubmit="AddTreatment" FormName="create" Enhance>
+			<DataAnnotationsValidator />
+			<ValidationSummary class="text-danger" role="alert" />
+			<div class="mb-3">
+				<label for="treatmentName" class="form-label">Navn:</label>
+				<InputText id="treatmentName" @bind-Value="Treatment.Name" class="form-control" />
+				<ValidationMessage For="() => Treatment.Name" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="treatmentPrice" class="form-label">Pris:</label>
+				<InputNumber id="treatmentPrice" @bind-Value="Treatment.Price" class="form-control" />
+				<ValidationMessage For="() => Treatment.Price" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="treatmentDuration" class="form-label">Varighed (minutter):</label>
+				<InputNumber id="treatmentDuration" @bind-Value="Treatment.Duration" class="form-control" />
+				<ValidationMessage For="() => Treatment.Duration" class="text-danger" />
+			</div>
+			<button type="submit" class="btn btn-primary">Opret</button>
+		</EditForm>
+	</div>
 </div>
-
 <div>
-    <a href="/Treatments">Back to List</a>
+	<a href="/behandlinger">Tilbage</a>
 </div>
 
 @code {
-    [SupplyParameterFromForm]
-    private Treatment Treatment { get; set; } = new();
+	[SupplyParameterFromForm]
+	private Treatment Treatment { get; set; } = new();
 
-    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
-    private async Task AddTreatment()
-    {
-	    TreatmentService.AddTreatmentAsync(Treatment);
-        NavigationManager.NavigateTo("/treatments");
-    }
+	private async Task AddTreatment()
+	{
+		await TreatmentService.AddTreatmentAsync(Treatment);
+		NavigationManager.NavigateTo("/behandlinger");
+	}
 }

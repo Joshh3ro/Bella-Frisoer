@@ -1,34 +1,34 @@
-﻿@page "/treatments/details"
+﻿@page "/behandlinger/detaljer"
+@using BellaFrisoer.Application.Interfaces
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
-@inject IDbContextFactory<BellaFrisoer.Infrastructure.Data.BellaFrisoerWebUiContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ITreatmentService TreatmentService
 
-<PageTitle>Details</PageTitle>
+<PageTitle>Detaljer</PageTitle>
 
-<h1>Details</h1>
+<h1>Detaljer</h1>
 
 <div>
-    <h2>Treatment</h2>
+    <h2>Behandling</h2>
     <hr />
-    @if (Treatment is null)
+    @if (Treatment == null)
     {
-        <p><em>Loading...</em></p>
+        <p><em>Indlæser...</em></p>
     }
     else {
         <dl class="row">
             <dt class="col-sm-2">Name</dt>
             <dd class="col-sm-10">@Treatment.Name</dd>
             <dt class="col-sm-2">ProductNumber</dt>
-            <dd class="col-sm-10">@Treatment.ProductNumber</dd>
+            <dd class="col-sm-10">@Treatment.Price</dd>
             <dt class="col-sm-2">DurationMinutes</dt>
-            <dd class="col-sm-10">@Treatment.DurationMinutes</dd>
-            <dt class="col-sm-2">HourlyRate</dt>
-            <dd class="col-sm-10">@Treatment.HourlyRate</dd>
+            <dd class="col-sm-10">@Treatment.Duration</dd>
         </dl>
         <div>
-            <a href="@($"/Treatments/edit?id={Treatment.Id}")">Edit</a> |
-            <a href="@($"/Treatments")">Back to List</a>
+	        <a href="/behandlinger/detaljer?id=@Treatment.Id" class="btn btn-sm btn-primary">Detaljer</a>
+	        <a href="/behandlinger/rediger?id=@Treatment.Id" class="btn btn-sm btn-warning">Rediger</a>
+	        <a href="/behandlinger/delete?id=@Treatment.Id" class="btn btn-sm btn-danger">Slet</a>
         </div>
     }
 </div>
@@ -41,10 +41,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        Treatment = await context.Treatments.FirstOrDefaultAsync(m => m.Id == Id);
+        Treatment = await TreatmentService.GetTreatmentByIdAsync(Id);
 
-        if (Treatment is null)
+        if (Treatment == null)
         {
             NavigationManager.NavigateTo("notfound");
         }
