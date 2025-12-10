@@ -30,6 +30,7 @@ else
 				<th>Dato/Tidspunkt</th>
 				<th>Varighed (minutter)</th>
 				<th>Slut tid</th>
+				<th>Behandslingtype</th>
 
 				<th></th>
 			</tr>
@@ -43,6 +44,7 @@ else
 					<td>@(b.BookingDateTime.ToString() ?? "—")</td>
 					<td>@(b.BookingDuration.ToString() ?? "-")</td>
 					<td>@(b.BookingEndTime.ToString() ?? "-")</td>
+					<td>@(b.Treatment?.Name ?? "-")</td>
 
 					<td>
 						<a href="/bookings/detaljer?id=@b.Id" class="btn btn-sm btn-primary">Detaljer</a>

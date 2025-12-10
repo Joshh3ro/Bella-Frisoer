@@ -23,6 +23,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
                 .AsNoTracking()
                 .Include(b => b.Customer)
                 .Include(b => b.Employee)
+                .Include(b => b.Treatment)
                 .OrderBy(b => b.BookingDate)
                 .ToListAsync(cancellationToken);
 
@@ -38,6 +39,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
                 .Where(b => b.EmployeeId == employeeId)
                 .Include(b => b.Customer)
                 .Include(b => b.Employee)
+                .Include(b => b.Treatment)
                 .OrderBy(b => b.BookingDate)
                 .ToListAsync(cancellationToken);
 
@@ -56,6 +58,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
                 .Where(b => b.EmployeeId == employeeId && b.BookingDate == dateOnly)
                 .Include(b => b.Customer)
                 .Include(b => b.Employee)
+                .Include(b => b.Treatment)
                 .OrderBy(b => b.BookingStartTime)
                 .ToListAsync(cancellationToken);
 
@@ -70,6 +73,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
                 .AsNoTracking()
                 .Include(b => b.Customer)
                 .Include(b => b.Employee)
+                .Include(b => b.Treatment)
                 .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
         }
 
@@ -88,6 +92,10 @@ namespace BellaFrisoer.Infrastructure.Repositories
             if (booking.Employee is not null)
             {
                 ctx.Attach(booking.Employee);
+            }
+            if (booking.Treatment is not null)
+            {
+                ctx.Attach(booking.Treatment);
             }
 
             ctx.Bookings.Add(booking);

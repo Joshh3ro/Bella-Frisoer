@@ -4,6 +4,7 @@ using BellaFrisoer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BellaFrisoer.Infrastructure.Migrations
 {
     [DbContext(typeof(BellaFrisoerWebUiContext))]
-    partial class BellaFrisoerWebUiContextModelSnapshot : ModelSnapshot
+    [Migration("20251210110434_TreatmentPLease")]
+    partial class TreatmentPLease
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,9 +47,6 @@ namespace BellaFrisoer.Infrastructure.Migrations
 
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TreatmentId")
                         .HasColumnType("int");
@@ -107,8 +107,8 @@ namespace BellaFrisoer.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("HourlyPrice")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("HourlyPrice")
+                        .HasColumnType("float");
 
                     b.Property<string>("LastName")
                         .IsRequired()

@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Compile Remove="Interfaces\IDiscountStrategy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BellaFrisoer.Domain\BellaFrisoer.Domain.csproj" />
   </ItemGroup>
 
