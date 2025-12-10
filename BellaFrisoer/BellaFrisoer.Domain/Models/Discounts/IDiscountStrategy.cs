@@ -1,4 +1,4 @@
-namespace BellaFrisoer.Domain.Interfaces; 
+namespace BellaFrisoer.Domain.Models.Discounts;
 
 public interface IDiscountStrategy
 {
