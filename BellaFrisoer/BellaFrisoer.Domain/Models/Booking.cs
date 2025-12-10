@@ -29,6 +29,8 @@ public class Booking
         }
     }
 
+    public decimal TotalPrice { get; set; }
+
     // scalar FK: what EF uses & what forms bind to
     [Required]
     public int CustomerId { get; set; }
