@@ -70,18 +70,20 @@ namespace BellaFrisoer.Infrastructure.Repositories
                     .ToListAsync(cancellationToken);
             }
 
-            searchTerm = $"%{searchTerm.Trim()}%";
+            searchTerm = searchTerm.Trim();
 
             return await ctx.Employees
                 .AsNoTracking()
                 .Include(e => e.Qualifications)
                 .Where(e =>
-                    EF.Functions.Like(e.FirstName ?? string.Empty, searchTerm) ||
-                    EF.Functions.Like(e.LastName ?? string.Empty, searchTerm) ||
-                    EF.Functions.Like(e.PhoneNumber.ToString(), searchTerm) ||
-                    EF.Functions.Like(e.Email ?? string.Empty, searchTerm)
+                    EF.Functions.Like(e.FirstName ?? string.Empty, $"%{searchTerm}%") ||
+                    EF.Functions.Like(e.LastName ?? string.Empty, $"%{searchTerm}%") ||
+                    EF.Functions.Like(e.Email ?? string.Empty, $"%{searchTerm}%") ||
+                    e.PhoneNumber.ToString().Contains(searchTerm) ||
+                    e.Id.ToString().Contains(searchTerm)
                 )
                 .ToListAsync(cancellationToken);
+
         }
 
 
