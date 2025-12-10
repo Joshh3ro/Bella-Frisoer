@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BellaFrisoer.Infrastructure.Migrations
 {
     [DbContext(typeof(BellaFrisoerWebUiContext))]
-    [Migration("20251209142912_AllMerged")]
-    partial class AllMerged
+    [Migration("20251210134028_qualemail")]
+    partial class qualemail
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,11 +48,16 @@ namespace BellaFrisoer.Infrastructure.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
+                    b.Property<int>("TreatmentId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("EmployeeId");
+
+                    b.HasIndex("TreatmentId");
 
                     b.ToTable("Bookings", (string)null);
                 });
@@ -112,6 +117,10 @@ namespace BellaFrisoer.Infrastructure.Migrations
                     b.Property<long>("PhoneNumber")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("Qualifications")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Employees", (string)null);
@@ -125,13 +134,7 @@ namespace BellaFrisoer.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BookingId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Duration")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("EmployeeId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -143,10 +146,6 @@ namespace BellaFrisoer.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("EmployeeId");
 
                     b.ToTable("Treatments", (string)null);
                 });
@@ -165,35 +164,22 @@ namespace BellaFrisoer.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BellaFrisoer.Domain.Models.Treatment", "Treatment")
+                        .WithMany()
+                        .HasForeignKey("TreatmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Customer");
 
                     b.Navigation("Employee");
-                });
 
-            modelBuilder.Entity("BellaFrisoer.Domain.Models.Treatment", b =>
-                {
-                    b.HasOne("BellaFrisoer.Domain.Models.Booking", null)
-                        .WithMany("Treatments")
-                        .HasForeignKey("BookingId");
-
-                    b.HasOne("BellaFrisoer.Domain.Models.Employee", null)
-                        .WithMany("Treatments")
-                        .HasForeignKey("EmployeeId");
-                });
-
-            modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
-                {
-                    b.Navigation("Treatments");
+                    b.Navigation("Treatment");
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
                 {
                     b.Navigation("Bookings");
-                });
-
-            modelBuilder.Entity("BellaFrisoer.Domain.Models.Employee", b =>
-                {
-                    b.Navigation("Treatments");
                 });
 #pragma warning restore 612, 618
         }

@@ -35,6 +35,11 @@ else
                     <InputNumber id="phonenumber" @bind-Value="customer.PhoneNumber" class="form-control" />
                     <ValidationMessage For="() => customer.PhoneNumber" class="text-danger" />
                 </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <InputText id="email" @bind-Value="customer.Email" class="form-control" />
+                    <ValidationMessage For="() => customer.Email" class="text-danger" />
+                </div>
                 <button type="submit" class="btn btn-primary">Gem</button>
             </EditForm>
         </div>

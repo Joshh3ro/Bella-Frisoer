@@ -32,6 +32,11 @@
                 <InputNumber id="phonenumber" @bind-Value="Customer.PhoneNumber" class="form-control" />
                 <ValidationMessage For="() => Customer.PhoneNumber" class="text-danger" />
             </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <InputText id="email" @bind-Value="Customer.Email" class="form-control" />
+                <ValidationMessage For="() => Customer.Email" class="text-danger" />
+            </div>
             <button type="submit" class="btn btn-primary">Opret</button>
         </EditForm>
     </div>

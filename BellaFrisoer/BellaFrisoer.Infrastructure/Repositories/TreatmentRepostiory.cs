@@ -58,5 +58,28 @@ namespace BellaFrisoer.Infrastructure.Repositories
             ctx.Treatments.Remove(entity);
             await ctx.SaveChangesAsync(cancellationToken);
         }
+        public async Task<List<Treatment>> FilterTreatmentsAsync(string searchTerm, CancellationToken cancellationToken = default)
+        {
+            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return await ctx.Treatments
+                    .AsNoTracking()
+                    .ToListAsync(cancellationToken);
+            }
+
+            searchTerm = searchTerm.Trim().ToLower();
+
+            return await ctx.Treatments
+                .AsNoTracking()
+                .Where(t =>
+                    t.Name.ToLower().Contains(searchTerm) ||
+                    t.Price.ToString().Contains(searchTerm) ||
+                    t.Duration.ToString().Contains(searchTerm)
+                )
+                .ToListAsync(cancellationToken);
+        }
+
     }
 }

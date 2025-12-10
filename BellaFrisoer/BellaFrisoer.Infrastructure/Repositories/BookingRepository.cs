@@ -119,5 +119,38 @@ namespace BellaFrisoer.Infrastructure.Repositories
             if (entity is null) return;
             ctx.Bookings.Remove(entity);
         }
+        public async Task<IReadOnlyList<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken = default)
+        {
+            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
+
+            // Base query including all related entities
+            var query = ctx.Bookings
+                .AsNoTracking()
+                .Include(b => b.Customer)
+                .Include(b => b.Employee)
+                .Include(b => b.Treatment)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.Trim().ToLower();
+
+                query = query.Where(b =>
+                    (b.Customer.FirstName != null && b.Customer.FirstName.ToLower().Contains(searchTerm)) ||
+                    (b.Customer.LastName != null && b.Customer.LastName.ToLower().Contains(searchTerm)) ||
+                    (b.Customer.PhoneNumber != null && b.Customer.PhoneNumber.ToString().Contains(searchTerm)) ||
+                    (b.Employee.FirstName != null && b.Employee.FirstName.ToLower().Contains(searchTerm)) ||
+                    (b.Employee.LastName != null && b.Employee.LastName.ToLower().Contains(searchTerm)) ||
+                    (b.Treatment.Name != null && b.Treatment.Name.ToLower().Contains(searchTerm)) ||
+                    b.Id.ToString().Contains(searchTerm)
+                );
+            }
+
+            return await query
+                .OrderBy(b => b.BookingDate)
+                .ThenBy(b => b.BookingStartTime)
+                .ToListAsync(cancellationToken);
+        }
+
     }
 }

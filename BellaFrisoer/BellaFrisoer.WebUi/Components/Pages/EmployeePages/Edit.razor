@@ -35,11 +35,25 @@ else
                     <InputText id="lastname" @bind-Value="Employee.LastName" class="form-control" />
                     <ValidationMessage For="() => Employee.LastName" class="text-danger" />
                 </div>
-
+                <div class="mb-3">
+                    <label for="hourlyprice" class="form-label">Timepris:</label>
+                    <InputNumber id="hourlyprice" @bind-Value="Employee.HourlyPrice" class="form-control" />
+                    <ValidationMessage For="() => Employee.HourlyPrice" class="text-danger" />
+                </div>
                 <div class="mb-3">
                     <label for="phonenumber" class="form-label">Telefon Nummer:</label>
                     <InputNumber id="phonenumber" @bind-Value="Employee.PhoneNumber" class="form-control" />
                     <ValidationMessage For="() => Employee.PhoneNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <InputText id="email" @bind-Value="Employee.Email" class="form-control" />
+                    <ValidationMessage For="() => Employee.Email" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="qualifications" class="form-label">Kompetencer:</label>
+                    <InputText id="qualifications" @bind-Value="Employee.Qualifications" class="form-control" />
+                    <ValidationMessage For="() => Employee.Qualifications" class="text-danger" />
                 </div>
 
                 <button type="submit" class="btn btn-primary">Gem</button>
