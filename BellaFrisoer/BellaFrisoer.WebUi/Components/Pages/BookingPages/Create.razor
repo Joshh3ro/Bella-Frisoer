@@ -23,6 +23,7 @@
 @inject IBookingService BookingService
 @inject ICustomerService CustomerService
 @inject IEmployeeService EmployeeService
+@inject ITreatmentService TreatmentService
 
 @inject NavigationManager NavigationManager
 
@@ -74,7 +75,8 @@ else
 
         <div class="mb-3">
             <label class="form-label">Booking varighed</label>
-            <InputText type="time" @bind-Value="BookingDurationString" class="form-control" />
+            @* Display-only field showing current Booking duration *@
+            <div class="form-control-plaintext">@DurationDisplay</div>
             <ValidationMessage For="@(() => Booking.BookingDuration)" />
         </div>
 
@@ -83,7 +85,7 @@ else
 	        @if (!customers.Any())
 	        {
 		        <div>
-			        <p>Ingen kunder endnu... <a href="/customers/create">Opret Kunde</a></p>
+			        <p>Ingen kunder endnu... <a href="/kunder/opret">Opret Kunde</a></p>
 		        </div>
 	        }
 	        else
@@ -120,6 +122,28 @@ else
 	        }
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Behandling</label>
+            @if (treatments == null || !treatments.Any())
+            {
+                <div>
+                    <p>Ingen registrerede ansatte... <a href="/customers/create">Opret Ansat</a></p>
+                </div>
+            }
+            else
+            {
+                @* Bind to SelectedTreatmentId so the setter runs when selection changes *@
+                <InputSelect @bind-Value="SelectedTreatmentId" class="form-select">
+                    <option value="0"> -- Vælg behandling --</option>
+                    @foreach (var t in treatments)
+                    {
+                        <option value="@t.Id">@t.Name </option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Booking.TreatmentId)" />
+            }
+        </div>
+
         <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Opret</button>
         <a class="btn btn-link" href="/kunder/opret">Opret kunde</a>
     </EditForm>
@@ -128,16 +152,33 @@ else
 @code {
     private Booking Booking { get; set; } = new Booking { BookingDate = DateTime.Now, CustomerId = 0 };
     private string bookingStartTimeString = "";
-	private string BookingDurationString = "";
+    private string BookingDurationString = "";
 
     private List<Customer>? customers;
     private List<Employee>? employees;
+    private List<Treatment>? treatments;
     private string? ErrorMessage;
+
+    // Backing field and property to run logic when treatment selection changes
+    private int selectedTreatmentId;
+    private int SelectedTreatmentId
+    {
+        get => selectedTreatmentId;
+        set
+        {
+            if (selectedTreatmentId == value) return;
+            selectedTreatmentId = value;
+            // Update the Booking model and the displayed duration
+            Booking.TreatmentId = value;
+            UpdateDurationFromTreatment(value);
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
             customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
             employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
         }
@@ -164,13 +205,17 @@ else
         }
         Booking.BookingStartTime = startTime;
 
-        // Parse the duration string to TimeSpan
-        if (!TimeSpan.TryParse(BookingDurationString, out var duration))
+        // Use the Booking.BookingDuration directly (BookingDurationString is kept for compatibility)
+        if (Booking.BookingDuration == default || Booking.BookingDuration <= TimeSpan.Zero)
         {
-            ErrorMessage = "Ugyldig varighed.";
-            return;
+            // fallback: attempt to parse textual representation
+            if (!TimeSpan.TryParse(BookingDurationString, out var duration))
+            {
+                ErrorMessage = "Ugyldig varighed.";
+                return;
+            }
+            Booking.BookingDuration = duration;
         }
-        Booking.BookingDuration = duration;
 
         if (Booking.CustomerId <= 0)
         {
@@ -182,6 +227,13 @@ else
         {
             ErrorMessage = "Vælg ansat...";
             return;
+        }
+
+        if (Booking.TreatmentId <= 0)
+        {
+            ErrorMessage = "Vælg behandling...";
+            return;
+
         }
 
         if (Booking.BookingStartTime == default)
@@ -211,5 +263,39 @@ else
         {
             ErrorMessage = $"Save failed: {ex.Message}";
         }
+
     }
+
+    // Adds the treatment duration (minutes) to the current Booking.BookingDuration and updates the display
+    private void UpdateDurationFromTreatment(int treatmentId)
+    {
+        if (treatmentId <= 0)
+        {
+            Booking.BookingDuration = TimeSpan.Zero;
+            BookingDurationString = string.Empty;
+            StateHasChanged();
+            return;
+        }
+
+        var treatment = treatments?.FirstOrDefault(t => t.Id == treatmentId);
+        if (treatment == null)
+        {
+            Booking.BookingDuration = TimeSpan.Zero;
+            BookingDurationString = string.Empty;
+            StateHasChanged();
+            return;
+        }
+
+        // Add the treatment minutes to the existing duration (per request)
+        Booking.BookingDuration = Booking.BookingDuration.Add(TimeSpan.FromMinutes(treatment.Duration));
+        BookingDurationString = Booking.BookingDuration.ToString(@"hh\:mm");
+
+        StateHasChanged();
+    }
+
+    // Display helper for the Booking duration (shows hh:mm when set)
+    private string DurationDisplay =>
+        (Booking.BookingDuration != default && Booking.BookingDuration > TimeSpan.Zero)
+            ? Booking.BookingDuration.ToString(@"hh\:mm")
+            : string.Empty;
 }

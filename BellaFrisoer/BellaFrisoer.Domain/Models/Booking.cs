@@ -40,8 +40,11 @@ public class Booking
 
     [ForeignKey(nameof(EmployeeId))]
     public Employee? Employee { get; set; }
+
     [Required]
-    public List<Treatment> Treatments { get; set; }
+    public int TreatmentId { get; set; }
+    [ForeignKey(nameof(TreatmentId))]
+    public Treatment Treatment { get; set; }
 
     public Booking()
     {
