@@ -20,5 +20,7 @@ namespace BellaFrisoer.Application.Interfaces
         Task AddAsync(Booking booking, CancellationToken cancellationToken = default);
         Task UpdateAsync(Booking booking, CancellationToken cancellationToken = default);
         Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken = default);
+
     }
 }

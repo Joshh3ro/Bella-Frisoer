@@ -65,6 +65,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
 
+            // If no search term, return all customers with their bookings
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 return await ctx.Customers
@@ -73,16 +74,23 @@ namespace BellaFrisoer.Infrastructure.Repositories
                     .ToListAsync(cancellationToken);
             }
 
+            searchTerm = searchTerm.Trim().ToLower();
+
+            // Filter customers by first name, last name, phone, or ID
             return await ctx.Customers
                 .AsNoTracking()
                 .Include(c => c.Bookings)
                 .Where(c =>
-                    (c.FirstName != null && c.FirstName.Contains(searchTerm)) ||
-                    (c.LastName != null && c.LastName.Contains(searchTerm)) ||
+                    (c.FirstName != null && EF.Functions.Like(c.FirstName.ToLower(), $"%{searchTerm}%")) ||
+                    (c.LastName != null && EF.Functions.Like(c.LastName.ToLower(), $"%{searchTerm}%")) ||
                     c.PhoneNumber.ToString().Contains(searchTerm) ||
                     c.Id.ToString().Contains(searchTerm)
                 )
+                .OrderBy(c => c.LastName)
+                .ThenBy(c => c.FirstName)
                 .ToListAsync(cancellationToken);
         }
+
+
     }
 }

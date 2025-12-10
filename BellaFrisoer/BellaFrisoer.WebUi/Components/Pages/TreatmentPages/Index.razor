@@ -10,8 +10,22 @@
 
 <div class="mb-3">
 	<a href="/behandlinger/opret" class="btn btn-primary">Opret Behandling</a>
-	<a href="/bookings" class="btn btn-secondary">Bookinger</a>
+	<a href="/bookings" class="btn btn-secondary">Bookings</a>
 </div>
+
+<input @oninput="OnSearchChanged" class="form-control mb-3" placeholder="Søg Behandlinger..." />
+
+@if (Treatments is null)
+{
+	<p><em>Indlæser...</em></p>
+}
+else if (!Treatments.Any())
+{
+	<p>Ingen behandlinger endnu...</p>
+}
+else
+{
+
 
 <table class="table">
 	<thead>
@@ -40,12 +54,17 @@
 	}
 	</tbody>
 </table>
-
+}
 @code {
 	private List<Treatment> Treatments { get; set; } = new();
 
 	protected override async Task OnInitializedAsync()
 	{
 		Treatments = await TreatmentService.GetAllAsync();
+	}
+	private async Task OnSearchChanged(ChangeEventArgs e)
+	{
+		string searchString = e.Value?.ToString() ?? string.Empty;
+		Treatments = await TreatmentService.FilterTreatmentsAsync(searchString);
 	}
 }

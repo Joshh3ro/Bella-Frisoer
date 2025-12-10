@@ -14,7 +14,7 @@
     <a class="btn btn-secondary" href="/bookings">Bookings</a>
 </p>
 
-<input @oninput="OnSearchChanged" class="form-control mb-3" placeholder="Søg Kunder..." />
+<input @oninput="OnSearchChanged" class="form-control mb-3" placeholder="Søg Ansatte..." />
 
 @if (customers is null)
 {
@@ -32,6 +32,7 @@ else
 			<th>Fornavn:</th>
 			<th>Efternavn:</th>
 			<th>Telefon Nummer:</th>
+			<th>Email</th>
 			<th>Id:</th>
 		</tr>
 		</thead>
@@ -42,6 +43,7 @@ else
 				<td>@(c.FirstName ?? "—")</td>
 				<td>@(c.LastName ?? "—")</td>
 				<td>@(c.PhoneNumber.ToString() ?? "—")</td>
+				<td>@(c.Email ?? "-")</td>
 				<td>@(c.Id.ToString() ?? "—")</td>
 
 				<td>

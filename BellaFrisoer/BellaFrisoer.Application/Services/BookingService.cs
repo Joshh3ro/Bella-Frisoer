@@ -59,6 +59,13 @@ namespace BellaFrisoer.Application.Services
 
         public async Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
             => await _repository.GetByIdAsync(id, cancellationToken);
+        public async Task<List<Booking>> FilterBookingsAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return (List<Booking>)await GetAllAsync();
 
+            var filtered = await _repository.FilterBookingsAsync(searchTerm);
+            return filtered.ToList();
+        }
     }
 }

@@ -17,6 +17,7 @@ namespace BellaFrisoer.Application.Interfaces
 
         Task UpdateAsync(Treatment treatment, CancellationToken cancellationToken = default);
         Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+        Task<List<Treatment>> FilterTreatmentsAsync(string searchTerm, CancellationToken cancellationToken = default);
 
     }
 }

@@ -17,5 +17,7 @@ namespace BellaFrisoer.Application.Interfaces
         Task UpdateAsync(Employee employee, CancellationToken cancellationToken = default);
 
         Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+        Task<List<Employee>> FilterEmployeesAsync(string searchTerm, CancellationToken cancellationToken = default);
+
     }
 }

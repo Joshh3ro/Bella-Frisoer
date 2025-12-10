@@ -13,6 +13,6 @@ namespace BellaFrisoer.Application.Interfaces
         Task DeleteEmployeeAsync(int id);
 
         Task<Employee?> UpdateEmployeeAsync(Employee employee);
-
+        Task<List<Employee>> FilterEmployeesAsync(string searchTerm);
     }
 }

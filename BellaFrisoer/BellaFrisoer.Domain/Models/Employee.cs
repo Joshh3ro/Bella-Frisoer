@@ -14,7 +14,7 @@ public class Employee
     public long PhoneNumber { get; set; }
     public string? Email { get; set; }
     public double HourlyPrice { get; set; }
-    public ICollection<Treatment>? Treatments { get; set; } = new List<Treatment>();
+    public string Qualifications { get; set; }
 
     public Employee() { }
 }

@@ -14,6 +14,8 @@ namespace BellaFrisoer.Application.Interfaces
         // Added for read/update flow from UI
         Task<Treatment?> GetByIdAsync(int id);
         Task UpdateTreatmentAsync(Treatment treatment);
+        Task<List<Treatment>> FilterTreatmentsAsync(string searchTerm);
+
 
     }
 }

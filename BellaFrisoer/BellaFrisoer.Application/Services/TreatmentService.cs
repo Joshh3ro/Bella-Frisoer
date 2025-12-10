@@ -69,6 +69,13 @@ namespace BellaFrisoer.Application.Services
             if (treatment is null) throw new ArgumentNullException(nameof(treatment));
             await _repository.UpdateAsync(treatment);
         }
+        public async Task<List<Treatment>> FilterTreatmentsAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return await GetAllAsync();
 
+            var filtered = await _repository.FilterTreatmentsAsync(searchTerm);
+            return filtered.ToList();
+        }
     }
 }
