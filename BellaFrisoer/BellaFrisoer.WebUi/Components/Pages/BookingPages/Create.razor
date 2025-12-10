@@ -319,39 +319,36 @@ else
     }
 
     // Compute the price using the most appropriate source:
-    // 1. If a Treatment with a defined Price exists -> use Treatment.Price
-    // 2. Otherwise if Employee + duration available -> compute from employee.HourlyPrice
-    // 3. Otherwise -> 0
+    // - Use Treatment.Price as base when available
+    // - Always add an employee hourly component if an employee + duration are present
+    // - Otherwise fall back to employee-only calculation or 0
     private void UpdatePrice()
     {
-        // Prefer treatment price when available
+        decimal computedPrice = 0m;
+
+        // Base price from treatment when available
         if (Booking.TreatmentId > 0)
         {
             var treatment = treatments?.FirstOrDefault(t => t.Id == Booking.TreatmentId);
             if (treatment != null && treatment.Price > 0m)
             {
-                Booking.TotalPrice = treatment.Price;
-                StateHasChanged();
-                return;
+                computedPrice = treatment.Price;
             }
         }
 
-        // Fallback to employee hourly price calculation if we have an employee and a duration
+        // Add employee hourly component when we have both an employee and a duration
         if (Booking.EmployeeId > 0 && Booking.BookingDuration > TimeSpan.Zero)
         {
             var employee = employees?.FirstOrDefault(e => e.Id == Booking.EmployeeId);
-            if (employee != null)
+            if (employee != null && employee.HourlyPrice > 0d)
             {
                 var minutes = (decimal)Booking.BookingDuration.TotalMinutes;
-                // Cast employee.HourlyPrice (double) to decimal to avoid mixing double and decimal
-                Booking.TotalPrice = ((decimal)employee.HourlyPrice / 60m) * minutes;
-                StateHasChanged();
-                return;
+                var employeePart = ((decimal)employee.HourlyPrice / 60m) * minutes;
+                computedPrice += employeePart;
             }
         }
 
-        // Nothing applicable -> show 0
-        Booking.TotalPrice = 0m;
+        Booking.TotalPrice = computedPrice;
         StateHasChanged();
     }
 
