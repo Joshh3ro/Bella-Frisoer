@@ -128,9 +128,6 @@ namespace BellaFrisoer.Infrastructure.Migrations
                     b.Property<int>("Duration")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -143,9 +140,22 @@ namespace BellaFrisoer.Infrastructure.Migrations
 
                     b.HasIndex("BookingId");
 
-                    b.HasIndex("EmployeeId");
-
                     b.ToTable("Treatments", (string)null);
+                });
+
+            modelBuilder.Entity("EmployeeTreatment", b =>
+                {
+                    b.Property<int>("EmployeesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QualificationsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("EmployeesId", "QualificationsId");
+
+                    b.HasIndex("QualificationsId");
+
+                    b.ToTable("EmployeeQualifications", (string)null);
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
@@ -172,10 +182,21 @@ namespace BellaFrisoer.Infrastructure.Migrations
                     b.HasOne("BellaFrisoer.Domain.Models.Booking", null)
                         .WithMany("Treatments")
                         .HasForeignKey("BookingId");
+                });
 
+            modelBuilder.Entity("EmployeeTreatment", b =>
+                {
                     b.HasOne("BellaFrisoer.Domain.Models.Employee", null)
-                        .WithMany("Treatments")
-                        .HasForeignKey("EmployeeId");
+                        .WithMany()
+                        .HasForeignKey("EmployeesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BellaFrisoer.Domain.Models.Treatment", null)
+                        .WithMany()
+                        .HasForeignKey("QualificationsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Booking", b =>
@@ -186,11 +207,6 @@ namespace BellaFrisoer.Infrastructure.Migrations
             modelBuilder.Entity("BellaFrisoer.Domain.Models.Customer", b =>
                 {
                     b.Navigation("Bookings");
-                });
-
-            modelBuilder.Entity("BellaFrisoer.Domain.Models.Employee", b =>
-                {
-                    b.Navigation("Treatments");
                 });
 #pragma warning restore 612, 618
         }

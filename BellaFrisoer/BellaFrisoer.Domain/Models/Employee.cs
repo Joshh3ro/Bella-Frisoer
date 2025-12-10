@@ -6,15 +6,23 @@ namespace BellaFrisoer.Domain.Models;
 
 public class Employee
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; }
-    public long PhoneNumber { get; set; }
-    public string? Email { get; set; }
-    public double HourlyPrice { get; set; }
-    public ICollection<Treatment>? Treatments { get; set; } = new List<Treatment>();
+        public int Id { get; set; }
+
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; }
+        public long PhoneNumber { get; set; }
+        public string? Email { get; set; }
+        public double HourlyPrice { get; set; }
+
+        public List<Treatment> Qualifications { get; set; } = new();
+
+        [NotMapped]
+        public int SelectedTreatmentId { get; set; }
+
 
     public Employee() { }
 }
+
+
+
+

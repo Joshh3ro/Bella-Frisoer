@@ -1,11 +1,14 @@
-﻿using BellaFrisoer.WebUi.Components;
+﻿using System;
+using BellaFrisoer.WebUi.Components;
 using Microsoft.EntityFrameworkCore;
 using BellaFrisoer.Application.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using BellaFrisoer.Application.Services;
 using BellaFrisoer.Infrastructure.Data;
 using BellaFrisoer.Infrastructure.Repositories;
-
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 
 var builder = WebApplication.CreateBuilder(args);

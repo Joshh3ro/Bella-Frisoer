@@ -3,6 +3,7 @@
 @using Microsoft.EntityFrameworkCore
 @inject NavigationManager NavigationManager
 @inject IEmployeeService EmployeeService
+@inject ITreatmentService TreatmentService
 @rendermode InteractiveServer
 
 <PageTitle>Opret Ansat</PageTitle>
@@ -33,6 +34,42 @@
 				<InputNumber id="phonenumber" @bind-Value="Employee.PhoneNumber" class="form-control" />
 				<ValidationMessage For="() => Employee.PhoneNumber" class="text-danger" />
 			</div>
+			<div class="mb-3">
+				<label class="form-label">Kvalifikationer</label>
+
+				@if (!treatments.Any())
+				{
+					<p>Ingen behandlinger endnu... <a href="/behandlinger/opret">Opret Behandling</a></p>
+				}
+				else
+				{
+					<div class="input-group mb-2">
+						<InputSelect @bind-Value="Employee.SelectedTreatmentId" class="form-select">
+							<option value="0">-- Vælg Behandling --</option>
+							@foreach (var t in treatments)
+							{
+								<option value="@t.Id">@t.Name</option>
+							}
+						</InputSelect>
+
+						<button class="btn btn-success" type="button" @onclick="AddTreatmentToEmployee">
+							Tilføj
+						</button>
+					</div>
+
+@* 					<ul class="list-group">
+						@foreach (var t in Employee.Qualifications)
+						{
+							<li class="list-group-item d-flex justify-content-between">
+								@t.Name
+								<button class="btn btn-sm btn-danger" @onclick="(() => RemoveTreatment(t.Id))">
+									Fjern
+								</button>
+							</li>
+						}
+					</ul> *@
+				}
+			</div>
 
 			<button type="submit" class="btn btn-primary">Opret</button>
 		</EditForm>
@@ -46,6 +83,46 @@
 @code {
 	[SupplyParameterFromForm]
 	private Employee Employee { get; set; } = new();
+
+	
+
+	string ErrorMessage;
+
+	private List<Treatment> treatments = new List<Treatment>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		
+		try
+		{
+			treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
+			
+		}
+		catch (Exception ex)
+		{
+			ErrorMessage = $"Load failed: {ex.Message}";
+		}
+	}
+	private void AddTreatmentToEmployee()
+	{
+		if (Employee.SelectedTreatmentId == 0)
+			return;
+
+		var treatment = treatments.FirstOrDefault(t => t.Id == Employee.SelectedTreatmentId);
+		if (treatment is null)
+			return;
+
+			Employee.Qualifications.Add(treatment);
+		
+
+		Employee.SelectedTreatmentId = 0; // reset dropdown
+	}
+	private void RemoveTreatment(int id)
+	{
+		var t = Employee.Qualifications.FirstOrDefault(x => x.Id == id);
+		if (t != null)
+			Employee.Qualifications.Remove(t);
+	}
 
 	private async Task AddEmployee()
 	{

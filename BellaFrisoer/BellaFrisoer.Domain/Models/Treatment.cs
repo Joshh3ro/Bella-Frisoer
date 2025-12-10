@@ -11,13 +11,13 @@
 
         [Required]
         [StringLength(100)]
-        public string Name { get; set; } = string.Empty; // Navn på behandlingen
+        public string Name { get; set; } = string.Empty;
 
         [Required]
-        public decimal Price { get; set; } // Pris i kr.
+        public decimal Price { get; set; }
         [Required]
         public int Duration { get; set; }
 
+        public List<Employee> Employees { get; set; } = new();
 
-        
-    }
+}

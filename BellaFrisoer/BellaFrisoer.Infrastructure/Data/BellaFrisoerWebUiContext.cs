@@ -33,5 +33,10 @@ public class BellaFrisoerWebUiContext : DbContext
             .HasForeignKey(b => b.CustomerId) // Booking.CustomerId is the scalar FK
             .OnDelete(DeleteBehavior.Cascade); // when a Customer is deleted, their bookings are deleted
 
+
+        modelBuilder.Entity<Employee>()
+            .HasMany(e => e.Qualifications)
+            .WithMany(t => t.Employees)
+            .UsingEntity(j => j.ToTable("EmployeeQualifications"));
     }
 }

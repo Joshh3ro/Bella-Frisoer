@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BellaFrisoer.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AllMerged : Migration
+    public partial class _111 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -83,8 +83,7 @@ namespace BellaFrisoer.Infrastructure.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Duration = table.Column<int>(type: "int", nullable: false),
-                    BookingId = table.Column<int>(type: "int", nullable: true),
-                    EmployeeId = table.Column<int>(type: "int", nullable: true)
+                    BookingId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -94,11 +93,30 @@ namespace BellaFrisoer.Infrastructure.Migrations
                         column: x => x.BookingId,
                         principalTable: "Bookings",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EmployeeQualifications",
+                columns: table => new
+                {
+                    EmployeesId = table.Column<int>(type: "int", nullable: false),
+                    QualificationsId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmployeeQualifications", x => new { x.EmployeesId, x.QualificationsId });
                     table.ForeignKey(
-                        name: "FK_Treatments_Employees_EmployeeId",
-                        column: x => x.EmployeeId,
+                        name: "FK_EmployeeQualifications_Employees_EmployeesId",
+                        column: x => x.EmployeesId,
                         principalTable: "Employees",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EmployeeQualifications_Treatments_QualificationsId",
+                        column: x => x.QualificationsId,
+                        principalTable: "Treatments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -112,19 +130,22 @@ namespace BellaFrisoer.Infrastructure.Migrations
                 column: "EmployeeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EmployeeQualifications_QualificationsId",
+                table: "EmployeeQualifications",
+                column: "QualificationsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Treatments_BookingId",
                 table: "Treatments",
                 column: "BookingId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Treatments_EmployeeId",
-                table: "Treatments",
-                column: "EmployeeId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "EmployeeQualifications");
+
             migrationBuilder.DropTable(
                 name: "Treatments");
 
