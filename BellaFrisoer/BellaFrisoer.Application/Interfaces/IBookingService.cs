@@ -14,6 +14,9 @@ namespace BellaFrisoer.Application.Interfaces
         Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         Task DeleteBookingAsync(int id, CancellationToken cancellationToken = default);
         Task<List<Booking>> FilterBookingsAsync(string searchTerm);
+        decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment);
+        void UpdateDurationFromTreatment(Booking booking, Treatment? treatment);
 
+        (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking);
     }
 }

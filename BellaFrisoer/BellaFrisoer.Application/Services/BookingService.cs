@@ -67,5 +67,54 @@ namespace BellaFrisoer.Application.Services
             var filtered = await _repository.FilterBookingsAsync(searchTerm);
             return filtered.ToList();
         }
+        public decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment)
+        {
+            decimal computedPrice = 0m;
+
+            if (treatment != null && treatment.Price > 0m)
+                computedPrice = treatment.Price;
+
+            if (employee != null && booking.BookingDuration > TimeSpan.Zero && employee.HourlyPrice > 0d)
+            {
+                var minutes = (decimal)booking.BookingDuration.TotalMinutes;
+                var employeePart = ((decimal)employee.HourlyPrice / 60m) * minutes;
+                computedPrice += employeePart;
+            }
+
+            return computedPrice;
+        }
+
+        public void UpdateDurationFromTreatment(Booking booking, Treatment? treatment)
+        {
+            if (booking == null)
+                throw new ArgumentNullException(nameof(booking));
+
+            if (treatment == null || treatment.Id <= 0)
+            {
+                booking.BookingDuration = TimeSpan.Zero;
+                return;
+            }
+
+            booking.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
+        }
+
+        public (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking)
+        {
+            if (booking is null)
+                return (false, "Booking mangler.");
+            if (booking.CustomerId <= 0)
+                return (false, "Vælg kunde...");
+            if (booking.EmployeeId <= 0)
+                return (false, "Vælg ansat...");
+            if (booking.TreatmentId <= 0)
+                return (false, "Vælg behandling...");
+            if (booking.BookingStartTime == default)
+                return (false, "Ugyldigt starttidspunkt.");
+            if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)
+                return (false, "Ugyldig varighed.");
+            return (true, null);
+        }
+
+
     }
 }

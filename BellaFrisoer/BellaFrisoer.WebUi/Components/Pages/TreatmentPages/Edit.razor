@@ -1,6 +1,6 @@
 ﻿@page "/behandlinger/rediger"
 @using BellaFrisoer.Application.Interfaces
-@using Microsoft.EntityFrameworkCore // Mulligvis ikke nødvendigt
+@using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Domain.Models
 @inject NavigationManager NavigationManager
 @inject ITreatmentService TreatmentService
@@ -78,8 +78,6 @@ else
         {
             ErrorMessage = $"Load failed: {ex.Message}";
         }
-
-        NavigationManager.NavigateTo("/Behandlinger"); // Muligvis ikke nødvendigt
     }
 
     private void OnInvalidSubmit(EditContext ctx)

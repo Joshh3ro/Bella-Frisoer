@@ -33,5 +33,12 @@ public class BellaFrisoerWebUiContext : DbContext
             .HasForeignKey(b => b.CustomerId) // Booking.CustomerId is the scalar FK
             .OnDelete(DeleteBehavior.Cascade); // when a Customer is deleted, their bookings are deleted
 
+        modelBuilder.Entity<Booking>()
+            .Property(b => b.TotalPrice)
+            .HasPrecision(18, 2); // or use .HasColumnType("decimal(18,2)")
+
+        modelBuilder.Entity<Treatment>()
+            .Property(t => t.Price)
+            .HasPrecision(18, 2); // or use .HasColumnType("decimal(18,2)")
     }
 }
