@@ -343,7 +343,8 @@ else
             if (employee != null)
             {
                 var minutes = (decimal)Booking.BookingDuration.TotalMinutes;
-                Booking.TotalPrice = (employee.HourlyPrice / 60m) * minutes;
+                // Cast employee.HourlyPrice (double) to decimal to avoid mixing double and decimal
+                Booking.TotalPrice = ((decimal)employee.HourlyPrice / 60m) * minutes;
                 StateHasChanged();
                 return;
             }
