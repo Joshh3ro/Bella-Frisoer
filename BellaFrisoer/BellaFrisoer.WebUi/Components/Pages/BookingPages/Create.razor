@@ -228,20 +228,16 @@ else
         {
             tier = BookingService.GetDiscountStrategyForCustomerTotalBookings(customer);
         }
-
-        // Build optional event discount if enabled and applicable
         var eventDiscount = BuildEventDiscountIfApplicable(out bool eventAppliesNow);
 
         // Choose best single discount (no stacking)
         decimal priceWithTier = tier != null ? tier.Apply(basePrice) : basePrice;
         decimal priceWithEvent = (eventDiscount != null && eventAppliesNow) ? eventDiscount.Apply(basePrice) : basePrice;
-
         decimal final = Math.Min(priceWithTier, priceWithEvent);
         Booking.TotalPrice = final;
 
         // Update label for UI
         AppliedDiscountLabel = ComputeAppliedDiscountLabel(tier, eventDiscount, eventAppliesNow, basePrice, final);
-
         StateHasChanged();
     }
 
@@ -258,7 +254,7 @@ else
             return $"Event ({pct:0.#}%)";
         }
 
-        // Fall back to tier label
+        // Vores Discount Tiers == Hvornår man får en discount efter antal booking
         var count = customers.FirstOrDefault(c => c.Id == Booking.CustomerId)?.Bookings?.Count ?? 0;
         return count >= 20 ? "Guld (15%)" :
                count >= 10 ? "Sølv (10%)" :

@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6b7c8f8a-5f56-4607-b75e-0957db21ada6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/BellaFrisoer/BellaFrisoer.Domain/Models/Treatment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BellaFrisoer/BellaFrisoer.Domain/Models/Treatment.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BellaFrisoer/BellaFrisoer.Application/Interfaces/IBookingConflictChecker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BellaFrisoer/BellaFrisoer.Application/Interfaces/IBookingConflictChecker.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
