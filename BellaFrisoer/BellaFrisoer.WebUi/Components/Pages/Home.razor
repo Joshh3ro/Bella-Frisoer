@@ -1,64 +1,61 @@
 ﻿@page "/"
 @using BellaFrisoer.Application.Interfaces
-@using BellaFrisoer.Infrastructure.Data
-@using Microsoft.EntityFrameworkCore
+@using BellaFrisoer.Domain.Models
 @rendermode InteractiveServer
 
-@inject BellaFrisoerWebUiContext Db
+@inject IBookingService BookingService
+@inject IEmployeeService EmployeeService
 
 <PageTitle>Kalender</PageTitle>
 
 <EditForm Model="@this">
-	<InputDate @bind-Value="myDate" />
+    <InputDate @bind-Value="myDate" />
 </EditForm>
 
 <select @bind="SelectedEmployeeId">
-	<option value="">-- Alle Ansatte --</option>
-
-	@foreach (var e in Employees)
-	{
-		<option value="@e.Id">@e.FirstName</option>
-	}
+    <option value="">-- Alle Ansatte --</option>
+    @foreach (var e in Employees)
+    {
+        <option value="@e.Id">@e.FirstName</option>
+    }
 </select>
 
 <button @onclick="SortBookings">Sortér Bookings</button>
 
 @if (SortedBookings.Any())
 {
-	@foreach (Booking b in SortedBookings)
-	{
-		<p>@b.Customer?.FirstName Har en tid hos @b.Employee?.FirstName kl. @b.BookingDateTime</p>
-	}
+    @foreach (var b in SortedBookings)
+    {
+        <p>@b.Customer?.FirstName Har en tid hos @b.Employee?.FirstName kl. @b.BookingDateTime</p>
+    }
 }
 
 @code
 {
-	public DateTime myDate = DateTime.Today;
+    public DateTime myDate = DateTime.Today;
 
-	public int? SelectedEmployeeId { get; set; }
+    public int? SelectedEmployeeId { get; set; }
 
-	public List<Employee> Employees { get; set; } = new();
-	public List<Booking> SortedBookings { get; set; } = new();
+    public List<Employee> Employees { get; set; } = new();
+    public List<Booking> SortedBookings { get; set; } = new();
 
-	protected override async Task OnInitializedAsync()
-	{
-		Employees = await Db.Employees.OrderBy(e => e.FirstName).ToListAsync();
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        Employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.FirstName).ToList();
+        await SortBookings();
+    }
 
-	private async Task SortBookings()
-	{
-		var query = Db.Bookings
-			.Include(b => b.Customer)
-			.Include(b => b.Employee)
-			.Where(b => b.BookingDate.Date == myDate.Date);
+    private async Task SortBookings()
+    {
+        var allBookings = await BookingService.GetAllAsync();
 
-		if (SelectedEmployeeId.HasValue)
-		{
-			query = query.Where(b => b.EmployeeId == SelectedEmployeeId.Value);
-		}
+        var filtered = allBookings.Where(b => b.BookingDate.Date == myDate.Date);
 
-		SortedBookings = await query
-			.OrderBy(b => b.BookingDate)
-			.ToListAsync();
-	}
+        if (SelectedEmployeeId.HasValue)
+        {
+            filtered = filtered.Where(b => b.EmployeeId == SelectedEmployeeId.Value);
+        }
+
+        SortedBookings = filtered.OrderBy(b => b.BookingDate).ToList();
+    }
 }
