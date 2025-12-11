@@ -8,26 +8,61 @@
 
 <PageTitle>Kalender</PageTitle>
 
-<EditForm Model="@this">
-    <InputDate @bind-Value="myDate" />
-</EditForm>
+<h1>Kalender</h1>
 
-<select @bind="SelectedEmployeeId">
-    <option value="">-- Alle Ansatte --</option>
-    @foreach (var e in Employees)
-    {
-        <option value="@e.Id">@e.FirstName</option>
-    }
-</select>
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Dato</label>
+        <InputDate @bind-Value="myDate" class="form-control" />
+    </div>
 
-<button @onclick="SortBookings">Sortér Bookings</button>
+    <div class="col-md-4">
+        <label>Ansatte</label>
+        <select @bind="SelectedEmployeeId" class="form-control">
+            <option value="">-- Alle Ansatte --</option>
+            @foreach (var e in Employees)
+            {
+                <option value="@e.Id">@e.FirstName</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-primary w-100" @onclick="SortBookings">Sortér Bookings</button>
+    </div>
+</div>
 
 @if (SortedBookings.Any())
 {
-    @foreach (var b in SortedBookings)
-    {
-        <p>@b.Customer?.FirstName Har en tid hos @b.Employee?.FirstName kl. @b.BookingDateTime</p>
-    }
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Medarbejder</th>
+                <th>Kunde</th>
+                <th>Starttidspunkt</th>
+                <th>Varighed</th>
+                <th>Behandling</th>
+                <th>Pris</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var b in SortedBookings)
+            {
+                <tr>
+                    <td>@b.Employee?.FirstName</td>
+                    <td>@b.Customer?.FirstName @b.Customer?.LastName</td>
+                    <td>@b.BookingStartTime</td>
+                    <td>@b.BookingDuration.ToString(@"hh\:mm")</td>
+                    <td>@b.Treatment?.Name</td>
+                    <td>@b.TotalPrice.ToString("C0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p><em>Ingen tider fundet for denne dato.</em></p>
 }
 
 @code
@@ -41,7 +76,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.FirstName).ToList();
+        Employees = (await EmployeeService.GetAllAsync())
+            .OrderBy(e => e.FirstName)
+            .ToList();
+
         await SortBookings();
     }
 
@@ -56,6 +94,8 @@
             filtered = filtered.Where(b => b.EmployeeId == SelectedEmployeeId.Value);
         }
 
-        SortedBookings = filtered.OrderBy(b => b.BookingDate).ToList();
+        SortedBookings = filtered
+            .OrderBy(b => b.BookingDateTime) // evt. brug StartTime hvis ønsket
+            .ToList();
     }
 }

@@ -65,7 +65,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
 
-            // If no search term, return all customers with their bookings
+            // Hvis søgefeltet står tomt, returnere funktionen alle kunder.
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 return await ctx.Customers
@@ -76,7 +76,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
             searchTerm = searchTerm.Trim().ToLower();
 
-            // Filter customers by first name, last name, phone, or ID
+            // Filtrer kunder, tillader søgning efter fornavn, efternavn, telefonnummer eller Id. (Kan ikke kombineres)
             return await ctx.Customers
                 .AsNoTracking()
                 .Include(c => c.Bookings)
