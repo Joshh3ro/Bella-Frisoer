@@ -67,7 +67,10 @@ app.MapGet("/invoice/{id}", async (int id, IBookingService bookingService) =>
         Varighed: {booking.BookingDuration} minutter
         Behandling: {booking.Treatment?.Name}
         Pris: {booking.TotalPrice}
+        ---------------------------
+        Bella Frisør
         {DateTime.Now}
+        ---------------------------
         """;
 
     return Results.File(
