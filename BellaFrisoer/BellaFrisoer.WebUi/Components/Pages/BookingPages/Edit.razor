@@ -1,96 +1,167 @@
 ﻿@page "/bookings/rediger"
-@using Microsoft.EntityFrameworkCore
-@using BellaFrisoer.Domain.Models
 @using BellaFrisoer.Application.Interfaces
+@using BellaFrisoer.Domain.Models
 @inject IBookingService BookingService
+@inject ICustomerService CustomerService
+@inject IEmployeeService EmployeeService
+@inject ITreatmentService TreatmentService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Redigér Booking</PageTitle>
 
-<h1>Redigér</h1>
+<h1>Redigér Booking</h1>
 
-<h2>Booking</h2>
-<hr />
-@if (Booking is null)
+@if (Booking is null || customers is null || employees is null || treatments is null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <div class="row">
-        <div class="col-md-4">
-            <EditForm method="post" Model="Booking" OnValidSubmit="UpdateBooking" FormName="edit">
-                <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
-                <input type="hidden" name="Booking.Id" value="@Booking.Id" />
-                <div class="mb-3">
-                    <label for="BookingDate" class="form-label">Dato:</label>
-                    <InputDate id="BookingDate" @bind-Value="Booking.BookingDate" class="form-control" />
-                    <ValidationMessage For="() => Booking.BookingDate" class="text-danger" />
-                </div>
-                <div class="mb-3">
-	                <label for="FirstName" class="form-label">Fornavn:</label>
-	                <InputText id="Name" @bind-Value="Booking.Customer.FirstName" class="form-control" />
-	                <ValidationMessage For="() => Booking.Customer.FirstName" class="text-danger" />
-                </div>
-                <div class="mb-3">
-	                <label for="LastName" class="form-label">Efternavn:</label>
-	                <InputText id="Name" @bind-Value="Booking.Customer.LastName" class="form-control" />
-	                <ValidationMessage For="() => Booking.Customer.LastName" class="text-danger" />
-                </div>
-                <button type="submit" class="btn btn-primary">Gem</button>
-            </EditForm>
+    <EditForm Model="Booking" OnValidSubmit="UpdateBooking">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Dato:</label>
+            <InputDate @bind-Value="Booking.BookingDate" class="form-control" />
+            <ValidationMessage For="@(() => Booking.BookingDate)" />
         </div>
-    </div>
+
+        <div class="mb-3">
+            <label class="form-label">Kunde:</label>
+            <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
+                <option value="0">-- Vælg Kunde --</option>
+                @foreach (var c in customers)
+                {
+                    <option value="@c.Id">@c.FirstName @c.LastName (@c.Bookings?.Count ?? 0 bookings)</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Booking.CustomerId)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Ansat:</label>
+            <InputSelect @bind-Value="SelectedEmployeeId" class="form-select">
+                <option value="0">-- Vælg Ansat --</option>
+                @foreach (var e in employees)
+                {
+                    <option value="@e.Id">@e.FirstName @e.LastName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Booking.EmployeeId)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Behandling:</label>
+            <InputSelect @bind-Value="SelectedTreatmentId" class="form-select">
+                <option value="0">-- Vælg behandling --</option>
+                @foreach (var t in treatments)
+                {
+                    <option value="@t.Id">@t.Name (@t.Duration min)</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Booking.TreatmentId)" />
+        </div>
+
+        <dl class="row">
+            <dt class="col-sm-2">Pris</dt>
+            <dd class="col-sm-10">@Booking.TotalPrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"))</dd>
+        </dl>
+
+        <div class="mb-3">
+            <label class="form-label">Rabat:</label>
+            <span class="badge bg-info">@GetDiscountLabel()</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Gem</button>
+        <a href="/bookings" class="btn btn-secondary ms-2">Tilbage</a>
+    </EditForm>
 }
 
-<div>
-    <a href="/bookings">Tilbage</a>
-</div>
-
 @code {
-    [SupplyParameterFromQuery]
-    private int Id { get; set; }
-
-    [SupplyParameterFromForm]
+    [SupplyParameterFromQuery] private int Id { get; set; }
     private Booking? Booking { get; set; }
+    private List<Customer> customers = new();
+    private List<Employee> employees = new();
+    private List<Treatment> treatments = new();
+
+    private int selectedEmployeeId;
+    private int SelectedEmployeeId
+    {
+        get => selectedEmployeeId;
+        set
+        {
+            selectedEmployeeId = value;
+            if (Booking != null)
+            {
+                Booking.EmployeeId = value;
+                UpdatePrice();
+            }
+        }
+    }
+
+    private int selectedTreatmentId;
+    private int SelectedTreatmentId
+    {
+        get => selectedTreatmentId;
+        set
+        {
+            selectedTreatmentId = value;
+            if (Booking != null)
+            {
+                Booking.TreatmentId = value;
+                UpdateDurationFromTreatment();
+            }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        Booking ??= await BookingService.GetByIdAsync(Id);
-
+        Booking = await BookingService.GetByIdAsync(Id);
         if (Booking is null)
         {
             NavigationManager.NavigateTo("notfound");
+            return;
         }
+
+        customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
+        employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
+        treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
+
+        selectedEmployeeId = Booking.EmployeeId;
+        selectedTreatmentId = Booking.TreatmentId;
+
+        UpdatePrice();
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private void UpdateDurationFromTreatment()
+    {
+        var treatment = treatments.FirstOrDefault(t => t.Id == Booking!.TreatmentId);
+        if (treatment != null)
+            Booking!.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
+
+        UpdatePrice();
+    }
+
+    private void UpdatePrice()
+    {
+        var employee = employees.FirstOrDefault(e => e.Id == Booking!.EmployeeId);
+        var treatment = treatments.FirstOrDefault(t => t.Id == Booking!.TreatmentId);
+        Booking!.TotalPrice = BookingService.CalculatePrice(Booking!, employee, treatment);
+    }
+
+    private string GetDiscountLabel()
+    {
+        var count = customers.FirstOrDefault(c => c.Id == Booking?.CustomerId)?.Bookings?.Count ?? 0;
+        if (count >= 15) return "Guld (15%)";
+        if (count >= 10) return "Sølv (10%)";
+        if (count >= 5) return "Bronze (5%)";
+        return "Ingen rabat";
+    }
+
     private async Task UpdateBooking()
     {
-        try
-        {
-            await BookingService.UpdateBookingAsync(Booking!);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!await BookingExists(Booking!.Id))
-            {
-                NavigationManager.NavigateTo("notfound");
-            }
-            else
-            {
-                throw;
-            }
-        }
-
+        await BookingService.UpdateBookingAsync(Booking!);
         NavigationManager.NavigateTo("/bookings");
-    }
-
-    private async Task<bool> BookingExists(int id)
-    {
-        var booking = await BookingService.GetByIdAsync(id);
-        return booking != null;
     }
 }

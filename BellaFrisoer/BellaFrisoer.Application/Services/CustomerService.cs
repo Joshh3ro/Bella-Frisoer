@@ -36,6 +36,7 @@ namespace BellaFrisoer.Application.Services
         public async Task<List<Customer>> GetAllAsync()
         {
             var customers = await _repository.GetAllAsync();
+
             return customers.ToList();
         }
         public async Task<Customer?> GetCustomerByIdAsync(int id)

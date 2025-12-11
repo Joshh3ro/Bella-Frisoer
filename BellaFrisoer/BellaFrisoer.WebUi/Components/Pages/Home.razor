@@ -15,9 +15,9 @@
 <select @bind="SelectedEmployeeId">
 	<option value="">-- Alle Ansatte --</option>
 
-	@foreach (var emp in Employees)
+	@foreach (var e in Employees)
 	{
-		<option value="@emp.Id">@emp.FirstName</option>
+		<option value="@e.Id">@e.FirstName</option>
 	}
 </select>
 
@@ -27,7 +27,7 @@
 {
 	@foreach (Booking b in SortedBookings)
 	{
-		<p>@b.Customer?.FirstName Har en tid hos @b.Employee?.FirstName kl. @b.BookingDate.TimeOfDay</p>
+		<p>@b.Customer?.FirstName Har en tid hos @b.Employee?.FirstName kl. @b.BookingDateTime</p>
 	}
 }
 

@@ -33,6 +33,7 @@ else
 			<th>Efternavn:</th>
 			<th>Telefon Nummer:</th>
 			<th>Email</th>
+			<th>Antal Besøg</th>
 			<th>Id:</th>
 		</tr>
 		</thead>
@@ -40,11 +41,15 @@ else
 		@foreach (var c in customers)
 		{
 			<tr>
+				
 				<td>@(c.FirstName ?? "—")</td>
 				<td>@(c.LastName ?? "—")</td>
 				<td>@(c.PhoneNumber.ToString() ?? "—")</td>
 				<td>@(c.Email ?? "-")</td>
-				<td>@(c.Id.ToString() ?? "—")</td>
+				<td>@c.Bookings.Count()</td>
+					<td>@(c.Id.ToString() ?? "—")</td>
+
+
 
 				<td>
 						<a href="/kunder/detaljer?id=@c.Id" class="btn btn-sm btn-primary">Detaljer</a>
@@ -63,6 +68,7 @@ else
 
 	private List<Customer>? customers;
 	private string searchString = string.Empty;
+	
 
 	protected override async Task OnInitializedAsync()
 	{
