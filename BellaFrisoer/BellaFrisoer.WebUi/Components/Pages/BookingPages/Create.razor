@@ -82,11 +82,6 @@ else
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Booking pris</label>
-            <div class="form-control-plaintext">@PriceDisplay</div>
-        </div>
-
-        <div class="mb-3">
 	        <label class="form-label">Kunde</label>
 	        @if (!customers.Any())
 	        {
@@ -149,17 +144,16 @@ else
                 <ValidationMessage For="@(() => Booking.TreatmentId)" />
             }
         </div>
+        <div class="mb-3">
+            <label class="form-label">Booking pris</label>
+            <div class="form-control-plaintext">@PriceDisplay</div>
+        </div>
 
         <div class="mb-3">
             <label class="form-label">Rabat</label>
-            <InputSelect @bind-Value="SelectedDiscountKey" class="form-select">
-                @foreach (var d in discountOptions)
-                {
-                    <option value="@d.Key">@d.Label</option>
-                }
-            </InputSelect>
+@*             <div class="form-control-plaintext">@BookingService.</div>
+ *@
         </div>
-
         <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Opret</button>
     </EditForm>
 }
@@ -318,12 +312,15 @@ else
     // - Otherwise fall back to employee-only calculation or 0
     private void UpdatePrice()
     {
-
         var employee = employees?.FirstOrDefault(e => e.Id == Booking.EmployeeId);
         var treatment = treatments?.FirstOrDefault(t => t.Id == Booking.TreatmentId);
-        Booking.TotalPrice = BookingService.CalculatePrice(Booking, employee, treatment);
+        var customer = customers?.FirstOrDefault(c => c.Id == Booking.CustomerId);
+
+        Booking.TotalPrice = BookingService.CalculatePrice(Booking, employee, treatment, customer);
+
         StateHasChanged();
     }
+
 
     // Display helper for the Booking duration (shows hh:mm, including 00:00)
     private string DurationDisplay =>

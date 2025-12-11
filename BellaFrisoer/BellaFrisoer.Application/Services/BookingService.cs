@@ -1,7 +1,8 @@
-using System;
-using System.Globalization;
 using BellaFrisoer.Application.Interfaces;
 using BellaFrisoer.Domain.Models;
+using BellaFrisoer.Domain.Models.Discounts;
+using System;
+using System.Globalization;
 
 //NOTE: Services bruges som vores logik til vores UI.
 
@@ -67,7 +68,21 @@ namespace BellaFrisoer.Application.Services
             var filtered = await _repository.FilterBookingsAsync(searchTerm);
             return filtered.ToList();
         }
-        public decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment)
+        public IDiscountStrategy? GetDiscountStrategyForCustomer(Customer customer)
+        {
+            int count = customer.Bookings?.Count ?? 0;
+
+            if (count >= 15)
+                return new GoldDiscount();
+            if (count >= 10)
+                return new SilverDiscount();
+            if (count >= 5)
+                return new BronzeDiscount();
+
+            return null; // no discount
+        }
+
+        public decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment, Customer? customer = null)
         {
             decimal computedPrice = 0m;
 
@@ -81,8 +96,18 @@ namespace BellaFrisoer.Application.Services
                 computedPrice += employeePart;
             }
 
+            // APPLY DISCOUNT AUTOMATICALLY
+            if (customer != null)
+            {
+                var strategy = GetDiscountStrategyForCustomer(customer);
+                if (strategy != null)
+                    computedPrice = strategy.Apply(computedPrice);
+            }
+
             return computedPrice;
         }
+
+
 
         public void UpdateDurationFromTreatment(Booking booking, Treatment? treatment)
         {
