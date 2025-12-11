@@ -49,9 +49,9 @@ namespace BellaFrisoer.Application.Services
             await _repository.UpdateAsync(booking, cancellationToken);
         }
 
-        public async Task DeleteBookingAsync(int id, CancellationToken cancellationToken = default)
+        public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
         {
-            await _repository.DeleteAsync(id, cancellationToken);
+            await _repository.DeleteAsync(booking.Id, cancellationToken);
         }
 
         public async Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default)

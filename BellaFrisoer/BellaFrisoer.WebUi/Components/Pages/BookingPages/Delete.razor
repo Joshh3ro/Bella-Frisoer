@@ -54,7 +54,7 @@
 
     private async Task DeleteBooking()
     {
-        await BookingService.DeleteBookingAsync(Id);
+        await BookingService.DeleteBookingAsync(booking);
         NavigationManager.NavigateTo("/bookings");
     }
 }

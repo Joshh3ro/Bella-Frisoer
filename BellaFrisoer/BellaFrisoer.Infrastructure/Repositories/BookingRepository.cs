@@ -118,6 +118,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
             var entity = await ctx.Bookings.FindAsync(new object[] { id }, cancellationToken);
             if (entity is null) return;
             ctx.Bookings.Remove(entity);
+            await ctx.SaveChangesAsync(cancellationToken);
         }
         public async Task<IReadOnlyList<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken = default)
         {

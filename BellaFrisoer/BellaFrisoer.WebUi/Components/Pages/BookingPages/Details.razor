@@ -25,9 +25,9 @@
             <dd class="col-sm-10">@booking.Employee?.FirstName @booking.Employee?.LastName</dd>
         </dl>
         <div>
-            <a href="@($"/bookings/rediger?id={booking.Id}")">Edit</a> |
+            <a href="@($"/bookings/rediger?id={booking.Id}")">Rediger</a> |
             <a href="@($"/bookings")">Back to List</a>
-            <a href="@($"/behandlinger/slet?id={booking.Id}")">Slet behandling</a>
+            <a href="@($"/bookings/slet?id={booking.Id}")">Slet Booking</a>
         </div>
     }
 </div>
