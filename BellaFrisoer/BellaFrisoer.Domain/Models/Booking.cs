@@ -9,9 +9,9 @@ public class Booking
     [Key]
     public int Id { get; set; }
 
-    public DateTime BookingDateTime 
+    public DateTime BookingDateTime
     {
-        get { return CombineDateTime(BookingDate, BookingStartTime); } 
+        get { return CombineDateTime(BookingDate, BookingStartTime); }
     }
 
     [Required]
@@ -23,8 +23,8 @@ public class Booking
 
     public DateTime BookingEndTime
     {
-        get 
-        { 
+        get
+        {
             return CombineDateTime(BookingDate, BookingStartTime).Add(BookingDuration);
         }
     }
@@ -47,6 +47,8 @@ public class Booking
     public int TreatmentId { get; set; }
     [ForeignKey(nameof(TreatmentId))]
     public Treatment Treatment { get; set; }
+    [Timestamp]
+    public byte[] RowVersion { get; set; }
 
     public Booking()
     {

@@ -24,6 +24,8 @@ namespace BellaFrisoer.Infrastructure.Repositories
             return await ctx.Customers
                 .AsNoTracking()
                 .Include(c => c.Bookings)
+                .OrderBy(c => c.LastName)
+                .ThenBy(c => c.FirstName)
                 .ToListAsync(cancellationToken);
         }
 
@@ -31,14 +33,15 @@ namespace BellaFrisoer.Infrastructure.Repositories
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
             return await ctx.Customers
-                .AsNoTracking()
                 .Include(c => c.Bookings)
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
         public async Task AddAsync(Customer customer, CancellationToken cancellationToken = default)
         {
-            if (customer is null) throw new ArgumentNullException(nameof(customer));
+            if (customer is null)
+                throw new ArgumentNullException(nameof(customer));
+
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
             ctx.Customers.Add(customer);
             await ctx.SaveChangesAsync(cancellationToken);
@@ -46,51 +49,74 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task UpdateAsync(Customer customer, CancellationToken cancellationToken = default)
         {
-            if (customer is null) throw new ArgumentNullException(nameof(customer));
+            if (customer is null)
+                throw new ArgumentNullException(nameof(customer));
+
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            ctx.Customers.Update(customer);
-            await ctx.SaveChangesAsync(cancellationToken);
+
+            try
+            {
+                ctx.Attach(customer);
+                ctx.Entry(customer).State = EntityState.Modified;
+                await ctx.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ApplicationException(
+                    "Kunden kunne ikke opdateres, da den blev ændret af en anden bruger. Prøv venligst at opdatere siden og prøv igen.",
+                    ex);
+            }
         }
 
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
             var entity = await ctx.Customers.FindAsync(new object[] { id }, cancellationToken);
-            if (entity is null) return;
-            ctx.Customers.Remove(entity);
-            await ctx.SaveChangesAsync(cancellationToken);
+
+            if (entity is null)
+                return;
+
+            try
+            {
+                ctx.Customers.Remove(entity);
+                await ctx.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ApplicationException(
+                    "Kunden kunne ikke slettes, da den blev ændret af en anden bruger. Prøv venligst at opdatere siden og prøv igen.",
+                    ex);
+            }
         }
 
         public async Task<IReadOnlyList<Customer>> FilterCustomersAsync(string searchTerm, CancellationToken cancellationToken = default)
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
 
-            // Hvis søgefeltet står tomt, returnere funktionen alle kunder.
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 return await ctx.Customers
                     .AsNoTracking()
                     .Include(c => c.Bookings)
+                    .OrderBy(c => c.LastName)
+                    .ThenBy(c => c.FirstName)
                     .ToListAsync(cancellationToken);
             }
 
             searchTerm = searchTerm.Trim().ToLower();
 
-            // Filtrer kunder, tillader søgning efter fornavn, efternavn, telefonnummer eller Id. (Kan ikke kombineres)
             return await ctx.Customers
                 .AsNoTracking()
                 .Include(c => c.Bookings)
                 .Where(c =>
                     (c.FirstName != null && EF.Functions.Like(c.FirstName.ToLower(), $"%{searchTerm}%")) ||
                     (c.LastName != null && EF.Functions.Like(c.LastName.ToLower(), $"%{searchTerm}%")) ||
-                    c.PhoneNumber.ToString().Contains(searchTerm) ||
+                    (c.PhoneNumber != null && c.PhoneNumber.ToString().Contains(searchTerm)) ||
                     c.Id.ToString().Contains(searchTerm)
                 )
                 .OrderBy(c => c.LastName)
                 .ThenBy(c => c.FirstName)
                 .ToListAsync(cancellationToken);
         }
-
-
     }
 }

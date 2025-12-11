@@ -15,6 +15,7 @@ public class Employee
     public string? Email { get; set; }
     public double HourlyPrice { get; set; }
     public string Qualifications { get; set; }
-
+    [Timestamp]
+    public byte[] RowVersion { get; set; }
     public Employee() { }
 }

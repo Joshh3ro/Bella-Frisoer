@@ -23,6 +23,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
             return await ctx.Treatments
                 .AsNoTracking()
+                .OrderBy(t => t.Name)
                 .ToListAsync(cancellationToken);
         }
 
@@ -30,13 +31,14 @@ namespace BellaFrisoer.Infrastructure.Repositories
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
             return await ctx.Treatments
-                .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         }
 
         public async Task AddAsync(Treatment treatment, CancellationToken cancellationToken = default)
         {
-            if (treatment is null) throw new ArgumentNullException(nameof(treatment));
+            if (treatment is null)
+                throw new ArgumentNullException(nameof(treatment));
+
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
             ctx.Treatments.Add(treatment);
             await ctx.SaveChangesAsync(cancellationToken);
@@ -44,20 +46,46 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task UpdateAsync(Treatment treatment, CancellationToken cancellationToken = default)
         {
-            if (treatment is null) throw new ArgumentNullException(nameof(treatment));
+            if (treatment is null)
+                throw new ArgumentNullException(nameof(treatment));
+
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            ctx.Treatments.Update(treatment);
-            await ctx.SaveChangesAsync(cancellationToken);
+
+            try
+            {
+                ctx.Attach(treatment);
+                ctx.Entry(treatment).State = EntityState.Modified;
+                await ctx.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ApplicationException(
+                    "Behandlingen kunne ikke opdateres, da den blev ændret af en anden bruger. Prøv venligst at opdatere siden og prøv igen.",
+                    ex);
+            }
         }
 
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
             var entity = await ctx.Treatments.FindAsync(new object[] { id }, cancellationToken);
-            if (entity is null) return;
-            ctx.Treatments.Remove(entity);
-            await ctx.SaveChangesAsync(cancellationToken);
+
+            if (entity is null)
+                return;
+
+            try
+            {
+                ctx.Treatments.Remove(entity);
+                await ctx.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ApplicationException(
+                    "Behandlingen kunne ikke slettes, da den blev ændret af en anden bruger. Prøv venligst at opdatere siden og prøv igen.",
+                    ex);
+            }
         }
+
         public async Task<List<Treatment>> FilterTreatmentsAsync(string searchTerm, CancellationToken cancellationToken = default)
         {
             await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
@@ -66,6 +94,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
             {
                 return await ctx.Treatments
                     .AsNoTracking()
+                    .OrderBy(t => t.Name)
                     .ToListAsync(cancellationToken);
             }
 
@@ -78,8 +107,8 @@ namespace BellaFrisoer.Infrastructure.Repositories
                     t.Price.ToString().Contains(searchTerm) ||
                     t.Duration.ToString().Contains(searchTerm)
                 )
+                .OrderBy(t => t.Name)
                 .ToListAsync(cancellationToken);
         }
-
     }
 }
