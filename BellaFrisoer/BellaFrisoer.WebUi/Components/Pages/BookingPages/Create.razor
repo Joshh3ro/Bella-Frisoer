@@ -17,6 +17,8 @@
 @* Domain model types used on this page: Booking, Customer, Employee *@
 @using BellaFrisoer.Domain.Models
 
+@using BellaFrisoer.Domain.Models.Discounts
+
 @using BellaFrisoer.Application.Interfaces
 
 @inject IBookingConflictChecker BookingConflictChecker
@@ -148,6 +150,16 @@ else
             }
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Rabat</label>
+            <InputSelect @bind-Value="SelectedDiscountKey" class="form-select">
+                @foreach (var d in discountOptions)
+                {
+                    <option value="@d.Key">@d.Label</option>
+                }
+            </InputSelect>
+        </div>
+
         <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Opret</button>
         <a class="btn btn-link" href="/kunder/opret">Opret kunde</a>
     </EditForm>
@@ -189,6 +201,34 @@ else
             selectedEmployeeId = value;
             Booking.EmployeeId = value;
             // Recompute price using current treatment/duration + employee
+            UpdatePrice();
+        }
+    }
+
+    // Discount selection support
+    private class DiscountOption
+    {
+        public required string Key { get; init; }
+        public required string Label { get; init; }
+        public IDiscountStrategy? Strategy { get; init; }
+    }
+
+    private readonly List<DiscountOption> discountOptions = new()
+    {
+        new() { Key = "none", Label = "Ingen rabat", Strategy = null },
+        new() { Key = "bronze", Label = "Bronze (5%)", Strategy = new BronzeDiscount() },
+        new() { Key = "silver", Label = "Sølv (10%)", Strategy = new SilverDiscount() },
+        new() { Key = "gold", Label = "Guld (15%)", Strategy = new GoldDiscount() }
+    };
+
+    private string selectedDiscountKey = "none";
+    private string SelectedDiscountKey
+    {
+        get => selectedDiscountKey;
+        set
+        {
+            if (selectedDiscountKey == value) return;
+            selectedDiscountKey = value;
             UpdatePrice();
         }
     }
@@ -334,6 +374,8 @@ else
             {
                 computedPrice = treatment.Price;
             }
+
+            // Apply selected discount after base price and before employee component if desired
         }
 
         // Add employee hourly component when we have both an employee and a duration
@@ -346,6 +388,13 @@ else
                 var employeePart = ((decimal)employee.HourlyPrice / 60m) * minutes;
                 computedPrice += employeePart;
             }
+        }
+
+        // Apply discount strategy to the total computed price
+        var discount = discountOptions.FirstOrDefault(d => d.Key == SelectedDiscountKey)?.Strategy;
+        if (discount != null)
+        {
+            computedPrice = discount.Apply(computedPrice);
         }
 
         Booking.TotalPrice = computedPrice;
