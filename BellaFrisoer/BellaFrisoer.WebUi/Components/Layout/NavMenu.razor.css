@@ -103,3 +103,30 @@
         overflow-y: auto;
     }
 }
+
+
+/* Container for the brand text */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+    /* Red text with bottom shadow for "Bella" */
+    .navbar-brand .bella {
+        color: red;
+        text-shadow: 0 2px 2px rgba(0, 0, 0, 0.3); /* subtle bottom shadow */
+        -webkit-text-stroke: 1px white; /* white outline */
+        text-stroke: 1px white; /* fallback */
+    }
+
+    /* Black to blue vertical gradient for "Frisør" */
+    .navbar-brand .frisor {
+        background: linear-gradient(to top, black, blue); /* black at bottom, blue at top */
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent; /* clip gradient to text */
+        -webkit-text-stroke: 1px white; /* white outline */
+        text-stroke: 1px white; /* fallback */
+        margin-left: 0.25rem; /* small spacing between words */
+    }

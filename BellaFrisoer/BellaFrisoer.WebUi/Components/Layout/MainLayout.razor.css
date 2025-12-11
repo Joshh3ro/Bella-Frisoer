@@ -2,18 +2,22 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    background: linear-gradient(90deg, rgba(36, 28, 24, 1) 0%, rgba(95, 75, 67, 1) 50%, rgba(103, 80, 69, 1) 100%);
+    color: white;
 }
 
 main {
     flex: 1;
+    background: linear-gradient(90deg, rgba(36, 28, 24, 1) 0%, rgba(95, 75, 67, 1) 50%, rgba(103, 80, 69, 1) 100%);
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background: #241c18;
+    background: linear-gradient(90deg, rgba(36, 28, 24, 1) 0%, rgba(95, 75, 67, 1) 50%, rgba(103, 80, 69, 1) 100%);
 }
 
 .top-row {
-    background-color: #f7f7f7;
+    background: linear-gradient(90deg, rgba(36, 28, 24, 1) 0%, rgba(95, 75, 67, 1) 50%, rgba(103, 80, 69, 1) 100%);
     border-bottom: 1px solid #d6d5d5;
     justify-content: flex-end;
     height: 3.5rem;
