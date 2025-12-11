@@ -68,11 +68,14 @@ namespace BellaFrisoer.Application.Services
             var filtered = await _repository.FilterBookingsAsync(searchTerm);
             return filtered.ToList();
         }
-        public IDiscountStrategy? GetDiscountStrategyForCustomer(Customer customer)
+        // Automatic tier discount based on total number of bookings for the customer (all treatments).
+        public IDiscountStrategy? GetDiscountStrategyForCustomerTotalBookings(Customer customer)
         {
+            if (customer is null) return null;
+
             int count = customer.Bookings?.Count ?? 0;
 
-            if (count >= 15)
+            if (count >= 20)
                 return new GoldDiscount();
             if (count >= 10)
                 return new SilverDiscount();
@@ -80,6 +83,24 @@ namespace BellaFrisoer.Application.Services
                 return new BronzeDiscount();
 
             return null; // no discount
+        }
+
+        public IDiscountStrategy? GetDiscountStrategyForCustomerAndTreatment(Customer customer, int treatmentId)
+        {
+            if (customer is null) return null;
+            if (treatmentId <= 0) return null;
+
+            var countForTreatment = customer.Bookings?
+                .Count(b => b.TreatmentId == treatmentId) ?? 0;
+
+            if (countForTreatment >= 20)
+                return new GoldDiscount();
+            if (countForTreatment >= 10)
+                return new SilverDiscount();
+            if (countForTreatment >= 5)
+                return new BronzeDiscount();
+
+            return null;
         }
 
         public decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment, Customer? customer = null)
@@ -94,14 +115,6 @@ namespace BellaFrisoer.Application.Services
                 var minutes = (decimal)booking.BookingDuration.TotalMinutes;
                 var employeePart = ((decimal)employee.HourlyPrice / 60m) * minutes;
                 computedPrice += employeePart;
-            }
-
-            // APPLY DISCOUNT AUTOMATICALLY
-            if (customer != null)
-            {
-                var strategy = GetDiscountStrategyForCustomer(customer);
-                if (strategy != null)
-                    computedPrice = strategy.Apply(computedPrice);
             }
 
             return computedPrice;
@@ -128,11 +141,11 @@ namespace BellaFrisoer.Application.Services
             if (booking is null)
                 return (false, "Booking mangler.");
             if (booking.CustomerId <= 0)
-                return (false, "Vælg kunde...");
+                return (false, "Vï¿½lg kunde...");
             if (booking.EmployeeId <= 0)
-                return (false, "Vælg ansat...");
+                return (false, "Vï¿½lg ansat...");
             if (booking.TreatmentId <= 0)
-                return (false, "Vælg behandling...");
+                return (false, "Vï¿½lg behandling...");
             if (booking.BookingStartTime == default)
                 return (false, "Ugyldigt starttidspunkt.");
             if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)

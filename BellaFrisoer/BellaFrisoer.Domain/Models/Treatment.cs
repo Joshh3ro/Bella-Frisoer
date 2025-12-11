@@ -17,7 +17,5 @@
         public decimal Price { get; set; } // Pris i kr.
         [Required]
         public int Duration { get; set; }
-
-
         
     }

@@ -149,11 +149,46 @@ else
             <div class="form-control-plaintext">@PriceDisplay</div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Rabat</label>
-@*             <div class="form-control-plaintext">@BookingService.</div>
- *@
-        </div>
+        <fieldset class="border rounded p-3 mb-3">
+            <legend class="float-none w-auto px-2 fs-6">Event rabat (dato og tid)</legend>
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" role="switch" id="evtEnabled" @bind="eventDiscountEnabled" @bind:after="UpdatePrice" />
+                <label class="form-check-label" for="evtEnabled">Aktivér event rabat</label>
+            </div>
+
+            @if (eventDiscountEnabled)
+            {
+                <div class="row g-2 mb-2">
+                    <div class="col-sm-6">
+                        <label class="form-label">Start dato</label>
+                        <InputDate @bind-Value="eventStartDate" @bind-Value:after="UpdatePrice" class="form-control" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Start tid</label>
+                        <InputText @bind-Value="eventStartTimeString" @bind-Value:after="UpdatePrice" class="form-control" type="time" />
+                    </div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-sm-6">
+                        <label class="form-label">Slut dato</label>
+                        <InputDate @bind-Value="eventEndDate" @bind-Value:after="UpdatePrice" class="form-control" />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Slut tid</label>
+                        <InputText @bind-Value="eventEndTimeString" @bind-Value:after="UpdatePrice" class="form-control" type="time" />
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Rabat i procent</label>
+                    <InputNumber @bind-Value="eventDiscountPercent" @bind-Value:after="UpdatePrice" class="form-control" min="0" max="100" step="1" />
+                    <div class="form-text">Angiv 10 for 10%.</div>
+                </div>
+                @if (!string.IsNullOrEmpty(eventValidationMessage))
+                {
+                    <div class="text-danger">@eventValidationMessage</div>
+                }
+            }
+        </fieldset>
         <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Opret</button>
     </EditForm>
 }
@@ -198,33 +233,7 @@ else
         }
     }
 
-    // Discount selection support
-    private class DiscountOption
-    {
-        public required string Key { get; init; }
-        public required string Label { get; init; }
-        public IDiscountStrategy? Strategy { get; init; }
-    }
-
-    private readonly List<DiscountOption> discountOptions = new()
-    {
-        new() { Key = "none", Label = "Ingen rabat", Strategy = null },
-        new() { Key = "bronze", Label = "Bronze (5%)", Strategy = new BronzeDiscount() },
-        new() { Key = "silver", Label = "Sølv (10%)", Strategy = new SilverDiscount() },
-        new() { Key = "gold", Label = "Guld (15%)", Strategy = new GoldDiscount() }
-    };
-
-    private string selectedDiscountKey = "none";
-    private string SelectedDiscountKey
-    {
-        get => selectedDiscountKey;
-        set
-        {
-            if (selectedDiscountKey == value) return;
-            selectedDiscountKey = value;
-            UpdatePrice();
-        }
-    }
+    // Manual tier discount selection removed; discounts are applied automatically based on usage tiers
 
     protected override async Task OnInitializedAsync()
     {
@@ -233,6 +242,12 @@ else
             treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
             customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
             employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
+
+            // Initialize event discount defaults
+            eventStartDate = DateTime.Today;
+            eventEndDate = DateTime.Today;
+            eventStartTimeString = "00:00";
+            eventEndTimeString = "23:59";
         }
         catch (Exception ex)
         {
@@ -316,9 +331,93 @@ else
         var treatment = treatments?.FirstOrDefault(t => t.Id == Booking.TreatmentId);
         var customer = customers?.FirstOrDefault(c => c.Id == Booking.CustomerId);
 
-        Booking.TotalPrice = BookingService.CalculatePrice(Booking, employee, treatment, customer);
+        var basePrice = BookingService.CalculatePrice(Booking, employee, treatment, customer);
+
+        // Apply automatic tier discount based on how many times the customer has booked in total (all treatments)
+        IDiscountStrategy? autoTierStrategy = null;
+        if (customer != null)
+        {
+            autoTierStrategy = BookingService.GetDiscountStrategyForCustomerTotalBookings(customer);
+        }
+        var priceWithTier = autoTierStrategy != null ? autoTierStrategy.Apply(basePrice) : basePrice;
+
+        // Apply event discount if applicable and choose the better SINGLE discount (no stacking)
+        var (evtApplicable, evtStrategy) = BuildEventDiscountIfApplicable();
+        decimal finalPrice;
+        if (evtApplicable && evtStrategy != null)
+        {
+            var priceWithEvent = evtStrategy.Apply(basePrice);
+            finalPrice = Math.Min(priceWithTier, priceWithEvent);
+        }
+        else
+        {
+            finalPrice = priceWithTier;
+        }
+
+        Booking.TotalPrice = Math.Max(0m, decimal.Round(finalPrice, 2));
 
         StateHasChanged();
+    }
+
+    // Event discount state and helpers
+    private bool eventDiscountEnabled = false;
+    private DateTime? eventStartDate;
+    private DateTime? eventEndDate;
+    private string eventStartTimeString = "";
+    private string eventEndTimeString = "";
+    private int? eventDiscountPercent;
+    private string? eventValidationMessage;
+
+    private (bool Applicable, IDiscountStrategy? Strategy) BuildEventDiscountIfApplicable()
+    {
+        eventValidationMessage = null;
+        if (!eventDiscountEnabled)
+        {
+            return (false, null);
+        }
+
+        if (eventDiscountPercent is null or < 0 or > 100)
+        {
+            eventValidationMessage = "Ugyldig event rabatprocent (0-100).";
+            return (false, null);
+        }
+
+        if (eventStartDate is null || eventEndDate is null)
+        {
+            eventValidationMessage = "Start- og slutdato skal udfyldes.";
+            return (false, null);
+        }
+
+        if (!TimeOnly.TryParse(string.IsNullOrWhiteSpace(eventStartTimeString) ? "00:00" : eventStartTimeString, out var evtStartTime))
+        {
+            eventValidationMessage = "Ugyldig starttid for event.";
+            return (false, null);
+        }
+        if (!TimeOnly.TryParse(string.IsNullOrWhiteSpace(eventEndTimeString) ? "23:59" : eventEndTimeString, out var evtEndTime))
+        {
+            eventValidationMessage = "Ugyldig sluttid for event.";
+            return (false, null);
+        }
+
+        var evtStart = eventStartDate.Value.Date.Add(evtStartTime.ToTimeSpan());
+        var evtEnd = eventEndDate.Value.Date.Add(evtEndTime.ToTimeSpan());
+        if (evtEnd < evtStart)
+        {
+            eventValidationMessage = "Event slut skal være efter start.";
+            return (false, null);
+        }
+
+        // Determine the booking's start DateTime
+        var bookingStart = Booking.BookingDate.Date.Add(Booking.BookingStartTime.ToTimeSpan());
+
+        var within = bookingStart >= evtStart && bookingStart <= evtEnd;
+        if (!within)
+        {
+            return (false, null);
+        }
+
+        var percentage = (decimal)eventDiscountPercent!.Value / 100m;
+        return (true, new EventDiscount(percentage));
     }
 
 
