@@ -25,10 +25,10 @@
             <dt class="col-sm-2">DurationMinutes</dt>
             <dd class="col-sm-10">@Treatment.Duration</dd>
         </dl>
-        <div>
-	        <a href="/behandlinger" class="btn btn-sm btn-primary">Tilbage</a>
-	        <a href="/behandlinger/rediger?id=@Treatment.Id" class="btn btn-sm btn-warning">Rediger</a>
-	        <a href="/behandlinger/delete?id=@Treatment.Id" class="btn btn-sm btn-danger">Slet</a>
+        <div class="mt-3">
+            <a class="btn btn-primary" href="@($"/behandlinger/rediger?id={Treatment.Id}")">Redigér</a>
+            <a class="btn btn-danger" href="@($"/behandlinger/slet?id={Treatment.Id}")">Slet</a>
+            <a class="btn btn-secondary" href="/behandlinger">Tilbage</a>
         </div>
     }
 </div>

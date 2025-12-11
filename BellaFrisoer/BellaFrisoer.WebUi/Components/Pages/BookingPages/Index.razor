@@ -9,7 +9,6 @@
 
 <p>
     <a class="btn btn-primary" href="/bookings/opret">Opret Booking</a>
-    <a class="btn btn-secondary" href="/kunder">Kunder</a>
 </p>
 <input @oninput="OnSearchChanged" class="form-control mb-3" placeholder="Søg Bookings..." />
 
@@ -32,6 +31,7 @@ else
 				<th>Varighed (minutter)</th>
 				<th>Slut tid</th>
 				<th>Behandslingtype</th>
+				<th>Total Pris</th>
 
 				<th></th>
 			</tr>
@@ -46,6 +46,7 @@ else
 					<td>@(b.BookingDuration.ToString() ?? "-")</td>
 					<td>@(b.BookingEndTime.ToString() ?? "-")</td>
 					<td>@(b.Treatment?.Name ?? "-")</td>
+					<td>@b.TotalPrice</td>
 
 					<td>
 						<a href="/invoice/@b.Id" class="btn btn-sm btn-success">Download Faktura</a>

@@ -1,285 +1,210 @@
-﻿@* 
-  Create.razor
-  Purpose: Blazor page to create a new Booking.
-  The comments explain each directive, markup block and code member.
-*@
-
-@* Route for the page: component is accessible at /bookings/create *@
-@page "/bookings/opret"
-
-@* Bring EF Core asynchronous query extensions (ToListAsync, OrderBy, Include) into scope *@
-@using Microsoft.EntityFrameworkCore
-@using System.Globalization
-
-@* Provide Blazor form components like EditForm, InputText, InputSelect, ValidationMessage *@
-@using Microsoft.AspNetCore.Components.Forms
-
-@* Domain model types used on this page: Booking, Customer, Employee *@
-@using BellaFrisoer.Domain.Models
-
-@using BellaFrisoer.Domain.Models.Discounts
-
+﻿@page "/bookings/opret"
 @using BellaFrisoer.Application.Interfaces
-
-@inject IBookingConflictChecker BookingConflictChecker
+@using BellaFrisoer.Domain.Models
+@using BellaFrisoer.Domain.Models.Discounts
 @inject IBookingService BookingService
 @inject ICustomerService CustomerService
 @inject IEmployeeService EmployeeService
 @inject ITreatmentService TreatmentService
-
 @inject NavigationManager NavigationManager
 
-
-
-@* Render mode for Blazor Server with interactive prerendering (keeps component interactive) *@
 @rendermode InteractiveServer
 
-@* Sets the browser title while this page is active *@
 <PageTitle>Opret Booking</PageTitle>
 
-@* Page heading shown to users *@
 <h1>Opret Booking</h1>
 
-@* Show a persistent error area when ErrorMessage is set in the component state *@
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
-    <div class="alert alert-danger" role="alert">@ErrorMessage</div>
+    <div class="alert alert-danger">@ErrorMessage</div>
 }
 
-@* Show a loading indicator while we fetch customers (customers is null until loaded) *@
-@if (customers == null)
+@if (customers == null || employees == null || treatments == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    @* Main form binding to the Booking instance.
-       - Model: the object bound to inputs and validated by DataAnnotations
-       - OnValidSubmit: handler when validation passes
-       - OnInvalidSubmit: handler when validation fails *@
-    <EditForm Model="Booking" OnValidSubmit="AddBooking" OnInvalidSubmit="OnInvalidSubmit" FormName="BookingForm">
-        @* Enables data-annotation validation on the model *@
+    <EditForm Model="Booking" OnValidSubmit="AddBooking">
         <DataAnnotationsValidator />
-        @* Displays a summary of validation errors *@
         <ValidationSummary />
 
         <div class="mb-3">
-            <label class="form-label">Booking Dato</label>
+            <label class="form-label">Dato</label>
             <InputDate @bind-Value="Booking.BookingDate" class="form-control" />
             <ValidationMessage For="@(() => Booking.BookingDate)" />
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Booking starttidspunkt</label>
-            <InputText @bind-Value="bookingStartTimeString" class="form-control" type="time" />
+            <label class="form-label">Starttidspunkt</label>
+            <InputText @bind-Value="BookingStartTimeString" type="time" class="form-control" />
             <ValidationMessage For="@(() => Booking.BookingStartTime)" />
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Booking varighed</label>
-            @* Display-only field showing current Booking duration *@
+            <label class="form-label">Varighed</label>
             <div class="form-control-plaintext">@DurationDisplay</div>
         </div>
 
         <div class="mb-3">
-	        <label class="form-label">Kunde</label>
-	        @if (!customers.Any())
-	        {
-		        <div>
-			        <p>Ingen kunder endnu... <a href="/kunder/opret">Opret Kunde</a></p>
-		        </div>
-	        }
-	        else
-	        {
-		        <InputSelect @bind-Value="Booking.CustomerId" class="form-select">
-			        <option value="0">-- Vælg Kunde --</option>
-			        @foreach (var c in customers)
-			        {
-				        <option value="@c.Id">@c.FirstName (@(c.PhoneNumber.ToString() ?? "Intet tlf nummer..."))</option>
-			        }
-		        </InputSelect>
-		        <ValidationMessage For="@(() => Booking.CustomerId)" />
-	        }
+            <label class="form-label">Kunde</label>
+            @if (!customers.Any())
+            {
+                <p>Ingen kunder endnu... <a href="/kunder/opret">Opret Kunde</a></p>
+            }
+            else
+            {
+                <InputSelect @bind-Value="Booking.CustomerId" class="form-select" @onchange="OnCustomerChanged">
+                    <option value="0">-- Vælg Kunde --</option>
+                    @foreach (var c in customers)
+                    {
+                        <option value="@c.Id">@c.FirstName @c.LastName (@(c.Bookings?.Count ?? 0) bookings)</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Booking.CustomerId)" />
+            }
         </div>
 
         <div class="mb-3">
-	        <label class="form-label">Ansatte</label>
-	        @if (employees == null || !employees.Any())
-	        {
-		        <div>
-			        <p>Ingen registrerede ansatte... <a href="/customers/create">Opret Ansat</a></p>
-		        </div>
-	        }
-	        else
-	        {
-		        <InputSelect @bind-Value="SelectedEmployeeId" class="form-select">
-            <option value="0"> -- Vælg Ansat --</option>
-            @foreach (var e in employees)
-            {
-                <option value="@e.Id">@e.FirstName (@(e.PhoneNumber.ToString() ?? "Intet tlf nummer..."))</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => Booking.EmployeeId)" />
-	        }
+            <label class="form-label">Ansat</label>
+            <InputSelect @bind-Value="SelectedEmployeeId" class="form-select">
+                <option value="0">-- Vælg Ansat --</option>
+                @foreach (var e in employees)
+                {
+                    <option value="@e.Id">@e.FirstName @e.LastName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Booking.EmployeeId)" />
         </div>
 
         <div class="mb-3">
             <label class="form-label">Behandling</label>
-            @if (treatments == null || !treatments.Any())
-            {
-                <div>
-                    <p>Ingen registrerede ansatte... <a href="/customers/create">Opret Ansat</a></p>
-                </div>
-            }
-            else
-            {
-                @* Bind to SelectedTreatmentId so the setter runs when selection changes *@
-                <InputSelect @bind-Value="SelectedTreatmentId" class="form-select">
-                    <option value="0"> -- Vælg behandling --</option>
-                    @foreach (var t in treatments)
-                    {
-                        <option value="@t.Id">@t.Name </option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => Booking.TreatmentId)" />
-            }
+            <InputSelect @bind-Value="SelectedTreatmentId" class="form-select">
+                <option value="0">-- Vælg Behandling --</option>
+                @foreach (var t in treatments)
+                {
+                    <option value="@t.Id">@t.Name (@t.Duration min)</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Booking.TreatmentId)" />
         </div>
+
         <div class="mb-3">
-            <label class="form-label">Booking pris</label>
+            <label class="form-label">Pris</label>
             <div class="form-control-plaintext">@PriceDisplay</div>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Rabat</label>
-@*             <div class="form-control-plaintext">@BookingService.</div>
- *@
+            <span class="badge bg-info">@GetDiscountLabel()</span>
         </div>
-        <button class="btn btn-primary" type="submit" disabled="@(!customers.Any())">Opret</button>
+
+        <button type="submit" class="btn btn-primary" disabled="@(!customers.Any())">Opret Booking</button>
+        <a href="/bookings" class="btn btn-secondary ms-2">Tilbage</a>
     </EditForm>
 }
 
 @code {
-    private Booking Booking { get; set; } = new Booking { BookingDate = DateTime.Now, CustomerId = 0 };
-    private string bookingStartTimeString = "";
-    private string BookingDurationString = "";
-
-    private List<Customer>? customers;
-    private List<Employee>? employees;
-    private List<Treatment>? treatments;
+    private Booking Booking { get; set; } = new() { BookingDate = DateTime.Now };
+    private List<Customer> customers = new();
+    private List<Employee> employees = new();
+    private List<Treatment> treatments = new();
+    private string BookingStartTimeString = "";
     private string? ErrorMessage;
 
-    // Backing field and property to run logic when treatment selection changes
-    private int selectedTreatmentId;
-    private int SelectedTreatmentId
-    {
-        get => selectedTreatmentId;
-        set
-        {
-            if (selectedTreatmentId == value) return;
-            selectedTreatmentId = value;
-            // Update the Booking model and the displayed duration
-            Booking.TreatmentId = value;
-            UpdateDurationFromTreatment(value);
-        }
-    }
-
-    // Backing field and property to run logic when employee selection changes
     private int selectedEmployeeId;
     private int SelectedEmployeeId
     {
         get => selectedEmployeeId;
         set
         {
-            if (selectedEmployeeId == value) return;
             selectedEmployeeId = value;
             Booking.EmployeeId = value;
-            // Recompute price using current treatment/duration + employee
             UpdatePrice();
         }
     }
 
-    // Discount selection support
-    private class DiscountOption
+    private int selectedTreatmentId;
+    private int SelectedTreatmentId
     {
-        public required string Key { get; init; }
-        public required string Label { get; init; }
-        public IDiscountStrategy? Strategy { get; init; }
-    }
-
-    private readonly List<DiscountOption> discountOptions = new()
-    {
-        new() { Key = "none", Label = "Ingen rabat", Strategy = null },
-        new() { Key = "bronze", Label = "Bronze (5%)", Strategy = new BronzeDiscount() },
-        new() { Key = "silver", Label = "Sølv (10%)", Strategy = new SilverDiscount() },
-        new() { Key = "gold", Label = "Guld (15%)", Strategy = new GoldDiscount() }
-    };
-
-    private string selectedDiscountKey = "none";
-    private string SelectedDiscountKey
-    {
-        get => selectedDiscountKey;
+        get => selectedTreatmentId;
         set
         {
-            if (selectedDiscountKey == value) return;
-            selectedDiscountKey = value;
-            UpdatePrice();
+            selectedTreatmentId = value;
+            Booking.TreatmentId = value;
+            UpdateDurationFromTreatment(value);
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
+        employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
+        treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
+    }
+
+    private void OnCustomerChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var id))
         {
-            treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
-            customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
-            employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"Load failed: {ex.Message}";
+            Booking.CustomerId = id;
+            UpdatePrice();
         }
     }
 
-    private void OnInvalidSubmit(EditContext ctx)
+    private void UpdateDurationFromTreatment(int treatmentId)
     {
-        ErrorMessage = "Form is invalid. Please fix validation errors.";
+        var treatment = treatments.FirstOrDefault(t => t.Id == treatmentId);
+        if (treatment != null)
+        {
+            Booking.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
+            UpdatePrice();
+        }
+    }
+
+    private void UpdatePrice()
+    {
+        var employee = employees.FirstOrDefault(e => e.Id == Booking.EmployeeId);
+        var treatment = treatments.FirstOrDefault(t => t.Id == Booking.TreatmentId);
+        var customer = customers.FirstOrDefault(c => c.Id == Booking.CustomerId);
+
+        Booking.TotalPrice = BookingService.CalculatePrice(Booking, employee, treatment, customer);
+        StateHasChanged();
+    }
+
+    private string DurationDisplay => Booking.BookingDuration.ToString(@"hh\:mm");
+    private string PriceDisplay => Booking.TotalPrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"));
+
+    private string GetDiscountLabel()
+    {
+        var count = customers.FirstOrDefault(c => c.Id == Booking.CustomerId)?.Bookings?.Count ?? 0;
+        return count >= 15 ? "Guld (15%)" :
+               count >= 10 ? "Sølv (10%)" :
+               count >= 5 ? "Bronze (5%)" : "Ingen rabat";
     }
 
     private async Task AddBooking()
     {
         ErrorMessage = null;
 
-        // Parse the time string to TimeOnly
-        if (!TimeOnly.TryParse(bookingStartTimeString, out var startTime))
+        if (!TimeOnly.TryParse(BookingStartTimeString, out var startTime))
         {
             ErrorMessage = "Ugyldigt starttidspunkt.";
             return;
         }
+
         Booking.BookingStartTime = startTime;
 
-        // Use the Booking.BookingDuration directly (BookingDurationString is kept for compatibility)
-        if (Booking.BookingDuration == default || Booking.BookingDuration <= TimeSpan.Zero)
-        {
-            // fallback: attempt to parse textual representation
-            if (!TimeSpan.TryParse(BookingDurationString, out var duration))
-            {
-                ErrorMessage = "Ugyldig varighed.";
-                return;
-            }
-            Booking.BookingDuration = duration;
-        }
         var (IsValid, ValidationError) = BookingService.ValidateBooking(Booking);
-         if (!IsValid)
-            {
-                ErrorMessage = ValidationError;
-                return;
-            }
-
-
-        var canCreate = await BookingService.CanCreateBookingAsync(Booking);
-        if (!canCreate)
+        if (!IsValid)
         {
-            ErrorMessage = "Booking conflict: selected customer or employee already has a booking during this time.";
+            ErrorMessage = ValidationError;
+            return;
+        }
+
+        if (!await BookingService.CanCreateBookingAsync(Booking))
+        {
+            ErrorMessage = "Booking konflikt: Kunde eller ansat har allerede en booking på dette tidspunkt.";
             return;
         }
 
@@ -290,47 +215,7 @@ else
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Save failed: {ex.Message}";
+            ErrorMessage = $"Gem fejlede: {ex.Message}";
         }
-
     }
-
-    // Sets the duration to the treatment duration (avoids accumulating on repeated selection)
-    private void UpdateDurationFromTreatment(int treatmentId)
-    {
-        var treatment = treatments?.FirstOrDefault(t => t.Id == treatmentId);
-        BookingService.UpdateDurationFromTreatment(Booking, treatment);
-
-        BookingDurationString = Booking.BookingDuration.ToString(@"hh\:mm");
-        UpdatePrice();
-        StateHasChanged();
-    }
-
-    // Compute the price using the most appropriate source:
-    // - Use Treatment.Price as base when available
-    // - Always add an employee hourly component if an employee + duration are present
-    // - Otherwise fall back to employee-only calculation or 0
-    private void UpdatePrice()
-    {
-        var employee = employees?.FirstOrDefault(e => e.Id == Booking.EmployeeId);
-        var treatment = treatments?.FirstOrDefault(t => t.Id == Booking.TreatmentId);
-        var customer = customers?.FirstOrDefault(c => c.Id == Booking.CustomerId);
-
-        Booking.TotalPrice = BookingService.CalculatePrice(Booking, employee, treatment, customer);
-
-        StateHasChanged();
-    }
-
-
-    // Display helper for the Booking duration (shows hh:mm, including 00:00)
-    private string DurationDisplay =>
-        Booking.BookingDuration >= TimeSpan.Zero
-            ? Booking.BookingDuration.ToString(@"hh\:mm")
-            : string.Empty;
-
-    // Display helper for the Booking price (shows currency, including 0 kr)
-    private string PriceDisplay =>
-        Booking.TotalPrice >= 0m
-            ? Booking.TotalPrice.ToString("C0", CultureInfo.GetCultureInfo("da-DK"))
-            : string.Empty;
 }

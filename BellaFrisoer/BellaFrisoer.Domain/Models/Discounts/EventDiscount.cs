@@ -10,8 +10,9 @@ public class EventDiscount : IDiscountStrategy
     }
 
     public decimal Apply(decimal amount)
-    { 
-        return amount - (amount * _percentage); 
+    {
+
+            return amount - (amount * _percentage); 
     }
 
     public bool IsBetterThan(IDiscountStrategy? currentDiscount)
@@ -21,4 +22,5 @@ public class EventDiscount : IDiscountStrategy
         const decimal testAmount = 100;
         return Apply(testAmount) < currentDiscount.Apply(testAmount);
     }
+
 }
