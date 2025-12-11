@@ -27,8 +27,6 @@
             <dd class="col-sm-10">@booking.BookingDate</dd>
             <dt class="col-sm-2">Pris</dt>
             <dd class="col-sm-10">@booking.TotalPrice</dd>
-            <dt class="col-sm-2">Rabat</dt>
-            <dd class="col-sm-10">@(((booking.Treatment.Duration / 60 ) * (decimal)booking.Employee.HourlyPrice) - (booking.TotalPrice)) </dd>
         </dl>
         <div>
             <div class="mt-3">
