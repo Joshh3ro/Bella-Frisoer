@@ -18,8 +18,6 @@ namespace BellaFrisoer.Application.Services
 
         public Task<bool> CanCreateCustomerAsync(Customer newCustomer)
         {
-            // Simple example: always allow creation.
-            // Replace with real business logic if needed.
             return Task.FromResult(true);
         }
 

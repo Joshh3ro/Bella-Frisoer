@@ -10,8 +10,6 @@ namespace BellaFrisoer.Application.Interfaces
         Task DeleteTreatmentAsync(Treatment treatment);
         Task AddTreatmentAsync(Treatment treatment);
         Task<List<Treatment>> GetAllAsync();
-
-        // Added for read/update flow from UI
         Task<Treatment?> GetByIdAsync(int id);
         Task UpdateTreatmentAsync(Treatment treatment);
         Task<List<Treatment>> FilterTreatmentsAsync(string searchTerm);

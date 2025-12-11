@@ -20,12 +20,8 @@ namespace BellaFrisoer.Application.Services
         {
             if (newTreatment is null)
                 throw new ArgumentNullException(nameof(newTreatment));
-
-            // Basic business rules: must have a name and positive duration
             if (string.IsNullOrWhiteSpace(newTreatment.Name) || newTreatment.Duration <= 0)
                 return false;
-
-            // Ensure product number uniqueness
             var all = await _repository.GetAllAsync();
             return !all.Any(t => string.Equals(newTreatment.Id, StringComparison.OrdinalIgnoreCase));
         }
@@ -34,36 +30,32 @@ namespace BellaFrisoer.Application.Services
         {
             if (treatment is null)
                 throw new ArgumentNullException(nameof(treatment));
-
             await _repository.AddAsync(treatment);
         }
 
         public async Task<List<Treatment>> GetAllAsync()
         {
             var all = await _repository.GetAllAsync();
-            return all.ToList(); // Konverter til liste for sikkerhed
+            return all.ToList();
         }
 
         public async Task<Treatment?> GetTreatmentByIdAsync(int id)
         {
-            return await _repository.GetByIdAsync(id); // Brug repository-metoden
+            return await _repository.GetByIdAsync(id);
         }
 
         public async Task DeleteTreatmentAsync(Treatment treatment)
         {
             if (treatment is null)
                 throw new ArgumentNullException(nameof(treatment));
-
-            await _repository.DeleteAsync(treatment.Id); // Brug repository-metoden
+            await _repository.DeleteAsync(treatment.Id);
         }
 
-        // New: retrieve single treatment by id
         public async Task<Treatment?> GetByIdAsync(int id)
         {
             return await _repository.GetByIdAsync(id);
         }
 
-        // New: update treatment
         public async Task UpdateTreatmentAsync(Treatment treatment)
         {
             if (treatment is null) throw new ArgumentNullException(nameof(treatment));

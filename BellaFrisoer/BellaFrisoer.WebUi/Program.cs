@@ -14,7 +14,7 @@ builder.Services.AddDbContextFactory<BellaFrisoerWebUiContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("BellaFrisoerWebUiContext")
             ?? throw new InvalidOperationException("Connection string not found."),
-        sql => sql.MigrationsAssembly("BellaFrisoer.Infrastructure") // important when migrations live in Infrastructure
+        sql => sql.MigrationsAssembly("BellaFrisoer.Infrastructure")
     ));
 
 builder.Services.AddQuickGridEntityFrameworkAdapter();
@@ -23,8 +23,6 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Register repositories and application services by interface
-// Use Scoped lifetime for request/component-scoped services in Blazor Server
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
 builder.Services.AddScoped<IBookingService, BookingService>();

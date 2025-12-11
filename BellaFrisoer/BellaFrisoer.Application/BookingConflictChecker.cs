@@ -17,20 +17,18 @@ namespace BellaFrisoer.Application.Services
                 if (!sameEmployee)
                     continue;
 
-                // Normalize both start times to the booking date + time-of-day to avoid mismatches in Date component.
                 var newStart = newBooking.CombineDateTime(newBooking.BookingDate.Date, newBooking.BookingStartTime);
                 var newEnd = newStart.Add(newBooking.BookingDuration);
 
                 var existingStart = newBooking.CombineDateTime(booking.BookingDate.Date, booking.BookingStartTime);
                 var existingEnd = existingStart.Add(booking.BookingDuration);
 
-                // Be robust: ignore bookings missing a valid duration
                 if (newBooking.BookingDuration <= TimeSpan.Zero || booking.BookingDuration <= TimeSpan.Zero)
                     continue;
 
                 if (newStart < existingEnd && existingStart < newEnd)
                 {
-                    return true; // There is a conflict
+                    return true;
                 }
             }
             return false;
