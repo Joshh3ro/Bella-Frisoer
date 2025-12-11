@@ -9,6 +9,5 @@ namespace BellaFrisoer.Application.Interfaces
     public interface IBookingConflictChecker
     {
         public bool HasBookingConflict(Domain.Models.Booking newBooking, IEnumerable<Domain.Models.Booking> existingBookings);
-
     }
 }

@@ -13,7 +13,5 @@ namespace BellaFrisoer.Application.Interfaces
         Task<Treatment?> GetByIdAsync(int id);
         Task UpdateTreatmentAsync(Treatment treatment);
         Task<List<Treatment>> FilterTreatmentsAsync(string searchTerm);
-
-
     }
 }
