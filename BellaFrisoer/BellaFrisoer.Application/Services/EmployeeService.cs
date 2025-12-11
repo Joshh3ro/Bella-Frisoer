@@ -39,10 +39,15 @@ namespace BellaFrisoer.Application.Services
         {
             return await _repository.GetByIdAsync(id);
         }
-        public async Task DeleteEmployeeAsync(int id)
+
+        public async Task DeleteEmployeeAsync(Employee employee)
         {
-            _repository.DeleteAsync(id);
+            if (employee is null)
+                throw new ArgumentNullException(nameof(employee));
+
+            await _repository.DeleteAsync(employee.Id); // Brug repository-metoden
         }
+
         public async Task<Employee?> UpdateEmployeeAsync(Employee employee)
         {
             await _repository.UpdateAsync(employee);

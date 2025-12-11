@@ -46,9 +46,9 @@ else
 			<td>@treatment.Price</td>
 			<td>@treatment.Duration</td>
 			<td>
-				<a href="/behandlinger/detaljer/@treatment.Id" class="btn btn-primary">Detaljer</a>
-				<a href="/behandlinger/rediger/@treatment.Id" class="btn btn-warning">Rediger</a>
-				<a href="/behandlinger/slet/@treatment.Id" class="btn btn-danger">Slet</a>
+				<a href="/behandlinger/detaljer?id=@treatment.Id" class="btn btn-primary">Detaljer</a>
+				<a href="/behandlinger/rediger?id=@treatment.Id" class="btn btn-warning">Rediger</a>
+				<a href="/behandlinger/slet?id=@treatment.Id" class="btn btn-danger">Slet</a>
 			</td>
 		</tr>
 	}

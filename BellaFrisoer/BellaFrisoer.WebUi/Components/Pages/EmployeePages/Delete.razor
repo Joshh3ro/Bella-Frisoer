@@ -59,7 +59,7 @@
 
 	private async Task DeleteEmployee()
 	{
-		await EmployeeService.DeleteEmployeeAsync(Id);
-		NavigationManager.NavigateTo("/employees");
+		await EmployeeService.DeleteEmployeeAsync(Employee);
+		NavigationManager.NavigateTo("/ansatte");
 	}
 }
