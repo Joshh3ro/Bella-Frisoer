@@ -54,5 +54,30 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+app.MapGet("/invoice/{id}", async (int id, IBookingService bookingService) =>
+{
+    var booking = await bookingService.GetByIdAsync(id);
+    if (booking is null)
+        return Results.NotFound();
+
+    string txt = $"""
+        Faktura for booking #{booking.Id}
+
+        Kunde: {booking.Customer?.FirstName}
+        Ansatte: {booking.Employee?.FirstName}
+        Dato: {booking.BookingDateTime}
+        Varighed: {booking.BookingDuration} minutter
+        Behandling: {booking.Treatment?.Name}
+        Pris: {booking.TotalPrice}
+        {DateTime.Now}
+        """;
+
+    return Results.File(
+        System.Text.Encoding.UTF8.GetBytes(txt),
+        "text/plain",
+        $"invoice_{booking.Id}.txt"
+    );
+});
+
 
 app.Run();
