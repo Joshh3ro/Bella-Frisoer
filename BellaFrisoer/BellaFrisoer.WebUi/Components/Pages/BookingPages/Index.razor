@@ -48,6 +48,7 @@ else
 					<td>@(b.Treatment?.Name ?? "-")</td>
 
 					<td>
+						<a href="/invoice/@b.Id" class="btn btn-sm btn-success">Download Faktura</a>
 						<a href="/bookings/detaljer?id=@b.Id" class="btn btn-sm btn-primary">Detaljer</a>
 						<a href="/bookings/rediger?id=@b.Id" class="btn btn-sm btn-warning">Rediger</a>
 						<a href="/bookings/delete?id=@b.Id" class="btn btn-sm btn-danger">Slet</a>
