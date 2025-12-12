@@ -3,6 +3,7 @@
 @using BellaFrisoer.Domain.Models
 @using BellaFrisoer.Domain.Models.Discounts
 @inject IBookingService BookingService
+@inject IBookingPriceService BookingPriceService
 @inject ICustomerService CustomerService
 @inject IEmployeeService EmployeeService
 @inject ITreatmentService TreatmentService
@@ -16,342 +17,327 @@
 
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
-	<div class="alert alert-danger">@ErrorMessage</div>
+    <div class="alert alert-danger">@ErrorMessage</div>
 }
 
 @if (customers == null || employees == null || treatments == null)
 {
-	<p><em>Loading...</em></p>
+    <p><em>Loading...</em></p>
 }
 else
 {
-	<EditForm Model="Booking" OnValidSubmit="AddBooking">
-		<DataAnnotationsValidator />
-		<ValidationSummary />
+    <EditForm Model="Booking" OnValidSubmit="AddBooking">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-		<div class="mb-3">
-			<label class="form-label">Dato</label>
-			<InputDate @bind-Value="Booking.BookingDate" class="form-control" />
-			<ValidationMessage For="@(() => Booking.BookingDate)" />
-		</div>
+        <div class="mb-3">
+            <label class="form-label">Dato</label>
+            <InputDate @bind-Value="Booking.BookingDate" class="form-control" />
+            <ValidationMessage For="@(() => Booking.BookingDate)" />
+        </div>
 
-		<div class="mb-3">
-			<label class="form-label">Starttidspunkt</label>
-			<InputText @bind-Value="BookingStartTimeString" type="time" class="form-control" />
-			<ValidationMessage For="@(() => Booking.BookingStartTime)" />
-		</div>
+        <div class="mb-3">
+            <label class="form-label">Starttidspunkt</label>
+            <InputText @bind-Value="BookingStartTimeString" type="time" class="form-control" />
+            <ValidationMessage For="@(() => Booking.BookingStartTime)" />
+        </div>
 
-		<div class="mb-3">
-			<label class="form-label">Varighed</label>
-			<div class="form-control-plaintext standout-text">@DurationDisplay</div>
-		</div>
+        <div class="mb-3">
+            <label class="form-label">Kunde</label>
+            @if (!customers.Any())
+            {
+                <p>Ingen kunder endnu... <a href="/kunder/opret">Opret Kunde</a></p>
+            }
+            else
+            {
+                <InputSelect @bind-Value="Booking.CustomerId" class="form-select" @onchange="OnCustomerChanged">
+                    <option value="0">-- Vælg Kunde --</option>
+                    @foreach (var c in customers)
+                    {
+                        <option value="@c.Id">@c.FirstName @c.LastName (@(c.Bookings?.Count ?? 0) bookings)</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Booking.CustomerId)" />
+            }
+        </div>
 
-		<div class="mb-3">
-			<label class="form-label">Kunde</label>
-			@if (!customers.Any())
-			{
-				<p>Ingen kunder endnu... <a href="/kunder/opret">Opret Kunde</a></p>
-			}
-			else
-			{
-				<InputSelect @bind-Value="Booking.CustomerId" class="form-select" @onchange="OnCustomerChanged">
-					<option value="0">-- Vælg Kunde --</option>
-					@foreach (var c in customers)
-					{
-						<option value="@c.Id">@c.FirstName @c.LastName (@(c.Bookings?.Count ?? 0) bookings)</option>
-					}
-				</InputSelect>
-				<ValidationMessage For="@(() => Booking.CustomerId)" />
-			}
-		</div>
+        <div class="mb-3">
+            <label class="form-label">Ansat</label>
+            <InputSelect @bind-Value="SelectedEmployeeId" class="form-select">
+                <option value="0">-- Vælg Ansat --</option>
+                @foreach (var e in employees)
+                {
+                    <option value="@e.Id">@e.FirstName @e.LastName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Booking.EmployeeId)" />
+        </div>
 
-		<div class="mb-3">
-			<label class="form-label">Ansat</label>
-			<InputSelect @bind-Value="SelectedEmployeeId" class="form-select">
-				<option value="0">-- Vælg Ansat --</option>
-				@foreach (var e in employees)
-				{
-					<option value="@e.Id">@e.FirstName @e.LastName</option>
-				}
-			</InputSelect>
-			<ValidationMessage For="@(() => Booking.EmployeeId)" />
-		</div>
+        <div class="mb-3">
+            <label class="form-label">Behandling</label>
+            <InputSelect @bind-Value="SelectedTreatmentId" class="form-select">
+                <option value="0">-- Vælg Behandling --</option>
+                @foreach (var t in treatments)
+                {
+                    <option value="@t.Id">@t.Name (@t.Duration min)</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Booking.TreatmentId)" />
+        </div>
 
-		<div class="mb-3">
-			<label class="form-label">Behandling</label>
-			<InputSelect @bind-Value="SelectedTreatmentId" class="form-select">
-				<option value="0">-- Vælg Behandling --</option>
-				@foreach (var t in treatments)
-				{
-					<option value="@t.Id">@t.Name (@t.Duration min)</option>
-				}
-			</InputSelect>
-			<ValidationMessage For="@(() => Booking.TreatmentId)" />
-		</div>
+        <div class="card mb-3">
+            <div class="card-header">Eventrabat</div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" role="switch" id="eventEnabledSwitch" @bind="EventEnabled" @bind:after="UpdatePrice" />
+                    <label class="form-check-label" for="eventEnabledSwitch">Aktivér eventrabat for denne booking</label>
+                </div>
 
-		<div class="mb-3">
-			<label class="form-label">Pris</label>
-			<div class="form-control-plaintext standout-text">@PriceDisplay</div>
-		</div>
+                @if (EventEnabled)
+                {
+                    <div class="row g-3 mb-2">
+                        <div class="col-md-3">
+                            <label class="form-label">Startdato</label>
+                            <InputDate @bind-Value="EventStartDate" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Starttid</label>
+                            <InputText @bind-Value="EventStartTimeString" type="time" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Slutdato</label>
+                            <InputDate @bind-Value="EventEndDate" class="form-control"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sluttid</label>
+                            <InputText @bind-Value="EventEndTimeString" type="time" class="form-control"" />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-2">
+                        <div class="col-md-3">
+                            <label class="form-label">Procent (%)</label>
+                            <InputNumber @bind-Value="EventPercent" class="form-control"" />
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(EventValidationMessage))
+                    {
+                        <div class="text-danger">@EventValidationMessage</div>
+                    }
+                }
+            </div>
+        </div>
 
-		<div class="card mb-3">
-			<div class="card-header">Eventrabat</div>
-			<div class="card-body">
-				<div class="form-check form-switch mb-3">
-					<input class="form-check-input" type="checkbox" role="switch" id="eventEnabledSwitch" @bind="EventEnabled" @bind:after="UpdatePrice" />
-					<label class="form-check-label" for="eventEnabledSwitch">Aktivér eventrabat for denne booking</label>
-				</div>
+        <div class="mb-3">
+            <label class="form-label">Pris</label>
+            <span class="badge bg-info">@PriceDisplay</span>
+        </div>
 
-				@if (EventEnabled)
-				{
-					<div class="row g-3 mb-2">
-						<div class="col-md-3">
-							<label class="form-label">Startdato</label>
-							<InputDate @bind-Value="EventStartDate" class="form-control" @bind-Value:after="UpdatePrice" />
-						</div>
-						<div class="col-md-3">
-							<label class="form-label">Starttid</label>
-							<InputText @bind-Value="EventStartTimeString" type="time" class="form-control" @bind-Value:after="UpdatePrice" />
-						</div>
-						<div class="col-md-3">
-							<label class="form-label">Slutdato</label>
-							<InputDate @bind-Value="EventEndDate" class="form-control" @bind-Value:after="UpdatePrice" />
-						</div>
-						<div class="col-md-3">
-							<label class="form-label">Sluttid</label>
-							<InputText @bind-Value="EventEndTimeString" type="time" class="form-control" @bind-Value:after="UpdatePrice" />
-						</div>
-					</div>
-					<div class="row g-3 mb-2">
-						<div class="col-md-3">
-							<label class="form-label">Procent (%)</label>
-							<InputNumber @bind-Value="EventPercent" class="form-control" @bind-Value:after="UpdatePrice" />
-						</div>
-					</div>
-					@if (!string.IsNullOrWhiteSpace(EventValidationMessage))
-					{
-						<div class="text-danger">@EventValidationMessage</div>
-					}
-				}
-			</div>
-		</div>
-
-		<div class="mb-3">
-			<label class="form-label">Rabat</label>
-			<span class="badge bg-info">@AppliedDiscountLabel</span>
-		</div>
-
-		<button type="submit" class="btn btn-primary" disabled="@(!customers.Any())">Opret Booking</button>
-		<a href="/bookings" class="btn btn-secondary ms-2">Tilbage</a>
-	</EditForm>
+        <button type="submit" class="btn btn-primary" disabled="@(!customers.Any())">Opret Booking</button>
+        <a href="/bookings" class="btn btn-secondary ms-2">Tilbage</a>
+    </EditForm>
 }
 
 @code {
-	private Booking Booking { get; set; } = new() { BookingDate = DateTime.Now };
-	private List<Customer> customers = new();
-	private List<Employee> employees = new();
-	private List<Treatment> treatments = new();
-	private string BookingStartTimeString = "";
-	private string? ErrorMessage;
+    private Booking Booking { get; set; } = new() { BookingDate = DateTime.Now };
+    private List<Customer> customers = new();
+    private List<Employee> employees = new();
+    private List<Treatment> treatments = new();
+    private string BookingStartTimeString = "";
+    private string? ErrorMessage;
 
-	// Event discount state (per booking)
-	private bool EventEnabled = false;
-	private DateTime? EventStartDate;
-	private DateTime? EventEndDate;
-	private string EventStartTimeString = "";
-	private string EventEndTimeString = "";
-	private decimal? EventPercent;
-	private string? EventValidationMessage;
+    // Event discount state (per booking)
+    private bool EventEnabled = false;
+    private DateTime? EventStartDate;
+    private DateTime? EventEndDate;
+    private string EventStartTimeString = "";
+    private string EventEndTimeString = "";
+    private decimal? EventPercent;
+    private string? EventValidationMessage;
 
-	private int selectedEmployeeId;
-	private int SelectedEmployeeId
-	{
-		get => selectedEmployeeId;
-		set
-		{
-			selectedEmployeeId = value;
-			Booking.EmployeeId = value;
-			UpdatePrice();
-		}
-	}
+    private int selectedEmployeeId;
+    private int SelectedEmployeeId
+    {
+        get => selectedEmployeeId;
+        set
+        {
+            selectedEmployeeId = value;
+            Booking.EmployeeId = value;
+            UpdatePrice();
+        }
+    }
 
-	private int selectedTreatmentId;
-	private int SelectedTreatmentId
-	{
-		get => selectedTreatmentId;
-		set
-		{
-			selectedTreatmentId = value;
-			Booking.TreatmentId = value;
-			UpdateDurationFromTreatment(value);
-		}
-	}
+    private int selectedTreatmentId;
+    private int SelectedTreatmentId
+    {
+        get => selectedTreatmentId;
+        set
+        {
+            selectedTreatmentId = value;
+            Booking.TreatmentId = value;
+            UpdateDurationFromTreatment(value);
+        }
+    }
 
-	protected override async Task OnInitializedAsync()
-	{
-		customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
-		employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
-		treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
+        employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
+        treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
+    }
 
-	private void OnCustomerChanged(ChangeEventArgs e)
-	{
-		if (int.TryParse(e.Value?.ToString(), out var id))
-		{
-			Booking.CustomerId = id;
-		}
-		UpdatePrice();
-	}
+    private async Task OnCustomerChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var id))
+        {
+            Booking.CustomerId = id;
+        }
+        await UpdatePrice();
+    }
 
-	private void UpdateDurationFromTreatment(int treatmentId)
-	{
-		var treatment = treatments.FirstOrDefault(t => t.Id == treatmentId);
-		if (treatment != null)
-		{
-			Booking.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
-			UpdatePrice();
-		}
-	}
 
-	private void UpdatePrice()
-	{
-		var employee = employees.FirstOrDefault(e => e.Id == Booking.EmployeeId);
-		var treatment = treatments.FirstOrDefault(t => t.Id == Booking.TreatmentId);
-		var customer = customers.FirstOrDefault(c => c.Id == Booking.CustomerId);
+    private async Task UpdateDurationFromTreatment(int treatmentId)
+    {
+        var treatment = treatments.FirstOrDefault(t => t.Id == treatmentId);
+        if (treatment != null)
+        {
+            Booking.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
+            await UpdatePrice();
+        }
+    }
 
-		// Base price without discounts
-		var basePrice = BookingService.CalculatePrice(Booking, employee, treatment, customer);
 
-		// Determine automatic tier based on total bookings
-		IDiscountStrategy? tier = null;
-		if (customer != null)
-		{
-			tier = BookingService.GetDiscountStrategyForCustomerTotalBookings(customer);
-		}
-		var eventDiscount = BuildEventDiscountIfApplicable(out bool eventAppliesNow);
+    private async Task UpdatePrice()
+    {
+        var employee = employees.FirstOrDefault(e => e.Id == Booking.EmployeeId);
+        var treatment = treatments.FirstOrDefault(t => t.Id == Booking.TreatmentId);
+        var customer = customers.FirstOrDefault(c => c.Id == Booking.CustomerId);
 
-		// Choose best single discount (no stacking)
-		decimal priceWithTier = tier != null ? tier.Apply(basePrice) : basePrice;
-		decimal priceWithEvent = (eventDiscount != null && eventAppliesNow) ? eventDiscount.Apply(basePrice) : basePrice;
-		decimal final = Math.Min(priceWithTier, priceWithEvent);
-		Booking.TotalPrice = final;
+        // Parse event time inputs
+        TimeOnly? eventStartTime = TimeOnly.TryParse(EventStartTimeString, out var est) ? est : null;
+        TimeOnly? eventEndTime = TimeOnly.TryParse(EventEndTimeString, out var eet) ? eet : null;
 
-		// Update label for UI
-		AppliedDiscountLabel = ComputeAppliedDiscountLabel(tier, eventDiscount, eventAppliesNow, basePrice, final);
-		StateHasChanged();
-	}
+        // Validate event inputs
+        EventValidationMessage = null;
+        if (EventEnabled)
+        {
+            if (EventPercent is null || EventPercent < 0m || EventPercent > 100m)
+            {
+                EventValidationMessage = "Procent skal være mellem 0 og 100.";
+            }
+            else if (EventStartDate is null || EventEndDate is null)
+            {
+                EventValidationMessage = "Start- og slutdato er påkrævet.";
+            }
+            else if (!TimeOnly.TryParse(EventStartTimeString, out _) || !TimeOnly.TryParse(EventEndTimeString, out _))
+            {
+                EventValidationMessage = "Ugyldigt tidspunkt for event.";
+            }
+        }
 
-	private string DurationDisplay => Booking.BookingDuration.ToString(@"hh\:mm");
-	private string PriceDisplay => Booking.TotalPrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"));
+        var basePriceTask = Task.Run(() =>
+            BookingPriceService.CalculateFinalPrice(
+                Booking,
+                employee,
+                treatment,
+                customer,
+                false, // EventEnabled
+                null,  // EventStartDate
+                null,  // EventEndDate
+                null,  // eventStartTime
+                null,  // eventEndTime
+                null   // EventPercent
+            )
+        );
 
-	private string AppliedDiscountLabel { get; set; } = "Ingen rabat";
+        var eventDiscountTask = EventEnabled
+            ? Task.Run(() =>
+                BookingPriceService.CalculateFinalPrice(
+                    Booking,
+                    employee,
+                    treatment,
+                    customer,
+                    EventEnabled,
+                    EventStartDate,
+                    EventEndDate,
+                    eventStartTime,
+                    eventEndTime,
+                    EventPercent
+                )
+            )
+            : Task.FromResult(decimal.Zero);
 
-	private string ComputeAppliedDiscountLabel(IDiscountStrategy? tier, IDiscountStrategy? eventDiscount, bool eventAppliesNow, decimal basePrice, decimal finalPrice)
-	{
-		if (eventDiscount != null && eventAppliesNow && eventDiscount.Apply(basePrice) <= finalPrice + 0.0001m)
-		{
-			var pct = EventPercent ?? 0m;
-			return $"Event ({pct:0.#}%)";
-		}
+        var tierDiscountTask = customer != null
+            ? Task.Run(() =>
+            {
+                var tierDiscount = BookingService.GetDiscountStrategyForCustomerTotalBookings(customer);
+                return tierDiscount?.Apply(
+                    BookingPriceService.CalculateFinalPrice(
+                        Booking,
+                        employee,
+                        treatment,
+                        customer,
+                        false,  // EventEnabled
+                        null,   // EventStartDate
+                        null,   // EventEndDate
+                        null,   // eventStartTime
+                        null,   // eventEndTime
+                        null    // EventPercent
+                    )
+                ) ?? decimal.Zero;
+            })
+            : Task.FromResult(decimal.Zero);
 
-		// Vores Discount Tiers == Hvornår man får en discount efter antal booking
-		var count = customers.FirstOrDefault(c => c.Id == Booking.CustomerId)?.Bookings?.Count ?? 0;
-		return count >= 20 ? "Guld (15%)" :
-			   count >= 10 ? "Sølv (10%)" :
-			   count >= 5 ? "Bronze (5%)" : "Ingen rabat";
-	}
+        await Task.WhenAll(basePriceTask, eventDiscountTask, tierDiscountTask);
 
-	private IDiscountStrategy? BuildEventDiscountIfApplicable(out bool appliesNow)
-	{
-		appliesNow = false;
-		EventValidationMessage = null;
+        var basePrice = basePriceTask.Result;
+        var eventDiscountPrice = eventDiscountTask.Result;
+        var tierDiscountPrice = tierDiscountTask.Result;
 
-		if (!EventEnabled)
-			return null;
+        var prices = new[] { basePrice, eventDiscountPrice, tierDiscountPrice };
+        var validPrices = prices.Where(p => p > 0).ToArray();
+        Booking.TotalPrice = validPrices.Any() ? validPrices.Min() : 0;
 
-		// Validate percent
-		if (EventPercent is null || EventPercent < 0m || EventPercent > 100m)
-		{
-			EventValidationMessage = "Procent skal være mellem 0 og 100.";
-			return null;
-		}
+        StateHasChanged();
+    }
 
-		// Validate date/time inputs
-		if (EventStartDate is null || EventEndDate is null)
-		{
-			EventValidationMessage = "Start- og slutdato er påkrævet.";
-			return null;
-		}
 
-		if (!TimeOnly.TryParse(EventStartTimeString, out var startTime))
-		{
-			EventValidationMessage = "Ugyldigt starttid for event.";
-			return null;
-		}
-		if (!TimeOnly.TryParse(EventEndTimeString, out var endTime))
-		{
-			EventValidationMessage = "Ugyldigt sluttid for event.";
-			return null;
-		}
 
-		var start = EventStartDate.Value.Date.Add(startTime.ToTimeSpan());
-		var end = EventEndDate.Value.Date.Add(endTime.ToTimeSpan());
+    private string DurationDisplay => Booking.BookingDuration.ToString(@"hh\:mm");
+    private string PriceDisplay => Booking.TotalPrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"));
 
-		if (end <= start)
-		{
-			EventValidationMessage = "Slut skal være efter start.";
-			return null;
-		}
+    private async Task AddBooking()
+    {
+        ErrorMessage = null;
 
-		// Determine booking start DateTime from current form state
-		if (Booking.BookingDate == default || !TimeOnly.TryParse(BookingStartTimeString, out var bookingTime))
-		{
-			// Cannot determine applicability without a valid booking time
-			appliesNow = false;
-		}
-		else
-		{
-			var bookingStart = Booking.BookingDate.Date.Add(bookingTime.ToTimeSpan());
-			appliesNow = bookingStart >= start && bookingStart <= end;
-		}
+        if (!TimeOnly.TryParse(BookingStartTimeString, out var startTime))
+        {
+            ErrorMessage = "Ugyldigt starttidspunkt.";
+            return;
+        }
 
-		var percentageDecimal = (EventPercent ?? 0m) / 100m;
-		return new EventDiscount(percentageDecimal);
-	}
+        Booking.BookingStartTime = startTime;
 
-	private async Task AddBooking()
-	{
-		ErrorMessage = null;
+        var (IsValid, ValidationError) = BookingService.ValidateBooking(Booking);
+        if (!IsValid)
+        {
+            ErrorMessage = ValidationError;
+            return;
+        }
 
-		if (!TimeOnly.TryParse(BookingStartTimeString, out var startTime))
-		{
-			ErrorMessage = "Ugyldigt starttidspunkt.";
-			return;
-		}
+        if (!await BookingService.CanCreateBookingAsync(Booking))
+        {
+            ErrorMessage = "Booking konflikt: Kunde eller ansat har allerede en booking på dette tidspunkt.";
+            return;
+        }
 
-		Booking.BookingStartTime = startTime;
-
-		var (IsValid, ValidationError) = BookingService.ValidateBooking(Booking);
-		if (!IsValid)
-		{
-			ErrorMessage = ValidationError;
-			return;
-		}
-
-		if (!await BookingService.CanCreateBookingAsync(Booking))
-		{
-			ErrorMessage = "Booking konflikt: Kunde eller ansat har allerede en booking på dette tidspunkt.";
-			return;
-		}
-
-		try
-		{
-			await BookingService.AddBookingAsync(Booking);
-			NavigationManager.NavigateTo("/bookings");
-		}
-		catch (Exception ex)
-		{
-			ErrorMessage = $"Gem fejlede: {ex.Message}";
-		}
-	}
+        try
+        {
+            await BookingService.AddBookingAsync(Booking);
+            NavigationManager.NavigateTo("/bookings");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Gem fejlede: {ex.Message}";
+        }
+    }
 }
