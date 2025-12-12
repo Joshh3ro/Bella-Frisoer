@@ -1,12 +1,10 @@
 ﻿using BellaFrisoer.WebUi.Components;
 using Microsoft.EntityFrameworkCore;
 using BellaFrisoer.Application.Interfaces;
-using Microsoft.AspNetCore.Builder;
 using BellaFrisoer.Application.Services;
 using BellaFrisoer.Infrastructure.Data;
 using BellaFrisoer.Infrastructure.Repositories;
-
-
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +24,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-
+builder.Services.AddScoped<IBookingPriceService, BookingPriceService>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 
@@ -36,22 +34,21 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
 builder.Services.AddScoped<ITreatmentService, TreatmentService>();
 
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
-    app.UseMigrationsEndPoint();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
 app.MapGet("/invoice/{id}", async (int id, IBookingService bookingService) =>
 {
     var booking = await bookingService.GetByIdAsync(id);
@@ -63,7 +60,8 @@ app.MapGet("/invoice/{id}", async (int id, IBookingService bookingService) =>
 
         Kunde: {booking.Customer?.FirstName}
         Ansatte: {booking.Employee?.FirstName}
-        Dato: {booking.BookingDateTime}
+        Dato: {booking.BookingDate}
+        Starttidspunkt: {booking.BookingStartTime}
         Varighed: {booking.BookingDuration} minutter
         Behandling: {booking.Treatment?.Name}
         Pris: {booking.TotalPrice}
@@ -79,6 +77,5 @@ app.MapGet("/invoice/{id}", async (int id, IBookingService bookingService) =>
         $"invoice_{booking.Id}.txt"
     );
 });
-
 
 app.Run();
