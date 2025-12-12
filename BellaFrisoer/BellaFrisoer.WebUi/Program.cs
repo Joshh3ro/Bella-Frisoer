@@ -25,6 +25,7 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IBookingPriceService, BookingPriceService>();
+
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 
@@ -33,6 +34,8 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
 builder.Services.AddScoped<ITreatmentService, TreatmentService>();
+
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 var app = builder.Build();
 
@@ -49,33 +52,23 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapGet("/invoice/{id}", async (int id, IBookingService bookingService) =>
+
+app.MapGet("/invoice/{id}", async (int id, IInvoiceService invoiceService) =>
 {
-    var booking = await bookingService.GetByIdAsync(id);
-    if (booking is null)
+    try
+    {
+        string invoiceText = await invoiceService.GenerateInvoiceAsync(id);
+        return Results.File(
+            System.Text.Encoding.UTF8.GetBytes(invoiceText),
+            "text/plain",
+            $"invoice_{id}.txt"
+        );
+    }
+    catch (KeyNotFoundException)
+    {
         return Results.NotFound();
-
-    string txt = $"""
-        Faktura for booking #{booking.Id}
-
-        Kunde: {booking.Customer?.FirstName}
-        Ansatte: {booking.Employee?.FirstName}
-        Dato: {booking.BookingDate}
-        Starttidspunkt: {booking.BookingStartTime}
-        Varighed: {booking.BookingDuration} minutter
-        Behandling: {booking.Treatment?.Name}
-        Pris: {booking.TotalPrice}
-        ---------------------------
-        Bella Frisør
-        {DateTime.Now}
-        ---------------------------
-        """;
-
-    return Results.File(
-        System.Text.Encoding.UTF8.GetBytes(txt),
-        "text/plain",
-        $"invoice_{booking.Id}.txt"
-    );
+    }
 });
+
 
 app.Run();
