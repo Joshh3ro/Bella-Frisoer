@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6b7c8f8a-5f56-4607-b75e-0957db21ada6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/BellaFrisoer/BellaFrisoer.Application/Interfaces/IBookingConflictChecker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BellaFrisoer/BellaFrisoer.Application/Interfaces/IBookingConflictChecker.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -13,7 +13,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="330" />
+    <option name="cachedIndexableFilesCount" value="637" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -58,12 +58,15 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -129,6 +132,7 @@
       <updated>1763470012160</updated>
       <workItem from="1763470014924" duration="8908000" />
       <workItem from="1763979441984" duration="162000" />
+      <workItem from="1765529546428" duration="73000" />
     </task>
     <servers />
   </component>

@@ -418,3 +418,5 @@ FodyWeavers.xsd
 *.msp
 .config/mysql/\#innodb_redo/\#ib_redo10_tmp
 /.config
+.idea/.name
+.idea/workspace.xml
