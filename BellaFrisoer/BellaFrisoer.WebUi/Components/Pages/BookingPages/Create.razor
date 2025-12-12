@@ -234,19 +234,18 @@ else
             }
         }
 
-        // Calculate base price and discounts in parallel
         var basePriceTask = Task.Run(() =>
             BookingPriceService.CalculateFinalPrice(
                 Booking,
                 employee,
                 treatment,
                 customer,
-                false, // eventEnabled
-                null,  // eventStartDate
-                null,  // eventEndDate
+                false, // EventEnabled
+                null,  // EventStartDate
+                null,  // EventEndDate
                 null,  // eventStartTime
                 null,  // eventEndTime
-                null   // eventPercent
+                null   // EventPercent
             )
         );
 
@@ -277,26 +276,23 @@ else
                         employee,
                         treatment,
                         customer,
-                        false,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null
+                        false,  // EventEnabled
+                        null,   // EventStartDate
+                        null,   // EventEndDate
+                        null,   // eventStartTime
+                        null,   // eventEndTime
+                        null    // EventPercent
                     )
                 ) ?? decimal.Zero;
             })
             : Task.FromResult(decimal.Zero);
 
-        // Wait for all tasks to complete
         await Task.WhenAll(basePriceTask, eventDiscountTask, tierDiscountTask);
 
-        // Get results
         var basePrice = basePriceTask.Result;
         var eventDiscountPrice = eventDiscountTask.Result;
         var tierDiscountPrice = tierDiscountTask.Result;
 
-        // Choose the best price (lowest)
         var prices = new[] { basePrice, eventDiscountPrice, tierDiscountPrice };
         var validPrices = prices.Where(p => p > 0).ToArray();
         Booking.TotalPrice = validPrices.Any() ? validPrices.Min() : 0;
