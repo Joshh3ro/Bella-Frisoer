@@ -1,4 +1,4 @@
-using BellaFrisoer.Application.Interfaces;
+using BellaFrisoer.Application.Repositories;
 using BellaFrisoer.Domain.Models;
 using BellaFrisoer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -15,26 +15,6 @@ namespace BellaFrisoer.Infrastructure.Repositories
         public BookingRepository(IDbContextFactory<BellaFrisoerWebUiContext> contextFactory)
         {
             _contextFactory = contextFactory;
-        }
-
-        public async Task<List<Booking>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-            return await context.Bookings
-                .Include(b => b.Customer)
-                .Include(b => b.Employee)
-                .Include(b => b.Treatment)
-                .ToListAsync(cancellationToken);
-        }
-
-        public async Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-        {
-            using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-            return await context.Bookings
-                .Include(b => b.Customer)
-                .Include(b => b.Employee)
-                .Include(b => b.Treatment)
-                .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
         }
 
         public async Task AddAsync(Booking booking, CancellationToken cancellationToken = default)
@@ -62,31 +42,8 @@ namespace BellaFrisoer.Infrastructure.Repositories
             }
         }
 
-        public async Task<List<Booking>> GetByEmployeeIdAndDateAsync(int employeeId, DateTime date, CancellationToken cancellationToken = default)
-        {
-            using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-            return await context.Bookings
-                .Where(b => b.EmployeeId == employeeId && b.BookingDate.Date == date.Date)
-                .Include(b => b.Customer)
-                .Include(b => b.Employee)
-                .Include(b => b.Treatment)
-                .ToListAsync(cancellationToken);
-        }
+        
 
-        public async Task<List<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken = default)
-        {
-            using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-            return await context.Bookings
-                .Where(b =>
-                    (b.Customer != null && b.Customer.FirstName.Contains(searchTerm)) ||
-                    (b.Customer != null && b.Customer.LastName.Contains(searchTerm)) ||
-                    (b.Employee != null && b.Employee.FirstName.Contains(searchTerm)) ||
-                    (b.Employee != null && b.Employee.LastName.Contains(searchTerm)) ||
-                    (b.Treatment != null && b.Treatment.Name.Contains(searchTerm)))
-                .Include(b => b.Customer)
-                .Include(b => b.Employee)
-                .Include(b => b.Treatment)
-                .ToListAsync(cancellationToken);
-        }
+        
     }
 }

@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BellaFrisoer.Domain.Models;
 
-namespace BellaFrisoer.Application.Interfaces
+namespace BellaFrisoer.Application.Repositories
 {
     public interface IEmployeeRepository
     {

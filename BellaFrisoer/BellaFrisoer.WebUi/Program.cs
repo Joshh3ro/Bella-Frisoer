@@ -5,6 +5,7 @@ using BellaFrisoer.Application.Services;
 using BellaFrisoer.Infrastructure.Data;
 using BellaFrisoer.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
+using BellaFrisoer.Application.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

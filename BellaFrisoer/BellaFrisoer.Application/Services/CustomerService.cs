@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BellaFrisoer.Application.Interfaces;
+using BellaFrisoer.Application.Repositories;
 using BellaFrisoer.Domain.Models;
 
 namespace BellaFrisoer.Application.Services

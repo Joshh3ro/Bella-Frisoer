@@ -1,4 +1,5 @@
 using BellaFrisoer.Application.Interfaces;
+using BellaFrisoer.Application.Repositories;
 using BellaFrisoer.Domain.Models;
 using BellaFrisoer.Domain.Models.Discounts;
 using System;
@@ -30,7 +31,7 @@ namespace BellaFrisoer.Application.Services
             if (newBooking is null) throw new ArgumentNullException(nameof(newBooking));
             if (newBooking.BookingDuration <= TimeSpan.Zero) return false;
 
-            var relevant = await _repository.GetByEmployeeIdAndDateAsync(newBooking.EmployeeId, newBooking.BookingDate, cancellationToken);
+            var relevant = await _repository.GetByEmployeeIdAndDateAsync(newBooking.Employee.Id, newBooking.BookingDate, cancellationToken);
             return !_conflictChecker.HasBookingConflict(newBooking, relevant);
         }
 

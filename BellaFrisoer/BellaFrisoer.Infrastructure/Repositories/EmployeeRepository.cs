@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using BellaFrisoer.Application.Interfaces;
 using BellaFrisoer.Domain.Models;
 using BellaFrisoer.Infrastructure.Data;
+using BellaFrisoer.Application.Repositories;
 
 namespace BellaFrisoer.Infrastructure.Repositories
 {
