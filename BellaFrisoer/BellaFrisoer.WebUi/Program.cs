@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContextFactory<BellaFrisoerWebUiContext>(options =>
+// AddDbContext is Scoped by default
+builder.Services.AddDbContext<BellaFrisoerWebUiContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("BellaFrisoerWebUiContext")
             ?? throw new InvalidOperationException("Connection string not found."),
