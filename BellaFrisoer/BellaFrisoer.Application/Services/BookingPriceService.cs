@@ -20,7 +20,7 @@ namespace BellaFrisoer.Application.Services
             decimal? eventPercent)
         {
             // Calculate base price
-            var basePrice = CalculateBasePrice(booking, employee, treatment, customer);
+            var basePrice = booking.CalculateBasePrice();
 
             // Determine automatic tier discount
             var tierDiscount = GetTierDiscountForCustomer(customer);
@@ -44,22 +44,7 @@ namespace BellaFrisoer.Application.Services
             return finalPrice;
         }
 
-        private decimal CalculateBasePrice(Booking booking, Employee? employee, Treatment? treatment, Customer? customer)
-        {
-            decimal computedPrice = 0m;
 
-            if (treatment != null && treatment.Price > 0m)
-                computedPrice = treatment.Price;
-
-            if (employee != null && booking.BookingDuration > TimeSpan.Zero && employee.HourlyPrice > 0d)
-            {
-                var minutes = (decimal)booking.BookingDuration.TotalMinutes;
-                var employeePart = ((decimal)employee.HourlyPrice / 60m) * minutes;
-                computedPrice += employeePart;
-            }
-
-            return computedPrice;
-        }
 
         private IDiscountStrategy? GetTierDiscountForCustomer(Customer? customer)
         {

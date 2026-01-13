@@ -30,7 +30,7 @@ namespace BellaFrisoer.Application.Services
             if (newBooking is null) throw new ArgumentNullException(nameof(newBooking));
             if (newBooking.BookingDuration <= TimeSpan.Zero) return false;
 
-            var relevant = await _repository.GetByEmployeeIdAndDateAsync(newBooking.EmployeeId, newBooking.BookingDate, cancellationToken);
+            var relevant = await _repository.GetByEmployeeIdAndDateAsync(newBooking.Employee.Id, newBooking.BookingDate, cancellationToken);
             return !_conflictChecker.HasBookingConflict(newBooking, relevant);
         }
 
@@ -66,6 +66,11 @@ namespace BellaFrisoer.Application.Services
 
         public async Task<List<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken = default)
             => await _repository.FilterBookingsAsync(searchTerm, cancellationToken);
+        public bool HasBookingConflict(Booking newBooking, IEnumerable<Booking> existingBookings)
+        {
+            // .Any looper over hele listen og sammenligner.
+            return existingBookings.Any(b => newBooking.ConflictsWith(b));
+        }
 
         public IDiscountStrategy? GetDiscountStrategyForCustomerTotalBookings(Customer customer)
         {
@@ -83,23 +88,6 @@ namespace BellaFrisoer.Application.Services
             return null;
         }
 
-        public IDiscountStrategy? GetDiscountStrategyForCustomerAndTreatment(Customer customer, int treatmentId)
-        {
-            if (customer is null) return null;
-            if (treatmentId <= 0) return null;
-
-            var countForTreatment = customer.Bookings?
-                .Count(b => b.TreatmentId == treatmentId) ?? 0;
-
-            if (countForTreatment >= 20)
-                return new GoldDiscount();
-            if (countForTreatment >= 10)
-                return new SilverDiscount();
-            if (countForTreatment >= 5)
-                return new BronzeDiscount();
-
-            return null;
-        }
 
         public decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment, Customer? customer = null)
         {
@@ -116,35 +104,6 @@ namespace BellaFrisoer.Application.Services
                 null);
         }
 
-        public void UpdateDurationFromTreatment(Booking booking, Treatment? treatment)
-        {
-            if (booking == null)
-                throw new ArgumentNullException(nameof(booking));
 
-            if (treatment == null || treatment.Id <= 0)
-            {
-                booking.BookingDuration = TimeSpan.Zero;
-                return;
-            }
-
-            booking.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
-        }
-
-        public (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking)
-        {
-            if (booking is null)
-                return (false, "Booking mangler.");
-            if (booking.CustomerId <= 0)
-                return (false, "Vælg kunde...");
-            if (booking.EmployeeId <= 0)
-                return (false, "Vælg ansat...");
-            if (booking.TreatmentId <= 0)
-                return (false, "Vælg behandling...");
-            if (booking.BookingStartTime == default)
-                return (false, "Ugyldigt starttidspunkt.");
-            if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)
-                return (false, "Ugyldig varighed.");
-            return (true, null);
-        }
     }
 }

@@ -15,14 +15,11 @@ namespace BellaFrisoer.Application.Interfaces
         Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default);
         Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         Task<List<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken = default);
-
+        bool HasBookingConflict(Booking otherBooking, IEnumerable<Booking> existingBookings);
         IDiscountStrategy? GetDiscountStrategyForCustomerTotalBookings(Customer customer);
-        IDiscountStrategy? GetDiscountStrategyForCustomerAndTreatment(Customer customer, int treatmentId);
 
         decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment, Customer? customer = null);
 
-        void UpdateDurationFromTreatment(Booking booking, Treatment? treatment);
 
-        (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking);
     }
 }

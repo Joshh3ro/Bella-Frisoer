@@ -207,7 +207,9 @@ namespace BellaFrisoer.Domain.Test
                 BookingStartTime = new TimeOnly(9, 0),
                 BookingDuration = TimeSpan.FromMinutes(45),
                 CustomerId = 1,
-                EmployeeId = 1,
+                
+                
+                = 1,
                 TreatmentId = 1,
                 TotalPrice = 250m,
                 Treatment = new Treatment { Id = 1, Name = "X", Price = 100m, Duration = 30 }
@@ -226,7 +228,7 @@ namespace BellaFrisoer.Domain.Test
                 BookingStartTime = new TimeOnly(9, 0),
                 BookingDuration = TimeSpan.FromMinutes(45),
                 CustomerId = 1,
-                EmployeeId = 1,
+                Employee.Id = 1,
                 TreatmentId = 0
             };
 

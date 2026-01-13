@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContextFactory<BellaFrisoerWebUiContext>(options =>
+// AddDbContext er scoped som default
+builder.Services.AddDbContext<BellaFrisoerWebUiContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("BellaFrisoerWebUiContext")
             ?? throw new InvalidOperationException("Connection string not found."),
@@ -22,7 +23,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IBookingPriceService, BookingPriceService>();
 
