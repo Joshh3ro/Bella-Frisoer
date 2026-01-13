@@ -57,7 +57,7 @@
                             <td>@b.BookingStartTime</td>
                             <td>@b.BookingDuration.ToString(@"hh\:mm")</td>
                             <td>@b.Treatment?.Name ?? "–"</td>
-                            <td>@b.TotalPrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"))</td>
+                            <td>@b.BasePrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"))</td>
                         </tr>
                     }
                 </tbody>

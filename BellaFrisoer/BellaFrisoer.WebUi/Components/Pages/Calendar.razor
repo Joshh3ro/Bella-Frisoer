@@ -54,7 +54,7 @@
                     <td>@b.BookingStartTime</td>
                     <td>@b.BookingDuration.ToString(@"hh\:mm")</td>
                     <td>@b.Treatment?.Name</td>
-                    <td>@b.TotalPrice.ToString("C0")</td>
+                    <td>@b.BasePrice.ToString("C0")</td>
                 </tr>
             }
         </tbody>
@@ -91,11 +91,11 @@ else
 
         if (SelectedEmployeeId.HasValue)
         {
-            filtered = filtered.Where(b => b.EmployeeId == SelectedEmployeeId.Value);
+            filtered = filtered.Where(b => b.Employee != null && b.Employee.Id == SelectedEmployeeId.Value);
         }
 
         SortedBookings = filtered
-            .OrderBy(b => b.BookingDateTime) // evt. brug StartTime hvis ønsket
+            .OrderBy(b => b.BookingDate.Add(b.BookingStartTime.ToTimeSpan()))
             .ToList();
     }
 }
