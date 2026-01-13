@@ -15,6 +15,8 @@ namespace BellaFrisoer.Domain.Models
 
         public decimal BasePrice { get; protected set; }
 
+        public decimal TotalPrice { get; protected set; }
+
         public Customer Customer { get; protected set; }
 
         public Employee Employee { get; protected set; }

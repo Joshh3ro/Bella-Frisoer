@@ -18,7 +18,7 @@
 
     <div class="col-md-4">
         <label>Ansatte</label>
-        <select @bind="SelectedEmployeeId" class="form-control">
+        <select @bind="SelectedEmployee.Id" class="form-control">
             <option value="">-- Alle Ansatte --</option>
             @foreach (var e in Employees)
             {
@@ -54,7 +54,7 @@
                     <td>@b.BookingStartTime</td>
                     <td>@b.BookingDuration.ToString(@"hh\:mm")</td>
                     <td>@b.Treatment?.Name</td>
-                    <td>@b.BasePrice.ToString("C0")</td>
+                    <td>@b.TotalPrice.ToString("C0")</td>
                 </tr>
             }
         </tbody>
@@ -69,7 +69,7 @@ else
 {
     public DateTime myDate = DateTime.Today;
 
-    public int? SelectedEmployeeId { get; set; }
+    public Employee? SelectedEmployee { get; set; }
 
     public List<Employee> Employees { get; set; } = new();
     public List<Booking> SortedBookings { get; set; } = new();
@@ -89,13 +89,13 @@ else
 
         var filtered = allBookings.Where(b => b.BookingDate.Date == myDate.Date);
 
-        if (SelectedEmployeeId.HasValue)
+        if (SelectedEmployee.Id != 0)
         {
-            filtered = filtered.Where(b => b.Employee != null && b.Employee.Id == SelectedEmployeeId.Value);
+            filtered = filtered.Where(b => b.Employee.Id == SelectedEmployee.Id);
         }
 
         SortedBookings = filtered
-            .OrderBy(b => b.BookingDate.Add(b.BookingStartTime.ToTimeSpan()))
+            .OrderBy(b => b.BookingStartTime) // evt. brug StartTime hvis ønsket
             .ToList();
     }
 }
