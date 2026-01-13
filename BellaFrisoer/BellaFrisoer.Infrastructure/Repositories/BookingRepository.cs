@@ -62,11 +62,11 @@ namespace BellaFrisoer.Infrastructure.Repositories
             }
         }
 
-        public async Task<List<Booking>> GetByEmployeeIdAndDateAsync(int employeeId, DateTime date, CancellationToken cancellationToken = default)
+        public async Task<List<Booking>> GetByEmployeeIdAndDateAsync(int EmployeeId, DateTime date, CancellationToken cancellationToken = default)
         {
             using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
             return await context.Bookings
-                .Where(b => b.EmployeeId == employeeId && b.BookingDate.Date == date.Date)
+                .Where(b => b.Employee.Id == EmployeeId && b.BookingDate.Date == date.Date)
                 .Include(b => b.Customer)
                 .Include(b => b.Employee)
                 .Include(b => b.Treatment)
