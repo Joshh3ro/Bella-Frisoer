@@ -30,7 +30,6 @@ public class BellaFrisoerWebUiContext : DbContext
         modelBuilder.Entity<Customer>()
             .HasMany(c => c.Bookings)
             .WithOne(b => b.Customer)
-            .HasForeignKey(b => b.Customer.Id) // Booking.CustomerId is the scalar FK
             .OnDelete(DeleteBehavior.Cascade); // when a Customer is deleted, their bookings are deleted
 
         modelBuilder.Entity<Booking>()

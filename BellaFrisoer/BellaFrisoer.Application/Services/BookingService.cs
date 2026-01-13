@@ -12,16 +12,13 @@ namespace BellaFrisoer.Application.Services
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _repository;
-        private readonly IBookingConflictChecker _conflictChecker;
         private readonly IBookingPriceService _bookingPriceService;
 
         public BookingService(
             IBookingRepository repository,
-            IBookingConflictChecker conflictChecker,
             IBookingPriceService bookingPriceService)
         {
             _repository = repository;
-            _conflictChecker = conflictChecker;
             _bookingPriceService = bookingPriceService;
         }
 
@@ -29,9 +26,11 @@ namespace BellaFrisoer.Application.Services
         {
             if (newBooking is null) throw new ArgumentNullException(nameof(newBooking));
             if (newBooking.BookingDuration <= TimeSpan.Zero) return false;
+            if (newBooking.Employee is null || newBooking.Employee.Id <= 0)
+                throw new ArgumentException("Booking must reference a valid employee.", nameof(newBooking));
 
             var relevant = await _repository.GetByEmployeeIdAndDateAsync(newBooking.Employee.Id, newBooking.BookingDate, cancellationToken);
-            return !_conflictChecker.HasBookingConflict(newBooking, relevant);
+            return !HasBookingConflict(newBooking, relevant);
         }
 
         public async Task AddBookingAsync(Booking booking, CancellationToken cancellationToken = default)
@@ -68,7 +67,7 @@ namespace BellaFrisoer.Application.Services
             => await _repository.FilterBookingsAsync(searchTerm, cancellationToken);
         public bool HasBookingConflict(Booking newBooking, IEnumerable<Booking> existingBookings)
         {
-            // .Any looper over hele listen og sammenligner.
+            // .Any looper over hele listens og sammenligner.
             return existingBookings.Any(b => newBooking.ConflictsWith(b));
         }
 
