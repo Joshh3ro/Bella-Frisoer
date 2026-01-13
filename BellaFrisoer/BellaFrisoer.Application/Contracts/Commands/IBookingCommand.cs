@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BellaFrisoer.Application.Contracts.Commands
@@ -13,6 +10,17 @@ namespace BellaFrisoer.Application.Contracts.Commands
 
     public class BookingCreateCommandDto
     {
-        public string Name { get; set; }
+        public int CustomerId { get; set; }
+        public int EmployeeId { get; set; }
+        public int TreatmentId { get; set; }
+
+        // Date (date part) for the booking
+        public DateTime BookingDate { get; set; }
+
+        // Start time for the booking (uses TimeOnly like domain model)
+        public TimeOnly BookingStartTime { get; set; }
+
+        // Duration in minutes
+        public int DurationMinutes { get; set; }
     }
 }

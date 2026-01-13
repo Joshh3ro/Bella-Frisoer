@@ -2,11 +2,13 @@
 @using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
 @using BellaFrisoer.Domain.Models.Discounts
+@using BellaFrisoer.Application.Contracts.Commands
 @inject IBookingService BookingService
 @inject IBookingPriceService BookingPriceService
 @inject ICustomerService CustomerService
 @inject IEmployeeService EmployeeService
 @inject ITreatmentService TreatmentService
+@inject IBookingCommand BookingCommand
 @inject NavigationManager NavigationManager
 
 @rendermode InteractiveServer
@@ -194,7 +196,6 @@ else
         await UpdatePrice();
     }
 
-
     private async Task UpdateDurationFromTreatment(int treatmentId)
     {
         var treatment = treatments.FirstOrDefault(t => t.Id == treatmentId);
@@ -204,7 +205,6 @@ else
             await UpdatePrice();
         }
     }
-
 
     private async Task UpdatePrice()
     {
@@ -332,7 +332,18 @@ else
 
         try
         {
-            await BookingService.AddBookingAsync(Booking);
+            var dto = new BookingCreateCommandDto
+            {
+                CustomerId = Booking.CustomerId,
+                EmployeeId = Booking.EmployeeId,
+                TreatmentId = Booking.TreatmentId,
+                BookingDate = Booking.BookingDate,
+                BookingStartTime = Booking.BookingStartTime,
+                DurationMinutes = (int)Booking.BookingDuration.TotalMinutes
+            };
+
+            await IBookingCommand.CreateAsync(dto);
+
             NavigationManager.NavigateTo("/bookings");
         }
         catch (Exception ex)

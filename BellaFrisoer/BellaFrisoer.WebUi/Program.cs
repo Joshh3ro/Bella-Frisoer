@@ -6,6 +6,7 @@ using BellaFrisoer.Infrastructure.Data;
 using BellaFrisoer.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using BellaFrisoer.Application.Repositories;
+using BellaFrisoer.Application.Contracts.Commands; // <-- added
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,9 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IBookingPriceService, BookingPriceService>();
+
+// register command
+builder.Services.AddScoped<IBookingCommand, BookingCommand>();
 
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();

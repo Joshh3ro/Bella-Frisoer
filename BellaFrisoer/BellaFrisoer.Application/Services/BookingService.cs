@@ -70,36 +70,14 @@ namespace BellaFrisoer.Application.Services
 
         public IDiscountStrategy? GetDiscountStrategyForCustomerTotalBookings(Customer customer)
         {
-            if (customer is null) return null;
-
-            int count = customer.Bookings?.Count ?? 0;
-
-            if (count >= 20)
-                return new GoldDiscount();
-            if (count >= 10)
-                return new SilverDiscount();
-            if (count >= 5)
-                return new BronzeDiscount();
-
-            return null;
+            // delegated to domain Booking helper
+            return Booking.GetDiscountStrategyForCustomerTotalBookings(customer);
         }
 
         public IDiscountStrategy? GetDiscountStrategyForCustomerAndTreatment(Customer customer, int treatmentId)
         {
-            if (customer is null) return null;
-            if (treatmentId <= 0) return null;
-
-            var countForTreatment = customer.Bookings?
-                .Count(b => b.TreatmentId == treatmentId) ?? 0;
-
-            if (countForTreatment >= 20)
-                return new GoldDiscount();
-            if (countForTreatment >= 10)
-                return new SilverDiscount();
-            if (countForTreatment >= 5)
-                return new BronzeDiscount();
-
-            return null;
+            // delegated to domain Booking helper
+            return Booking.GetDiscountStrategyForCustomerAndTreatment(customer, treatmentId);
         }
 
         public decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment, Customer? customer = null)
@@ -122,30 +100,17 @@ namespace BellaFrisoer.Application.Services
             if (booking == null)
                 throw new ArgumentNullException(nameof(booking));
 
-            if (treatment == null || treatment.Id <= 0)
-            {
-                booking.BookingDuration = TimeSpan.Zero;
-                return;
-            }
-
-            booking.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
+            // delegated to domain method
+            booking.UpdateDurationFromTreatment(treatment);
         }
 
         public (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking)
         {
             if (booking is null)
                 return (false, "Booking mangler.");
-            if (booking.CustomerId <= 0)
-                return (false, "Vælg kunde...");
-            if (booking.EmployeeId <= 0)
-                return (false, "Vælg ansat...");
-            if (booking.TreatmentId <= 0)
-                return (false, "Vælg behandling...");
-            if (booking.BookingStartTime == default)
-                return (false, "Ugyldigt starttidspunkt.");
-            if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)
-                return (false, "Ugyldig varighed.");
-            return (true, null);
+
+            // delegated to domain validation
+            return booking.Validate();
         }
     }
 }
