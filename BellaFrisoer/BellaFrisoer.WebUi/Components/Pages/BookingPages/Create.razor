@@ -2,6 +2,7 @@
 @using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
 @using BellaFrisoer.Domain.Models.Discounts
+@using BellaFrisoer.Application.Contracts.Commands;
 @inject IBookingService BookingService
 @inject IBookingPriceService BookingPriceService
 @inject ICustomerService CustomerService
@@ -314,34 +315,26 @@ else
             return;
         }
 
-        var customer = customers.FirstOrDefault(c => c.Id == selectedCustomerId);
-        var employee = employees.FirstOrDefault(e => e.Id == selectedEmployeeId);
-        var treatment = treatments.FirstOrDefault(t => t.Id == selectedTreatmentId);
-
-        if (customer == null || employee == null || treatment == null)
+        if (selectedCustomerId == 0 || selectedEmployeeId == 0 || selectedTreatmentId == 0)
         {
             ErrorMessage = "Vælg venligst kunde, ansat og behandling.";
             return;
         }
 
-        var booking = Booking.Create(customer, employee, treatment, bookingDate, startTime);
-
-        var (IsValid, ValidationError) = booking.ValidateBooking(booking);
-        if (!IsValid)
+        // Create a lightweight DTO carrying only IDs + booking data
+        var dto = new BookingCreateDto
         {
-            ErrorMessage = ValidationError;
-            return;
-        }
-
-        if (!await BookingService.CanCreateBookingAsync(booking))
-        {
-            ErrorMessage = "Booking konflikt: Kunde eller ansat har allerede en booking på dette tidspunkt.";
-            return;
-        }
+            CustomerId = selectedCustomerId,
+            EmployeeId = selectedEmployeeId,
+            TreatmentId = selectedTreatmentId,
+            BookingDate = bookingDate.Date,
+            BookingStartTime = startTime,
+            BasePrice = totalPrice
+        };
 
         try
         {
-            await BookingService.AddBookingAsync(booking);
+            await BookingService.AddBookingAsync(dto);
             NavigationManager.NavigateTo("/bookings");
         }
         catch (Exception ex)
