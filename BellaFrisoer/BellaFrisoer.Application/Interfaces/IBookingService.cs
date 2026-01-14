@@ -10,7 +10,6 @@ namespace BellaFrisoer.Application.Interfaces
     public interface IBookingService
     {
         Task<bool> CanCreateBookingAsync(Booking newBooking, CancellationToken cancellationToken = default);
-        Task AddBookingAsync(Booking booking, CancellationToken cancellationToken = default);
         Task AddBookingAsync(BookingCreateDto dto, CancellationToken cancellationToken = default);
         Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default);
         Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default);

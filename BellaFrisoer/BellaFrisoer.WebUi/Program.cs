@@ -5,6 +5,8 @@ using BellaFrisoer.Application.Services;
 using BellaFrisoer.Infrastructure.Data;
 using BellaFrisoer.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
+using BellaFrisoer.Application.Queries;
+using BellaFrisoer.Infrastructure.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingQuery, BookingQuery>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IBookingPriceService, BookingPriceService>();
 
