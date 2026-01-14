@@ -37,7 +37,7 @@ namespace BellaFrisoer.Domain.Models
             Treatment treatment,
             DateTime bookingDate, 
             TimeOnly startTime, 
-            TimeSpan duration)
+            TimeSpan? duration)
         {
             Customer = customer ?? throw new ArgumentNullException(nameof(customer));
             Employee = employee ?? throw new ArgumentNullException(nameof(employee));
@@ -48,7 +48,8 @@ namespace BellaFrisoer.Domain.Models
 
             BookingDate = bookingDate.Date;
             BookingStartTime = startTime;
-            BookingDuration = duration;
+            BookingDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
+
 
             BasePrice = CalculateBasePrice();
         }
@@ -61,8 +62,7 @@ namespace BellaFrisoer.Domain.Models
             TimeOnly startTime, 
             TimeSpan? duration = null)
         {
-            var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
-            return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
+            return new Booking(customer, employee, treatment, bookingDate, startTime, duration);
         }
 
         public decimal CalculateBasePrice()

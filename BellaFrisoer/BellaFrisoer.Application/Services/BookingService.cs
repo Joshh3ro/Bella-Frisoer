@@ -48,8 +48,9 @@ namespace BellaFrisoer.Application.Services
 
         public async Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default)
         {
+            // LOAD
             if (booking is null) throw new ArgumentNullException(nameof(booking));
-            await _repository.UpdateAsync(booking, cancellationToken);
+            await _repository.UpdateAsync(booking, cancellationToken); 
         }
 
         public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
