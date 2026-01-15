@@ -171,7 +171,6 @@ else
             TreatmentId = treatment.Id,
             BookingDate = bookingDate.Date,
             BookingStartTime = Booking.BookingStartTime,
-            BasePrice = totalPrice
 		};
 
         await BookingService.UpdateBookingAsync(dto);
