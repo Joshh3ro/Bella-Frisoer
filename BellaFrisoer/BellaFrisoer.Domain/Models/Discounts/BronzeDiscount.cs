@@ -2,24 +2,10 @@ namespace BellaFrisoer.Domain.Models.Discounts;
 
 public class BronzeDiscount : IDiscountStrategy
 {
-    private const decimal Rate = 0.5m;
-
-
-
-    private BronzeDiscount()
-    {
-
-    }
-
-    public BronzeDiscount Create()
-    {
-        return new BronzeDiscount();
-    }
-
-    public decimal Apply(Booking booking, Customer customer)
+    private const decimal Rate = 0.05m;
+    
+    public decimal Apply(decimal amount)
     { 
-        return booking.BasePrice * Rate; 
+        return amount - (amount * Rate); 
     }
-
-
 }
