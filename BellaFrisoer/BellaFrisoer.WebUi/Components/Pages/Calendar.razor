@@ -1,8 +1,9 @@
 ﻿@page "/kalender"
 @using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
+@using BellaFrisoer.Application.Queries
 @rendermode InteractiveServer
-
+@inject IBookingQuery bookingQuery
 @inject IBookingService BookingService
 @inject IEmployeeService EmployeeService
 
@@ -85,7 +86,7 @@ else
 
     private async Task SortBookings()
     {
-        var allBookings = await BookingService.GetAllAsync();
+        var allBookings = await bookingQuery.GetAllAsync(cancellationToken: default);
 
         var filtered = allBookings.Where(b => b.BookingDate.Date == myDate.Date);
 

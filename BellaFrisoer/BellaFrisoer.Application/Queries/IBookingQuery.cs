@@ -15,37 +15,4 @@ namespace BellaFrisoer.Application.Queries
         Task<List<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken);
     }
 
-    public class BookingDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-
-        public EmployeeDto Employee { get; set; }
-
-        public CustomerDto Customer { get; set; }
-
-        public TreatmentDto Treatment { get; set; }
-
-        public DateTime BookingDate { get; set; }
-    }
-
-    public class EmployeeDto
-    {
-        public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-    }
-
-    public class CustomerDto
-    {
-        public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-    }
-
-    public class TreatmentDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
 }

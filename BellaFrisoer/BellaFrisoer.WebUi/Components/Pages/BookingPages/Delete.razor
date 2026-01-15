@@ -1,6 +1,8 @@
 ﻿@page "/bookings/slet"
 @using BellaFrisoer.Domain.Models
 @using BellaFrisoer.Application.Interfaces
+@using BellaFrisoer.Application.Queries;
+@inject IBookingQuery BookingQuery;
 @inject IBookingService BookingService
 @inject NavigationManager NavigationManager
 
@@ -44,7 +46,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        booking = await BookingService.GetByIdAsync(Id);
+        booking = await BookingQuery.GetByIdAsync(Id, cancellationToken: default);
 
         if (booking is null)
         {

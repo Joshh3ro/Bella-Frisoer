@@ -1,7 +1,9 @@
 ﻿@page "/bookings"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Application.Interfaces
+@using BellaFrisoer.Application.Queries
 @inject IBookingService BookingService
+@inject IBookingQuery BookingQuery
 
 <PageTitle>Bookings</PageTitle>
 
@@ -65,11 +67,11 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		bookings = await BookingService.GetAllAsync();
+		bookings = await BookingQuery.GetAllAsync(cancellationToken: default);
 	}
 	private async Task OnSearchChanged(ChangeEventArgs e)
 	{
 		string searchString = e.Value?.ToString() ?? string.Empty;
-		bookings = await BookingService.FilterBookingsAsync(searchString);
+		bookings = await BookingQuery.FilterBookingsAsync(searchString, cancellationToken: default);
 	}
 }

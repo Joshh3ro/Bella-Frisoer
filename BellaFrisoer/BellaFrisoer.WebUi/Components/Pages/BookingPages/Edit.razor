@@ -1,7 +1,10 @@
 ﻿@page "/bookings/rediger"
 @using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
+@using BellaFrisoer.Application.DTOs;
+@using BellaFrisoer.Application.Queries;
 @inject IBookingService BookingService
+@inject IBookingQuery BookingQuery
 @inject ICustomerService CustomerService
 @inject IEmployeeService EmployeeService
 @inject ITreatmentService TreatmentService
@@ -109,7 +112,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Booking = await BookingService.GetByIdAsync(Id);
+        Booking = await BookingQuery.GetByIdAsync(Id, cancellationToken: default);
         if (Booking is null)
         {
             NavigationManager.NavigateTo("notfound");
@@ -159,16 +162,19 @@ else
         var employee = employees.First(e => e.Id == selectedEmployeeId);
         var treatment = treatments.First(t => t.Id == selectedTreatmentId);
 
-        // Da vi ikke kan ændre Booking objektet direkte pga. protected setters,
-        // og vi skal bevare ID'et, bruger vi reflection som en nødvendig løsning i WebUI
-        // for at overholde reglen om ikke at ændre Domain.
-        SetProperty(Booking, nameof(Booking.Customer), customer);
-        SetProperty(Booking, nameof(Booking.Employee), employee);
-        SetProperty(Booking, nameof(Booking.Treatment), treatment);
-        SetProperty(Booking, nameof(Booking.BookingDate), bookingDate.Date);
-        SetProperty(Booking, "BasePrice", totalPrice);
 
-        await BookingService.UpdateBookingAsync(Booking);
+        var dto = new BookingUpdateDto
+        {
+            Id = Booking.Id,
+            CustomerId = customer.Id,
+            EmployeeId = employee.Id,
+            TreatmentId = treatment.Id,
+            BookingDate = bookingDate.Date,
+            BookingStartTime = Booking.BookingStartTime,
+            BasePrice = totalPrice
+		};
+
+        await BookingService.UpdateBookingAsync(dto);
         NavigationManager.NavigateTo("/bookings");
     }
 

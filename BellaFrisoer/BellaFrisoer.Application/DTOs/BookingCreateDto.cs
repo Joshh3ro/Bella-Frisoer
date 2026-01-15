@@ -1,4 +1,4 @@
-namespace BellaFrisoer.Application.Contracts.Commands;
+namespace BellaFrisoer.Application.DTOs;
 /// <summary>
 /// Opretter lightweight DTO der opvarer IDer og Booking Data.
 /// </summary>

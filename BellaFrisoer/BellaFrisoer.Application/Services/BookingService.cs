@@ -1,7 +1,7 @@
 using BellaFrisoer.Application.Interfaces;
 using BellaFrisoer.Domain.Models;
 using BellaFrisoer.Domain.Models.Discounts;
-using BellaFrisoer.Application.Contracts.Commands;
+using BellaFrisoer.Application.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
