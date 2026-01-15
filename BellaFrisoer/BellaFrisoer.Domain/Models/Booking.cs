@@ -86,6 +86,8 @@ namespace BellaFrisoer.Domain.Models
             return date.Date.Add(time.ToTimeSpan());
         }
 
+        #region CRUD
+
         public void UpdateDurationFromTreatment(Booking booking)
         {
             var(isValid, errorMessage) = ValidateBooking(booking);
@@ -97,6 +99,10 @@ namespace BellaFrisoer.Domain.Models
             BasePrice = CalculateBasePrice();
         }
 
+        #endregion
+
+
+        #region Conflicts
 
         public bool ConflictsWith(Booking other)
         {
@@ -107,7 +113,11 @@ namespace BellaFrisoer.Domain.Models
 
             return this.BookingDateTime < other.BookingEndTime && other.BookingDateTime < this.BookingEndTime;
         }
-
+        public bool HasBookingConflict(Booking newBooking, IEnumerable<Booking> existingBookings)
+        {
+            // .Any looper over hele listens og sammenligner.
+            return existingBookings.Any(b => newBooking.ConflictsWith(b));
+        }
         public (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking)
         {
             if (booking is null)
@@ -125,6 +135,7 @@ namespace BellaFrisoer.Domain.Models
             return (true, null);
         }
 
+        #endregion
 
     }
 }

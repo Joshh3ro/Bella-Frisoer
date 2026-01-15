@@ -42,7 +42,14 @@ namespace BellaFrisoer.Infrastructure.Repositories
             }
         }
 
-        // Load metode
+        public async Task<Booking> LoadAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Bookings
+                .Include(b => b.Customer)
+                .Include(b => b.Employee)
+                .Include(b => b.Treatment)
+                .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
+        }
 
     }
 }

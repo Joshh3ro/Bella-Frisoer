@@ -37,30 +37,20 @@ namespace BellaFrisoer.Application.Services
         }
 
 
-        // Ryk. Til domain helst
-        public async Task<bool> CanCreateBookingAsync(Booking newBooking, CancellationToken cancellationToken = default)
-        {
-            if (newBooking is null) throw new ArgumentNullException(nameof(newBooking));
-            if (newBooking.BookingDuration <= TimeSpan.Zero) return false;
-            if (newBooking.Employee is null || newBooking.Employee.Id <= 0)
-                throw new ArgumentException("Booking must reference a valid employee.", nameof(newBooking));
 
-            var relevant = await _bookingQuery.GetByEmployeeIdAndDateAsync(newBooking.Employee.Id, newBooking.BookingDate, cancellationToken);
-            return !HasBookingConflict(newBooking, relevant);
-        }
 
         // Command
-        public async Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default)
-        {
-            if (booking is null) throw new ArgumentNullException(nameof(booking));
-            await _repository.UpdateAsync(booking, cancellationToken);
-        }
+        //public async Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default)
+        //{
+        //    if (booking is null) throw new ArgumentNullException(nameof(booking));
+        //    await _repository.UpdateAsync(booking, cancellationToken);
+        //}
 
-        // Command
-        public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
-        {
-            await _repository.DeleteAsync(booking.Id, cancellationToken);
-        }
+        //// Command
+        //public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
+        //{
+        //    await _repository.DeleteAsync(booking.Id, cancellationToken);
+        //}
 
         // Query??
         public async Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default)
