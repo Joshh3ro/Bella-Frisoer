@@ -7,6 +7,6 @@ public class SilverDiscount : IDiscountStrategy
 
     public decimal Apply(Booking booking, Customer customer)
     {
-        return booking.BasePrice - (booking.BasePrice * Rate);
+        return booking.BasePrice * Rate;
     }
 }
