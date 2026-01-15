@@ -9,18 +9,9 @@ public class EventDiscount : IDiscountStrategy
         _percentage = percentage;
     }
 
-    public decimal Apply(decimal amount)
+    // Returnerer rabatbeløbet (ikke final price) => konsistent med IDiscountStrategy
+    public decimal Apply(Booking booking, Customer customer)
     {
-
-            return amount - (amount * _percentage); 
+        return booking.BasePrice * _percentage;
     }
-
-    public bool IsBetterThan(IDiscountStrategy? currentDiscount)
-    {
-        if (currentDiscount == null ) return true;
-        
-        const decimal testAmount = 100;
-        return Apply(testAmount) < currentDiscount.Apply(testAmount);
-    }
-
 }

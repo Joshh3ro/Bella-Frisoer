@@ -3,15 +3,11 @@ namespace BellaFrisoer.Domain.Models.Discounts;
 public class GoldDiscount : IDiscountStrategy
 {
     private const decimal Rate = 0.15m;
-    private GoldDiscount(decimal rate)
+    public GoldDiscount()
     {
-        rate = Rate;
+        
     }
 
-    public GoldDiscount Create()
-    {
-        return new GoldDiscount(Rate);
-    }
     public decimal Apply(Booking booking, Customer customer)
     {
         return booking.BasePrice * Rate;
