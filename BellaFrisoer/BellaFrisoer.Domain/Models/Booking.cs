@@ -62,6 +62,7 @@ namespace BellaFrisoer.Domain.Models
             TimeSpan? duration = null)
         {
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
+
             return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
         }
 
@@ -113,11 +114,7 @@ namespace BellaFrisoer.Domain.Models
 
             return this.BookingDateTime < other.BookingEndTime && other.BookingDateTime < this.BookingEndTime;
         }
-        public bool HasBookingConflict(Booking newBooking, IEnumerable<Booking> existingBookings)
-        {
-            // .Any looper over hele listens og sammenligner.
-            return existingBookings.Any(b => newBooking.ConflictsWith(b));
-        }
+
         public (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking)
         {
             if (booking is null)

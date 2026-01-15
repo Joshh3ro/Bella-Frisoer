@@ -138,7 +138,7 @@ else
         {
             // Vi bruger en midlertidig booking til prisberegning
             var tempBooking = Booking.Create(customer, employee, treatment, bookingDate, Booking!.BookingStartTime);
-            totalPrice = BookingService.CalculatePrice(tempBooking, employee, treatment, customer);
+            // totalPrice = BookingService.CalculatePrice(tempBooking, employee, treatment, customer);
         }
     }
 

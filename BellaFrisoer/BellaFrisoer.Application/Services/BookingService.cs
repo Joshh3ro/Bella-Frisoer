@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BellaFrisoer.Application.Queries;
+using BellaFrisoer.Domain.Services;
 
 namespace BellaFrisoer.Application.Services
 {
@@ -19,6 +20,7 @@ namespace BellaFrisoer.Application.Services
         private readonly IEmployeeRepository _employeeRepository;
         private readonly ITreatmentRepository _treatmentRepository;
         private readonly IBookingQuery _bookingQuery;
+        private readonly IBookingConflictChecker _bookingConflictChecker;
 
         public BookingService(
             IBookingRepository repository,
@@ -26,7 +28,8 @@ namespace BellaFrisoer.Application.Services
             ICustomerRepository customerRepository,
             IEmployeeRepository employeeRepository,
             ITreatmentRepository treatmentRepository,
-            IBookingQuery bookingQuery)
+            IBookingQuery bookingQuery,
+            IBookingConflictChecker bookingConflictChecker)
         {
             _repository = repository;
             _bookingPriceService = bookingPriceService;
@@ -34,23 +37,24 @@ namespace BellaFrisoer.Application.Services
             _employeeRepository = employeeRepository;
             _bookingQuery = bookingQuery;
             _treatmentRepository = treatmentRepository;
+            _bookingConflictChecker = bookingConflictChecker;
         }
 
 
 
 
-        // Command
-        //public async Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default)
-        //{
-        //    if (booking is null) throw new ArgumentNullException(nameof(booking));
-        //    await _repository.UpdateAsync(booking, cancellationToken);
-        //}
+        //Command
+        public async Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default)
+        {
+            if (booking is null) throw new ArgumentNullException(nameof(booking));
+            await _repository.UpdateAsync(booking, cancellationToken);
+        }
 
-        //// Command
-        //public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
-        //{
-        //    await _repository.DeleteAsync(booking.Id, cancellationToken);
-        //}
+        // Command
+        public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
+        {
+            await _repository.DeleteAsync(booking.Id, cancellationToken);
+        }
 
         // Query??
         public async Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -63,13 +67,6 @@ namespace BellaFrisoer.Application.Services
         // Query
         public async Task<List<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken = default)
             => await _bookingQuery.FilterBookingsAsync(searchTerm, cancellationToken);
-
-        // Domain service
-        public bool HasBookingConflict(Booking newBooking, IEnumerable<Booking> existingBookings)
-        {
-            // .Any looper over hele listens og sammenligner.
-            return existingBookings.Any(b => newBooking.ConflictsWith(b));
-        }
 
         // ??? discount?
         public IDiscountStrategy? GetDiscountStrategyForCustomerTotalBookings(Customer customer)
@@ -119,9 +116,8 @@ namespace BellaFrisoer.Application.Services
                 throw new InvalidOperationException(validationError);
 
             // Check conflicts
-            if (!await CanCreateBookingAsync(booking, cancellationToken))
-                throw new InvalidOperationException("Cannot add booking: time conflict with existing booking.");
-
+            if (await _bookingConflictChecker.HasConflictWithAny(booking))
+                throw new InvalidOperationException("The booking conflicts with an existing booking.");
             // Persist
             await _repository.AddAsync(booking, cancellationToken);
         }
