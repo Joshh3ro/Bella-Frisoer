@@ -70,7 +70,7 @@ namespace BellaFrisoer.Application.Services
                 throw new InvalidOperationException(validationError);
 
             // Check conflicts (excluding the booking being updated)
-            if (await _bookingConflictChecker.HasConflictWithAny(booking))
+            if (await _bookingConflictChecker.HasConflictWithUpdated(booking, dto.Id))
                 throw new InvalidOperationException("The booking conflicts with an existing booking.");
 
             // Persist changes
