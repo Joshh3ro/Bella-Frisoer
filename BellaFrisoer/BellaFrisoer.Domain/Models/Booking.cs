@@ -86,14 +86,14 @@ namespace BellaFrisoer.Domain.Models
             return date.Date.Add(time.ToTimeSpan());
         }
 
-        public void UpdateDurationFromTreatment(Treatment treatment, Booking booking)
+        public void UpdateDurationFromTreatment(Booking booking)
         {
-            if (ValidateBooking(booking))
+            var(isValid, errorMessage) = ValidateBooking(booking);
+            if (!isValid)
             {
-                throw new ArgumentException("HALLO");
+                throw new ArgumentException(errorMessage);
             }
-            if (treatment == null) throw new ArgumentNullException(nameof(treatment));
-            BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
+            BookingDuration = TimeSpan.FromMinutes(booking.Treatment.Duration);
             BasePrice = CalculateBasePrice();
         }
 
