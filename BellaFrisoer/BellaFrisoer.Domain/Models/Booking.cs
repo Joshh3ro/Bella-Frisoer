@@ -66,6 +66,24 @@ namespace BellaFrisoer.Domain.Models
             return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
         }
 
+        public static Booking Update(
+            Booking existingBooking,
+            Customer customer,
+            Employee employee,
+            Treatment treatment,
+            DateTime bookingDate,
+            TimeOnly startTime,
+            TimeSpan? duration = null)
+        {
+            if (existingBooking == null)
+                throw new ArgumentNullException(nameof(existingBooking));
+            var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
+            return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration)
+            {
+                Id = existingBooking.Id // Preserver eksisterende ID
+            };
+        }
+
         public decimal CalculateBasePrice()
         {
             decimal price = 0m;
