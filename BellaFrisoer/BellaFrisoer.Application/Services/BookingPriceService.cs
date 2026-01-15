@@ -1,94 +1,43 @@
 ﻿using BellaFrisoer.Application.Interfaces;
 using BellaFrisoer.Domain.Models;
 using BellaFrisoer.Domain.Models.Discounts;
-using System;
 
-namespace BellaFrisoer.Application.Services
+namespace BellaFrisoer.Application.Services;
+
+public class BookingPriceService : IBookingPriceService
 {
-    public class BookingPriceService : IBookingPriceService
+    private readonly IDiscountCalculator _discountCalculator;
+
+    public BookingPriceService(IDiscountCalculator discountCalculator)
     {
-        public decimal CalculateFinalPrice(
-            Booking booking,
-            Employee? employee,
-            Treatment? treatment,
-            Customer? customer,
-            bool eventEnabled,
-            DateTime? eventStartDate,
-            DateTime? eventEndDate,
-            TimeOnly? eventStartTime,
-            TimeOnly? eventEndTime,
-            decimal? eventPercent)
+        _discountCalculator = discountCalculator;
+    }
+
+    public async Task<decimal> CalculateFinalPrice(Booking booking, Customer customer)
+    {
+        if (booking is null) throw new ArgumentNullException(nameof(booking));
+        if (customer is null) throw new ArgumentNullException(nameof(customer));
+
+        // 1. Base price fra domænet
+        var basePrice = booking.CalculateBasePrice();
+
+        // 2. Kør parallel rabatberegning
+        var strategies = new List<IDiscountStrategy>
         {
-            // Calculate base price
-            var basePrice = booking.CalculateBasePrice();
+            new BronzeDiscount(),
+            new SilverDiscount(),
+            new GoldDiscount(),
+        };
 
-            // Determine automatic tier discount
-            var tierDiscount = GetTierDiscountForCustomer(customer);
+        var rabatResult = await _discountCalculator.EvaluateAsync(
+            booking,
+            customer,
+            strategies
+        );
 
-            // Build event discount if applicable
-            var (eventDiscount, eventAppliesNow) = BuildEventDiscountIfApplicable(
-                eventEnabled,
-                eventStartDate,
-                eventEndDate,
-                eventStartTime,
-                eventEndTime,
-                eventPercent,
-                booking.BookingDate,
-                booking.BookingStartTime);
+        // 3. Træk bedste rabat fra base price
+        var finalPrice = basePrice - rabatResult.BestDiscountAmount;
 
-            // Apply the best discount
-            var priceWithTier = tierDiscount != null ? tierDiscount.Apply(basePrice) : basePrice;
-            var priceWithEvent = (eventDiscount != null && eventAppliesNow) ? eventDiscount.Apply(basePrice) : basePrice;
-            var finalPrice = Math.Min(priceWithTier, priceWithEvent);
-
-            return finalPrice;
-        }
-
-
-
-        private IDiscountStrategy? GetTierDiscountForCustomer(Customer? customer)
-        {
-            if (customer is null) return null;
-
-            int count = customer.Bookings?.Count ?? 0;
-
-            if (count >= 20)
-                return new GoldDiscount();
-            if (count >= 10)
-                return new SilverDiscount();
-            if (count >= 5)
-                return new BronzeDiscount();
-
-            return null;
-        }
-
-        private (IDiscountStrategy? discount, bool appliesNow) BuildEventDiscountIfApplicable(
-            bool eventEnabled,
-            DateTime? eventStartDate,
-            DateTime? eventEndDate,
-            TimeOnly? eventStartTime,
-            TimeOnly? eventEndTime,
-            decimal? eventPercent,
-            DateTime bookingDate,
-            TimeOnly bookingStartTime)
-        {
-            if (!eventEnabled || eventPercent is null || eventPercent < 0m || eventPercent > 100m)
-                return (null, false);
-
-            if (eventStartDate is null || eventEndDate is null || eventStartTime is null || eventEndTime is null)
-                return (null, false);
-
-            var start = eventStartDate.Value.Date.Add(eventStartTime.Value.ToTimeSpan());
-            var end = eventEndDate.Value.Date.Add(eventEndTime.Value.ToTimeSpan());
-
-            if (end <= start)
-                return (null, false);
-
-            var bookingStart = bookingDate.Date.Add(bookingStartTime.ToTimeSpan());
-            var appliesNow = bookingStart >= start && bookingStart <= end;
-
-            var percentageDecimal = (eventPercent ?? 0m) / 100m;
-            return (new EventDiscount(percentageDecimal), appliesNow);
-        }
+        return finalPrice;
     }
 }
