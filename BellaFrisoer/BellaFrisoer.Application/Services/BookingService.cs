@@ -81,7 +81,7 @@ namespace BellaFrisoer.Application.Services
             return existingBookings.Any(b => newBooking.ConflictsWith(b));
         }
 
-        // ???
+        // ??? discount?
         public IDiscountStrategy? GetDiscountStrategyForCustomerTotalBookings(Customer customer)
         {
             if (customer is null) return null;
@@ -98,7 +98,7 @@ namespace BellaFrisoer.Application.Services
             return null;
         }
 
-        // ??
+        // ?? booking?
         public decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment, Customer? customer = null)
         {
             return _bookingPriceService.CalculateFinalPrice(
