@@ -1,7 +1,7 @@
 using BellaFrisoer.Application.Interfaces;
 using BellaFrisoer.Domain.Models;
 using BellaFrisoer.Domain.Models.Discounts;
-using BellaFrisoer.Application.DTOs;
+using BellaFrisoer.Application.Contracts.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,69 +43,35 @@ namespace BellaFrisoer.Application.Services
 
 
 
-        // Command
-        public async Task UpdateBookingAsync(BookingUpdateDto dto, CancellationToken cancellationToken = default)
+        //Command
+        public async Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default)
         {
-            if (dto is null) throw new ArgumentNullException(nameof(dto));
-
-            // Load existing booking with tracked entities from repository
-            var existingBooking = await _repository.LoadAsync(dto.Id, cancellationToken)
-                ?? throw new KeyNotFoundException($"Booking with id {dto.Id} not found.");
-
-            // Load related entities if they have changed (these will be tracked by the same DbContext)
-            var customer = await _customerRepository.GetByIdAsync(dto.CustomerId, cancellationToken)
-                ?? throw new KeyNotFoundException($"Customer with id {dto.CustomerId} not found.");
-
-            var employee = await _employeeRepository.GetByIdAsync(dto.EmployeeId, cancellationToken)
-                ?? throw new KeyNotFoundException($"Employee with id {dto.EmployeeId} not found.");
-
-            var treatment = await _treatmentRepository.GetByIdAsync(dto.TreatmentId, cancellationToken)
-                ?? throw new KeyNotFoundException($"Treatment with id {dto.TreatmentId} not found.");
-
-            var booking = Booking.Update(existingBooking, customer, employee, treatment, dto.BookingDate, dto.BookingStartTime);
-
-            // Validate booking domain rules
-            var (isValid, validationError) = booking.ValidateBooking(booking);
-            if (!isValid)
-                throw new InvalidOperationException(validationError);
-
-            // Check conflicts (excluding the booking being updated)
-            if (await _bookingConflictChecker.HasConflictWithUpdated(booking, dto.Id))
-                throw new InvalidOperationException("The booking conflicts with an existing booking.");
-
-            // Persist changes
+            if (booking is null) throw new ArgumentNullException(nameof(booking));
             await _repository.UpdateAsync(booking, cancellationToken);
         }
 
         // Command
         public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
         {
-            if (booking is null) throw new ArgumentNullException(nameof(booking));
-
-            // Load existing booking with tracked entities from repository
-            var existingBooking = await _repository.LoadAsync(booking.Id, cancellationToken)
-                ?? throw new KeyNotFoundException($"Booking with id {booking.Id} not found.");
-
-            // Perform deletion
-            await _repository.DeleteAsync(existingBooking.Id, cancellationToken);
+            await _repository.DeleteAsync(booking.Id, cancellationToken);
         }
+
+        // Query??
+        public async Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default)
+            => await _bookingQuery.GetAllAsync(cancellationToken);
+
+        // Query
+        public async Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+            => await _bookingQuery.GetByIdAsync(id, cancellationToken);
+
+        // Query
+        public async Task<List<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken = default)
+            => await _bookingQuery.FilterBookingsAsync(searchTerm, cancellationToken);
 
         // ??? discount?
-        public IDiscountStrategy? GetDiscountStrategyForCustomerTotalBookings(Customer customer)
-        {
-            if (customer is null) return null;
 
-            int count = customer.Bookings?.Count ?? 0;
 
-            if (count >= 20)
-                return new GoldDiscount();
-            if (count >= 10)
-                return new SilverDiscount();
-            if (count >= 5)
-                return new BronzeDiscount();
-
-            return null;
-        }
+        // ?? booking?
 
 
         // Ai  lavet men godt eksempel på rigtig implmentering
