@@ -43,7 +43,19 @@ namespace BellaFrisoer.Application.Services
 
 
 
-        // Command
+        /// <summary>
+        /// VIRKER IKKE I NUVÆRENDE VERSION
+        /// Update funktion for en eksisterende booking. Indlæser den eksisterende booking fra repository,
+        /// opdaterer dens egenskaber baseret på de angivne data,
+        /// validerer derefter bookingreglerne og kontrollerer for konflikter,
+        /// før den gemmer de opdaterede oplysninger.
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task UpdateBookingAsync(BookingUpdateDto dto, CancellationToken cancellationToken = default)
         {
             if (dto is null) throw new ArgumentNullException(nameof(dto));
@@ -52,7 +64,7 @@ namespace BellaFrisoer.Application.Services
             var existingBooking = await _repository.LoadAsync(dto.Id, cancellationToken)
                 ?? throw new KeyNotFoundException($"Booking with id {dto.Id} not found.");
 
-            // Load related entities if they have changed (these will be tracked by the same DbContext)
+            // Load Relaterede entiteter fra repository
             var customer = await _customerRepository.GetByIdAsync(dto.CustomerId, cancellationToken)
                 ?? throw new KeyNotFoundException($"Customer with id {dto.CustomerId} not found.");
 
@@ -62,12 +74,8 @@ namespace BellaFrisoer.Application.Services
             var treatment = await _treatmentRepository.GetByIdAsync(dto.TreatmentId, cancellationToken)
                 ?? throw new KeyNotFoundException($"Treatment with id {dto.TreatmentId} not found.");
 
+            // Validerer og opdaterer booking via factory method
             var booking = Booking.Update(existingBooking, customer, employee, treatment, dto.BookingDate, dto.BookingStartTime);
-
-            // Valider booking domain regler
-            var (isValid, validationError) = booking.ValidateBooking(booking);
-            if (!isValid)
-                throw new InvalidOperationException(validationError);
 
             // Checker konflikter med andre bookinger
             if (await _bookingConflictChecker.HasConflictWithUpdated(booking, dto.Id))
@@ -139,13 +147,9 @@ namespace BellaFrisoer.Application.Services
             var treatment = await _treatmentRepository.GetByIdAsync(dto.TreatmentId, cancellationToken)
                 ?? throw new KeyNotFoundException($"Treatment with id {dto.TreatmentId} not found.");
 
-            // opretter ny booking via factory method
+            // opretter ny booking via factory methode. valider andre regler i factory method
             var booking = Booking.Create(customer, employee, treatment, dto.BookingDate, dto.BookingStartTime);
 
-            // Validate booking domain regler
-            var (isValid, validationError) = booking.ValidateBooking(booking);
-            if (!isValid)
-                throw new InvalidOperationException(validationError);
 
             // check for booking conflicts
             if (await _bookingConflictChecker.HasConflictWithAny(booking))

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace BellaFrisoer.Infrastructure.Queries
 {
     /// <summary>
-    /// Implementering af vores BookingConflictQuery (read-only, infrastructure layer)
+    /// Implementering af vores BookingConflictQuery (read-only)
     /// </summary>
     public class BookingConflictQuery : IBookingConflictQuery
     {

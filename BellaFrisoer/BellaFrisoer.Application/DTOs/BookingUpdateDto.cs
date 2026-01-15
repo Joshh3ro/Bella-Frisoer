@@ -10,5 +10,4 @@ public record BookingUpdateDto
     public int TreatmentId { get; init; }
     public DateTime BookingDate { get; init; }
     public TimeOnly BookingStartTime { get; init; }
-    public decimal BasePrice { get; init; }
 }

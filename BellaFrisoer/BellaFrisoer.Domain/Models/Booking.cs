@@ -51,6 +51,9 @@ namespace BellaFrisoer.Domain.Models
             BookingDuration = duration;
 
             BasePrice = CalculateBasePrice();
+
+            // Validerer bookingen efter den er oprettet. Ved den køres her, køres den også i booking create og update factory metoderne
+            ValidateBooking(this);
         }
 
         public static Booking Create(
@@ -109,23 +112,19 @@ namespace BellaFrisoer.Domain.Models
 
         public void UpdateDurationFromTreatment(Booking booking)
         {
-            var(isValid, errorMessage) = ValidateBooking(booking);
-            if (!isValid)
-            {
-                throw new ArgumentException(errorMessage);
-            }
+            // Validerer booking før
+            ValidateBooking(booking);
+            
             BookingDuration = TimeSpan.FromMinutes(booking.Treatment.Duration);
             BasePrice = CalculateBasePrice();
         }
 
         #endregion
 
-
         #region Conflicts
 
         public bool ConflictsWith(Booking other)
         {
-
             if (other == null) throw new ArgumentNullException(nameof(other));
             if (this.Employee.Id != other.Employee.Id) return false; // forskellig ansat
             if (this.BookingDuration <= TimeSpan.Zero || other.BookingDuration <= TimeSpan.Zero) return false;
@@ -133,24 +132,31 @@ namespace BellaFrisoer.Domain.Models
             return this.BookingDateTime < other.BookingEndTime && other.BookingDateTime < this.BookingEndTime;
         }
 
-        public (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking)
+        /// <summary>
+        /// Validerer booking domain regler. Kaster BookingValidationException hvis noget er ugyldigt.
+        /// </summary>
+        /// <param name="booking">Booking der skal valideres</param>
+        public static void ValidateBooking(Booking booking)
         {
             if (booking is null)
-                return (false, "Booking mangler.");
+                throw new ArgumentNullException(nameof(booking), "Booking mangler...");
+            
             if (booking.Customer.Id <= 0)
-                return (false, "Vælg kunde...");
+                throw new ArgumentException("Vælg kunde...", nameof(booking));
+            
             if (booking.Employee.Id <= 0)
-                return (false, "Vælg ansat...");
+                throw new ArgumentException("Vælg ansat...", nameof(booking));
+            
             if (booking.Treatment.Id <= 0)
-                return (false, "Vælg behandling...");
+                throw new ArgumentException("Vælg behandling...", nameof(booking));
+            
             if (booking.BookingStartTime == default)
-                return (false, "Ugyldigt starttidspunkt.");
+                throw new ArgumentException("Ugyldigt starttidspunkt...", nameof(booking));
+            
             if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)
-                return (false, "Ugyldig varighed.");
-            return (true, null);
+                throw new ArgumentException("Ugyldig varighed...", nameof(booking));
         }
 
         #endregion
-
     }
 }
