@@ -86,26 +86,18 @@ namespace BellaFrisoer.Domain.Models
             return date.Date.Add(time.ToTimeSpan());
         }
 
-        public void UpdateDurationFromTreatment(Treatment treatment)
+        public void UpdateDurationFromTreatment(Treatment treatment, Booking booking)
         {
+            if (ValidateBooking(booking))
+            {
+                throw new ArgumentException("HALLO");
+            }
             if (treatment == null) throw new ArgumentNullException(nameof(treatment));
             BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
             BasePrice = CalculateBasePrice();
         }
 
-        public void UpdateDurationFromTreatment(Booking booking, Treatment? treatment)
-        {
-            if (booking == null)
-                throw new ArgumentNullException(nameof(booking));
 
-            if (treatment == null || treatment.Id <= 0)
-            {
-                booking.BookingDuration = TimeSpan.Zero;
-                return;
-            }
-
-            booking.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
-        }
         public bool ConflictsWith(Booking other)
         {
 
@@ -132,5 +124,7 @@ namespace BellaFrisoer.Domain.Models
                 return (false, "Ugyldig varighed.");
             return (true, null);
         }
+
+
     }
 }

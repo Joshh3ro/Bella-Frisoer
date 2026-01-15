@@ -99,20 +99,7 @@ namespace BellaFrisoer.Application.Services
         }
 
         // ?? booking?
-        public decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment, Customer? customer = null)
-        {
-            return _bookingPriceService.CalculateFinalPrice(
-                booking,
-                employee,
-                treatment,
-                customer,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null);
-        }
+
 
         // Ai  lavet men godt eksempel på rigtig implmentering
         public async Task AddBookingAsync(BookingCreateDto dto, CancellationToken cancellationToken = default)
