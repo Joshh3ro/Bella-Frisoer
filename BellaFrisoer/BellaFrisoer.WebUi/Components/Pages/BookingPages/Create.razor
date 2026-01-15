@@ -191,109 +191,109 @@ else
         await UpdatePrice();
     }
 
-    private async Task UpdatePrice()
-    {
-        var employee = employees.FirstOrDefault(e => e.Id == selectedEmployeeId);
-        var treatment = treatments.FirstOrDefault(t => t.Id == selectedTreatmentId);
-        var customer = customers.FirstOrDefault(c => c.Id == selectedCustomerId);
+    // private async Task UpdatePrice()
+    // {
+    //     var employee = employees.FirstOrDefault(e => e.Id == selectedEmployeeId);
+    //     var treatment = treatments.FirstOrDefault(t => t.Id == selectedTreatmentId);
+    //     var customer = customers.FirstOrDefault(c => c.Id == selectedCustomerId);
 
-        if (employee == null || treatment == null || customer == null || !TimeOnly.TryParse(BookingStartTimeString, out var startTime))
-        {
-            totalPrice = 0;
-            StateHasChanged();
-            return;
-        }
+    //     if (employee == null || treatment == null || customer == null || !TimeOnly.TryParse(BookingStartTimeString, out var startTime))
+    //     {
+    //         totalPrice = 0;
+    //         StateHasChanged();
+    //         return;
+    //     }
 
-        // Opret en midlertidig booking til prisberegning
-        var tempBooking = Booking.Create(customer, employee, treatment, bookingDate, startTime);
+    //     // Opret en midlertidig booking til prisberegning
+    //     var tempBooking = Booking.Create(customer, employee, treatment, bookingDate, startTime);
 
-        // Parse event time inputs
-        TimeOnly? eventStartTime = TimeOnly.TryParse(EventStartTimeString, out var est) ? est : null;
-        TimeOnly? eventEndTime = TimeOnly.TryParse(EventEndTimeString, out var eet) ? eet : null;
+    //     // Parse event time inputs
+    //     TimeOnly? eventStartTime = TimeOnly.TryParse(EventStartTimeString, out var est) ? est : null;
+    //     TimeOnly? eventEndTime = TimeOnly.TryParse(EventEndTimeString, out var eet) ? eet : null;
 
-        // Validate event inputs
-        EventValidationMessage = null;
-        if (EventEnabled)
-        {
-            if (EventPercent is null || EventPercent < 0m || EventPercent > 100m)
-            {
-                EventValidationMessage = "Procent skal være mellem 0 og 100.";
-            }
-            else if (EventStartDate is null || EventEndDate is null)
-            {
-                EventValidationMessage = "Start- og slutdato er påkrævet.";
-            }
-            else if (!TimeOnly.TryParse(EventStartTimeString, out _) || !TimeOnly.TryParse(EventEndTimeString, out _))
-            {
-                EventValidationMessage = "Ugyldigt tidspunkt for event.";
-            }
-        }
+    //     // Validate event inputs
+    //     EventValidationMessage = null;
+    //     if (EventEnabled)
+    //     {
+    //         if (EventPercent is null || EventPercent < 0m || EventPercent > 100m)
+    //         {
+    //             EventValidationMessage = "Procent skal være mellem 0 og 100.";
+    //         }
+    //         else if (EventStartDate is null || EventEndDate is null)
+    //         {
+    //             EventValidationMessage = "Start- og slutdato er påkrævet.";
+    //         }
+    //         else if (!TimeOnly.TryParse(EventStartTimeString, out _) || !TimeOnly.TryParse(EventEndTimeString, out _))
+    //         {
+    //             EventValidationMessage = "Ugyldigt tidspunkt for event.";
+    //         }
+    //     }
 
-        var basePriceTask = Task.Run(() =>
-            BookingPriceService.CalculateFinalPrice(
-                tempBooking,
-                employee,
-                treatment,
-                customer,
-                false, // EventEnabled
-                null,  // EventStartDate
-                null,  // EventEndDate
-                null,  // eventStartTime
-                null,  // eventEndTime
-                null   // EventPercent
-            )
-        );
+    //     var basePriceTask = Task.Run(() =>
+    //         BookingPriceService.CalculateFinalPrice(
+    //             tempBooking,
+    //             employee,
+    //             treatment,
+    //             customer,
+    //             false, // EventEnabled
+    //             null,  // EventStartDate
+    //             null,  // EventEndDate
+    //             null,  // eventStartTime
+    //             null,  // eventEndTime
+    //             null   // EventPercent
+    //         )
+    //     );
 
-        var eventDiscountTask = EventEnabled
-            ? Task.Run(() =>
-                BookingPriceService.CalculateFinalPrice(
-                    tempBooking,
-                    employee,
-                    treatment,
-                    customer,
-                    EventEnabled,
-                    EventStartDate,
-                    EventEndDate,
-                    eventStartTime,
-                    eventEndTime,
-                    EventPercent
-                )
-            )
-            : Task.FromResult(decimal.Zero);
+    //     var eventDiscountTask = EventEnabled
+    //         ? Task.Run(() =>
+    //             BookingPriceService.CalculateFinalPrice(
+    //                 tempBooking,
+    //                 employee,
+    //                 treatment,
+    //                 customer,
+    //                 EventEnabled,
+    //                 EventStartDate,
+    //                 EventEndDate,
+    //                 eventStartTime,
+    //                 eventEndTime,
+    //                 EventPercent
+    //             )
+    //         )
+    //         : Task.FromResult(decimal.Zero);
 
-        var tierDiscountTask = customer != null
-            ? Task.Run(() =>
-            {
-                var tierDiscount = BookingService.GetDiscountStrategyForCustomerTotalBookings(customer);
-                return tierDiscount?.Apply(
-                    BookingPriceService.CalculateFinalPrice(
-                        tempBooking,
-                        employee,
-                        treatment,
-                        customer,
-                        false,  // EventEnabled
-                        null,   // EventStartDate
-                        null,   // EventEndDate
-                        null,   // eventStartTime
-                        null,   // eventEndTime
-                        null    // EventPercent
-                    )
-                ) ?? decimal.Zero;
-            })
-            : Task.FromResult(decimal.Zero);
+    //     var tierDiscountTask = customer != null
+    //         ? Task.Run(() =>
+    //         {
+    //             var tierDiscount = BookingService.GetDiscountStrategyForCustomerTotalBookings(customer);
+    //             return tierDiscount?.Apply(
+    //                 BookingPriceService.CalculateFinalPrice(
+    //                     tempBooking,
+    //                     employee,
+    //                     treatment,
+    //                     customer,
+    //                     false,  // EventEnabled
+    //                     null,   // EventStartDate
+    //                     null,   // EventEndDate
+    //                     null,   // eventStartTime
+    //                     null,   // eventEndTime
+    //                     null    // EventPercent
+    //                 )
+    //             ) ?? decimal.Zero;
+    //         })
+    //         : Task.FromResult(decimal.Zero);
 
-        await Task.WhenAll(basePriceTask, eventDiscountTask, tierDiscountTask);
+    //     await Task.WhenAll(basePriceTask, eventDiscountTask, tierDiscountTask);
 
-        var basePrice = basePriceTask.Result;
-        var eventDiscountPrice = eventDiscountTask.Result;
-        var tierDiscountPrice = tierDiscountTask.Result;
+    //     var basePrice = basePriceTask.Result;
+    //     var eventDiscountPrice = eventDiscountTask.Result;
+    //     var tierDiscountPrice = tierDiscountTask.Result;
 
-        var prices = new[] { basePrice, eventDiscountPrice, tierDiscountPrice };
-        var validPrices = prices.Where(p => p > 0).ToArray();
-        totalPrice = validPrices.Any() ? validPrices.Min() : 0;
+    //     var prices = new[] { basePrice, eventDiscountPrice, tierDiscountPrice };
+    //     var validPrices = prices.Where(p => p > 0).ToArray();
+    //     totalPrice = validPrices.Any() ? validPrices.Min() : 0;
 
-        StateHasChanged();
-    }
+    //     StateHasChanged();
+    // }
 
     private string DurationDisplay
     {
