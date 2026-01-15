@@ -2,6 +2,11 @@ using BellaFrisoer.Domain.Models;
 using BellaFrisoer.Domain.Queries;
 using BellaFrisoer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace BellaFrisoer.Infrastructure.Queries
 {
@@ -24,7 +29,7 @@ namespace BellaFrisoer.Infrastructure.Queries
         {
             return await _context.Bookings
                 .AsNoTracking()
-                .Where(b => b.Employee.Id == employeeId && b.BookingDate.Date == date.Date)
+                .Where(b => b.Employee != null && b.Employee.Id == employeeId && b.BookingDate.Date == date.Date)
                 .Include(b => b.Customer)
                 .Include(b => b.Employee)
                 .Include(b => b.Treatment)

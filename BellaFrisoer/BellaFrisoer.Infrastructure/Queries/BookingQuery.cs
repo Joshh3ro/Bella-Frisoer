@@ -22,6 +22,7 @@ namespace BellaFrisoer.Infrastructure.Queries
         public async Task<List<Booking>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Bookings
+                .AsNoTracking()
                 .Include(b => b.Customer)
                 .Include(b => b.Employee)
                 .Include(b => b.Treatment)
@@ -31,6 +32,7 @@ namespace BellaFrisoer.Infrastructure.Queries
         public async Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.Bookings
+                .AsNoTracking()
                 .Include(b => b.Customer)
                 .Include(b => b.Employee)
                 .Include(b => b.Treatment)
@@ -40,6 +42,7 @@ namespace BellaFrisoer.Infrastructure.Queries
         public async Task<List<Booking>> GetByEmployeeIdAndDateAsync(int EmployeeId, DateTime date, CancellationToken cancellationToken = default)
         {
             return await _context.Bookings
+                .AsNoTracking()
                 .Where(b => b.Employee != null && b.Employee.Id == EmployeeId && b.BookingDate.Date == date.Date)
                 .Include(b => b.Customer)
                 .Include(b => b.Employee)
@@ -53,6 +56,7 @@ namespace BellaFrisoer.Infrastructure.Queries
                 return new List<Booking>();
 
             return await _context.Bookings
+                .AsNoTracking()
                 .Where(b =>
                     (b.Customer != null && EF.Functions.Like(b.Customer.FirstName, $"%{searchTerm}%")) ||
                     (b.Customer != null && EF.Functions.Like(b.Customer.LastName, $"%{searchTerm}%")) ||
