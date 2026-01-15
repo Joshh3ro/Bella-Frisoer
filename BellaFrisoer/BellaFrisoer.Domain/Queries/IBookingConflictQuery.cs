@@ -3,12 +3,12 @@ using BellaFrisoer.Domain.Models;
 namespace BellaFrisoer.Domain.Queries
 {
     /// <summary>
-    /// Repository interface for booking conflict checking (read-only, domain layer)
+    /// Query der henter potentielle booking konflikter for bookingconflictchecker (read-only, domain layer)
     /// </summary>
     public interface IBookingConflictQuery
     {
         /// <summary>
-        /// Gets all bookings for a specific employee on a specific date
+        /// Henter alle bookings for en given medarbejder på en given dato
         /// </summary>
         Task<IEnumerable<Booking>> GetBookingsByEmployeeAndDateAsync(
             int employeeId, 

@@ -25,7 +25,12 @@ namespace BellaFrisoer.Domain.Services
 
             return existingBookings.Any(existing => booking.ConflictsWith(existing));
         }
-
+        /// <summary>
+        /// Checker om booking har konflikt med eksisterende bookings, ekskluderer en specifik booking (bruges til opdateringsscenarier)
+        /// </summary>
+        /// <param name="booking"></param>
+        /// <param name="excludeBookingId"></param>
+        /// <returns></returns>
         public async Task<bool> HasConflictWithUpdated(Booking booking, int excludeBookingId)
         {
             var existingBookings = await _conflictQuery
