@@ -6,16 +6,7 @@ namespace BellaFrisoer.Application.Interfaces
 {
     public interface IBookingPriceService
     {
-        decimal CalculateFinalPrice(
-            Booking booking,
-            Employee? employee,
-            Treatment? treatment,
-            Customer? customer,
-            bool eventEnabled,
-            DateTime? eventStartDate,
-            DateTime? eventEndDate,
-            TimeOnly? eventStartTime,
-            TimeOnly? eventEndTime,
-            decimal? eventPercent);
+        Task<decimal> CalculateFinalPrice(Booking booking, Customer customer);
+
     }
 }

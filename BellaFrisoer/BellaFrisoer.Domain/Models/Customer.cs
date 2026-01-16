@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BellaFrisoer.Domain.Models.Discounts;
 
 namespace BellaFrisoer.Domain.Models;
 
@@ -14,9 +15,7 @@ public class Customer
     public long PhoneNumber { get; set; }
     public string? Email { get; set; }
     public string? Note { get; set; }
-    [Timestamp]
-    public byte[] RowVersion { get; set; }
     public ICollection<Booking>? Bookings { get; set; } = new List<Booking>();
-
+   
     public Customer() { }
 }
