@@ -7,11 +7,7 @@ public class BronzeDiscount : IDiscountStrategy
     public BronzeDiscount(){}
 
     public decimal Apply(Booking booking, Customer customer)
-    {
-        if (customer.Bookings.Count >= 5)
-        {
-            return booking.BasePrice * Rate;
-        }
-        else return 0m;
+    { 
+        return booking.BasePrice * Rate;
     }
 }

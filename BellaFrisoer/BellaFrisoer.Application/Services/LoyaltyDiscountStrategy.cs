@@ -1,30 +1,32 @@
-    using BellaFrisoer.Application.Interfaces;
-    using BellaFrisoer.Domain.Models;
-    using BellaFrisoer.Domain.Models.Discounts;
+using BellaFrisoer.Application.Interfaces;
+using BellaFrisoer.Domain.Models;
+using BellaFrisoer.Domain.Models.Discounts;
 
-    namespace BellaFrisoer.Application.Services;
+namespace BellaFrisoer.Application.Services;
 
-    public class LoyaltyDiscountStrategy : IDiscountCalculator
+public class LoyaltyDiscountStrategy : IDiscountCalculator
+{
+    public async Task<DiscountResult> EvaluateAsync(Booking booking, Customer customer, IEnumerable<IDiscountStrategy> strategies, CancellationToken cancellationToken = default)
     {
-        public async Task<DiscountResult> EvaluateAsync(Booking booking, Customer customer, IEnumerable<IDiscountStrategy> strategies, CancellationToken cancellationToken = default)
+        Booking.ValidateBooking(booking);
+
+        var result = new DiscountResult();
+
+        // Hver strategi køres i en CPU-bound Task
+        var tasks = strategies.Select(strategy => Task.Run(() =>
         {
-            booking.ValidateBooking(booking);
 
-            var result = new DiscountResult();
+            var discount = strategy.Apply(booking, customer);
 
-            var tasks = strategies.Select(strategy => Task.Run(() =>
-            {
+            // Alle strategier forsøger at opdatere det delte RabatResult.
+            // Metoden er dog locked så race-condition håndteres.
+            var updated = result.TryUpdateIfBetter(discount, strategy);
 
-                var discount = strategy.Apply(booking, customer);
+        }, cancellationToken)).ToArray();
 
-                // Alle vores strategier forsï¿½ger at opdatere RabatResult.
-                // men metoden er locked sï¿½ race-condition hï¿½ndteres.
-                var updated = result.TryUpdateIfBetter(discount, strategy);
+        // Vent på alle strategier
+        await Task.WhenAll(tasks);
 
-            }, cancellationToken)).ToArray();
-
-            await Task.WhenAll(tasks);
-
-            return result;
-        }
+        return result;
     }
+}

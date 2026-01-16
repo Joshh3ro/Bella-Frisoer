@@ -7,10 +7,6 @@ public class SilverDiscount : IDiscountStrategy
 
     public decimal Apply(Booking booking, Customer customer)
     {
-        if (customer.Bookings.Count >= 10)
-        {
-            return booking.BasePrice * Rate;
-        }
-        else return 0m;
+        return booking.BasePrice * Rate;
     }
 }

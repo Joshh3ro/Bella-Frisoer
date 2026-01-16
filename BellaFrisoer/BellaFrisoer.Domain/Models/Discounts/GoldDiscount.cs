@@ -10,10 +10,6 @@ public class GoldDiscount : IDiscountStrategy
 
     public decimal Apply(Booking booking, Customer customer)
     {
-        if (customer.Bookings.Count >= 15)
-        {
-            return booking.BasePrice * Rate;
-        }
-        else return 0m;
+        return booking.BasePrice * Rate;
     }
 }
