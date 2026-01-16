@@ -1,32 +1,30 @@
-using BellaFrisoer.Application.Interfaces;
-using BellaFrisoer.Domain.Models;
-using BellaFrisoer.Domain.Models.Discounts;
+    using BellaFrisoer.Application.Interfaces;
+    using BellaFrisoer.Domain.Models;
+    using BellaFrisoer.Domain.Models.Discounts;
 
-namespace BellaFrisoer.Application.Services;
+    namespace BellaFrisoer.Application.Services;
 
-public class LoyaltyDiscountStrategy : IDiscountCalculator
-{
-    public async Task<DiscountResult> EvaluateAsync(Booking booking, Customer customer, IEnumerable<IDiscountStrategy> strategies, CancellationToken cancellationToken = default)
+    public class LoyaltyDiscountStrategy : IDiscountCalculator
     {
-        booking.ValidateBooking(booking);
-
-        var result = new DiscountResult();
-
-        // Hver strategi køres i en CPU-bound Task
-        var tasks = strategies.Select(strategy => Task.Run(() =>
+        public async Task<DiscountResult> EvaluateAsync(Booking booking, Customer customer, IEnumerable<IDiscountStrategy> strategies, CancellationToken cancellationToken = default)
         {
+            booking.ValidateBooking(booking);
 
-            var discount = strategy.Apply(booking, customer);
+            var result = new DiscountResult();
 
-            // Alle strategier forsøger at opdatere det delte RabatResult.
-            // Metoden er dog locked så race-condition håndteres.
-            var updated = result.TryUpdateIfBetter(discount, strategy);
+            var tasks = strategies.Select(strategy => Task.Run(() =>
+            {
 
-        }, cancellationToken)).ToArray();
+                var discount = strategy.Apply(booking, customer);
 
-        // Vent på alle strategier
-        await Task.WhenAll(tasks);
+                // Alle vores strategier forsøger at opdatere RabatResult.
+                // men metoden er locked så race-condition håndteres.
+                var updated = result.TryUpdateIfBetter(discount, strategy);
 
-        return result;
+            }, cancellationToken)).ToArray();
+
+            await Task.WhenAll(tasks);
+
+            return result;
+        }
     }
-}
