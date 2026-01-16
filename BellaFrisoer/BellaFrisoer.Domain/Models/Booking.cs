@@ -24,8 +24,8 @@ namespace BellaFrisoer.Domain.Models
         public Treatment Treatment { get; protected set; }
 
         // Beregnede properties
-        private DateTime BookingDateTime => CombineDateTime(BookingDate, BookingStartTime);
-        private DateTime BookingEndTime => BookingDateTime.Add(BookingDuration);
+        public DateTime BookingDateTime => CombineDateTime(BookingDate, BookingStartTime);
+        public DateTime BookingEndTime => BookingDateTime.Add(BookingDuration);
 
         // EF Core kræver parameterløs constructor
         private Booking() { }

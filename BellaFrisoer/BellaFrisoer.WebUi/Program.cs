@@ -9,6 +9,7 @@ using BellaFrisoer.Application.Queries;
 using BellaFrisoer.Infrastructure.Queries;
 using BellaFrisoer.Domain.Services;
 using BellaFrisoer.Domain.Queries;
+using BellaFrisoer.Application.CommandHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingQuery, BookingQuery>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IBookingCommandHandler, BookingCommandHandler>();
 builder.Services.AddScoped<IBookingPriceService, BookingPriceService>();
 
 builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
