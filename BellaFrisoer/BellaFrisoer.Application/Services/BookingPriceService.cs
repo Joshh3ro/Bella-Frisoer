@@ -18,10 +18,8 @@ public class BookingPriceService : IBookingPriceService
         if (booking is null) throw new ArgumentNullException(nameof(booking));
         if (customer is null) throw new ArgumentNullException(nameof(customer));
 
-        // 1. Base price fra domænet
         var basePrice = booking.CalculateBasePrice();
 
-        // 2. Kør parallel rabatberegning
         var strategies = new List<IDiscountStrategy>
         {
             new BronzeDiscount(),
@@ -35,7 +33,6 @@ public class BookingPriceService : IBookingPriceService
             strategies
         );
 
-        // 3. Træk bedste rabat fra base price
         var finalPrice = basePrice - rabatResult.BestDiscountAmount;
 
         return finalPrice;

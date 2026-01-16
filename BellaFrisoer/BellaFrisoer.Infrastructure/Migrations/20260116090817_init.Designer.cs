@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BellaFrisoer.Infrastructure.Migrations
 {
     [DbContext(typeof(BellaFrisoerWebUiContext))]
-    [Migration("20260113154132_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20260116090817_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -93,12 +93,6 @@ namespace BellaFrisoer.Infrastructure.Migrations
 
                     b.Property<long>("PhoneNumber")
                         .HasColumnType("bigint");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.HasKey("Id");
 

@@ -7,7 +7,6 @@ public class GoldDiscount : IDiscountStrategy
     {
         
     }
-
     public decimal Apply(Booking booking, Customer customer)
     {
         if (customer.Bookings.Count >= 15)
@@ -17,3 +16,7 @@ public class GoldDiscount : IDiscountStrategy
         else return 0m;
     }
 }
+
+
+
+
