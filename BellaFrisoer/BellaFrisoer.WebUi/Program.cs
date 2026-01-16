@@ -10,6 +10,8 @@ using BellaFrisoer.Infrastructure.Queries;
 using BellaFrisoer.Domain.Services;
 using BellaFrisoer.Domain.Queries;
 using BellaFrisoer.Application.CommandHandlers;
+using BellaFrisoer.Domain.Models.Discounts;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +43,9 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
+builder.Services.AddScoped<IDiscountCalculator, LoyaltyDiscountStrategy>();
+
 
 builder.Services.AddScoped<ITreatmentRepository, TreatmentRepository>();
 builder.Services.AddScoped<ITreatmentService, TreatmentService>();

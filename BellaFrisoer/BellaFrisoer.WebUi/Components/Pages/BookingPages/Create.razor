@@ -1,8 +1,7 @@
 ﻿@page "/bookings/opret"
 @using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
-@using BellaFrisoer.Domain.Models.Discounts
-@using BellaFrisoer.Application.DTOs;
+@using BellaFrisoer.Application.DTOs
 @inject IBookingService BookingService
 @inject IBookingPriceService BookingPriceService
 @inject ICustomerService CustomerService
@@ -33,12 +32,12 @@ else
 
         <div class="mb-3">
             <label class="form-label">Dato</label>
-            <InputDate @bind-Value="bookingDate" class="form-control" />
+            <InputDate @bind-Value="bookingDate" class="form-control" @bind:after="UpdatePriceSync" />
         </div>
 
         <div class="mb-3">
             <label class="form-label">Starttidspunkt</label>
-            <InputText @bind-Value="BookingStartTimeString" type="time" class="form-control" />
+            <InputText @bind-Value="BookingStartTimeString" type="time" class="form-control" @bind:after="UpdatePriceSync" />
         </div>
 
         <div class="mb-3">
@@ -81,48 +80,6 @@ else
             </InputSelect>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header">Eventrabat</div>
-            <div class="card-body">
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" role="switch" id="eventEnabledSwitch" @bind="EventEnabled" @bind:after="UpdatePrice" />
-                    <label class="form-check-label" for="eventEnabledSwitch">Aktivér eventrabat for denne booking</label>
-                </div>
-
-                @if (EventEnabled)
-                {
-                    <div class="row g-3 mb-2">
-                        <div class="col-md-3">
-                            <label class="form-label">Startdato</label>
-                            <InputDate @bind-Value="EventStartDate" class="form-control" />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Starttid</label>
-                            <InputText @bind-Value="EventStartTimeString" type="time" class="form-control" />
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Slutdato</label>
-                            <InputDate @bind-Value="EventEndDate" class="form-control"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Sluttid</label>
-                            <InputText @bind-Value="EventEndTimeString" type="time" class="form-control" />
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-2">
-                        <div class="col-md-3">
-                            <label class="form-label">Procent (%)</label>
-                            <InputNumber @bind-Value="EventPercent" class="form-control" />
-                        </div>
-                    </div>
-                    @if (!string.IsNullOrWhiteSpace(EventValidationMessage))
-                    {
-                        <div class="text-danger">@EventValidationMessage</div>
-                    }
-                }
-            </div>
-        </div>
-
         <div class="mb-3">
             <label class="form-label">Pris</label>
             <span class="badge bg-info">@PriceDisplay</span>
@@ -141,15 +98,6 @@ else
     private string BookingStartTimeString = "";
     private string? ErrorMessage;
 
-    // Event discount state (per booking)
-    private bool EventEnabled = false;
-    private DateTime? EventStartDate;
-    private DateTime? EventEndDate;
-    private string EventStartTimeString = "";
-    private string EventEndTimeString = "";
-    private decimal? EventPercent;
-    private string? EventValidationMessage;
-
     private int selectedCustomerId;
     private int selectedEmployeeId;
     private int selectedTreatmentId;
@@ -161,7 +109,7 @@ else
         set
         {
             selectedEmployeeId = value;
-            UpdatePrice();
+            _ = UpdatePrice();
         }
     }
 
@@ -171,7 +119,7 @@ else
         set
         {
             selectedTreatmentId = value;
-            UpdatePrice();
+            _ = UpdatePrice();
         }
     }
 
@@ -180,6 +128,9 @@ else
         customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
         employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
         treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
+
+        // initial price attempt
+        _ = UpdatePrice();
     }
 
     private async Task OnCustomerChanged(ChangeEventArgs e)
@@ -204,93 +155,19 @@ else
             return;
         }
 
-        // Opret en midlertidig booking til prisberegning
+        // Create a temporary domain Booking to feed the price service (domain-heavy approach)
         var tempBooking = Booking.Create(customer, employee, treatment, bookingDate, startTime);
 
-        // Parse event time inputs
-        TimeOnly? eventStartTime = TimeOnly.TryParse(EventStartTimeString, out var est) ? est : null;
-        TimeOnly? eventEndTime = TimeOnly.TryParse(EventEndTimeString, out var eet) ? eet : null;
-
-        // Validate event inputs
-        EventValidationMessage = null;
-        if (EventEnabled)
+        try
         {
-            if (EventPercent is null || EventPercent < 0m || EventPercent > 100m)
-            {
-                EventValidationMessage = "Procent skal være mellem 0 og 100.";
-            }
-            else if (EventStartDate is null || EventEndDate is null)
-            {
-                EventValidationMessage = "Start- og slutdato er påkrævet.";
-            }
-            else if (!TimeOnly.TryParse(EventStartTimeString, out _) || !TimeOnly.TryParse(EventEndTimeString, out _))
-            {
-                EventValidationMessage = "Ugyldigt tidspunkt for event.";
-            }
+            totalPrice = await BookingPriceService.CalculateFinalPrice(tempBooking, customer);
         }
-
-        var basePriceTask = Task.Run(() =>
-            BookingPriceService.CalculateFinalPrice(
-                tempBooking,
-                employee,
-                treatment,
-                customer,
-                false, // EventEnabled
-                null,  // EventStartDate
-                null,  // EventEndDate
-                null,  // eventStartTime
-                null,  // eventEndTime
-                null   // EventPercent
-            )
-        );
-
-        var eventDiscountTask = EventEnabled
-            ? Task.Run(() =>
-                BookingPriceService.CalculateFinalPrice(
-                    tempBooking,
-                    employee,
-                    treatment,
-                    customer,
-                    EventEnabled,
-                    EventStartDate,
-                    EventEndDate,
-                    eventStartTime,
-                    eventEndTime,
-                    EventPercent
-                )
-            )
-            : Task.FromResult(decimal.Zero);
-
-        var tierDiscountTask = customer != null
-            ? Task.Run(() =>
-            {
-                var tierDiscount = BookingService.GetDiscountStrategyForCustomerTotalBookings(customer);
-                return tierDiscount?.Apply(
-                    BookingPriceService.CalculateFinalPrice(
-                        tempBooking,
-                        employee,
-                        treatment,
-                        customer,
-                        false,  // EventEnabled
-                        null,   // EventStartDate
-                        null,   // EventEndDate
-                        null,   // eventStartTime
-                        null,   // eventEndTime
-                        null    // EventPercent
-                    )
-                ) ?? decimal.Zero;
-            })
-            : Task.FromResult(decimal.Zero);
-
-        await Task.WhenAll(basePriceTask, eventDiscountTask, tierDiscountTask);
-
-        var basePrice = basePriceTask.Result;
-        var eventDiscountPrice = eventDiscountTask.Result;
-        var tierDiscountPrice = tierDiscountTask.Result;
-
-        var prices = new[] { basePrice, eventDiscountPrice, tierDiscountPrice };
-        var validPrices = prices.Where(p => p > 0).ToArray();
-        totalPrice = validPrices.Any() ? validPrices.Min() : 0;
+        catch (Exception ex)
+        {
+            // keep page responsive; show a minimal message
+            ErrorMessage = $"Prisberegning fejlede: {ex.Message}";
+            totalPrice = 0;
+        }
 
         StateHasChanged();
     }
@@ -303,6 +180,7 @@ else
             return treatment != null ? TimeSpan.FromMinutes(treatment.Duration).ToString(@"hh\:mm") : "00:00";
         }
     }
+
     private string PriceDisplay => totalPrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"));
 
     private async Task AddBooking()
@@ -321,7 +199,6 @@ else
             return;
         }
 
-		// Lightweight dto der skal sendes bruges til oprettelse af booking
         var dto = new BookingCreateDto
         {
             CustomerId = selectedCustomerId,
@@ -344,4 +221,7 @@ else
             ErrorMessage = $"Gem fejlede: {ex.Message}";
         }
     }
+
+    // synchronous wrapper for @bind:after (void delegate required by Razor)
+    private void UpdatePriceSync() => _ = UpdatePrice();
 }
