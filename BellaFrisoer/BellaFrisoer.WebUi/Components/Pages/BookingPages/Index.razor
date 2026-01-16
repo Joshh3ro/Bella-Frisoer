@@ -1,7 +1,9 @@
 ﻿@page "/bookings"
 @using Microsoft.EntityFrameworkCore
 @using BellaFrisoer.Application.Interfaces
+@using BellaFrisoer.Application.Queries
 @inject IBookingService BookingService
+@inject IBookingQuery BookingQuery
 
 <PageTitle>Bookings</PageTitle>
 
@@ -42,11 +44,11 @@ else
 				<tr>
 					<td>@(b.Employee?.FirstName ?? "—")</td>
 					<td>@(b.Customer?.FirstName ?? "-")</td>
-					<td>@(b.BookingDateTime.ToString() ?? "—")</td>
-					<td>@(b.BookingDuration.ToString() ?? "-")</td>
-					<td>@(b.BookingEndTime.ToString() ?? "-")</td>
+					<td>@b.BookingDate.Add(b.BookingStartTime.ToTimeSpan()).ToString()</td>
+					<td>@b.BookingDuration.TotalMinutes</td>
+					<td>@b.BookingDate.Add(b.BookingStartTime.ToTimeSpan()).Add(b.BookingDuration).ToString()</td>
 					<td>@(b.Treatment?.Name ?? "-")</td>
-					<td>@b.TotalPrice</td>
+					<td>@b.BasePrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"))</td>
 
 					<td>
 						<a href="/invoice/@b.Id" class="btn btn-sm btn-success">Download Faktura</a>
@@ -65,11 +67,11 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		bookings = await BookingService.GetAllAsync();
+		bookings = await BookingQuery.GetAllAsync(cancellationToken: default);
 	}
 	private async Task OnSearchChanged(ChangeEventArgs e)
 	{
 		string searchString = e.Value?.ToString() ?? string.Empty;
-		bookings = await BookingService.FilterBookingsAsync(searchString);
+		bookings = await BookingQuery.FilterBookingsAsync(searchString, cancellationToken: default);
 	}
 }

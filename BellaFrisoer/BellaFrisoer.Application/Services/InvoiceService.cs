@@ -5,20 +5,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BellaFrisoer.Application.Services
+namespace BellaFrisoer.Application.Queries
 {
     public class InvoiceService : IInvoiceService
     {
-        private readonly IBookingService _bookingService;
+        private readonly IBookingQuery _bookingQuery;
 
-        public InvoiceService(IBookingService bookingService)
+        public InvoiceService(IBookingQuery bookingQuery)
         {
-            _bookingService = bookingService;
+            _bookingQuery = bookingQuery;
         }
 
         public async Task<string> GenerateInvoiceAsync(int bookingId)
         {
-            var booking = await _bookingService.GetByIdAsync(bookingId);
+            var booking = await _bookingQuery.GetByIdAsync(bookingId, cancellationToken: default);
             if (booking is null)
                 throw new KeyNotFoundException($"Booking with ID {bookingId} not found.");
 

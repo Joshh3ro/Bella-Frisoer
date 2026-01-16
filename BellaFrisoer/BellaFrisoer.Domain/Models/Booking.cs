@@ -1,19 +1,10 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BellaFrisoer.Domain.Models;
-
-public class Booking
+namespace BellaFrisoer.Domain.Models
 {
-    [Key]
-    public int Id { get; set; }
-
-    public DateTime BookingDateTime
+    public class Booking
     {
-<<<<<<< Updated upstream
-        get { return CombineDateTime(BookingDate, BookingStartTime); }
-=======
         public int Id { get; protected set; }
         [Required]
         public DateTime BookingDate { get; protected set; }
@@ -33,19 +24,19 @@ public class Booking
         public Treatment Treatment { get; protected set; }
 
         // Beregnede properties
-        private DateTime BookingDateTime => CombineDateTime(BookingDate, BookingStartTime);
-        private DateTime BookingEndTime => BookingDateTime.Add(BookingDuration);
+        public DateTime BookingDateTime => CombineDateTime(BookingDate, BookingStartTime);
+        public DateTime BookingEndTime => BookingDateTime.Add(BookingDuration);
 
         // EF Core kræver parameterløs constructor
         private Booking() { }
 
         // Privat constructor med alle forretningsregler
         private Booking(
-            Customer customer,
-            Employee employee,
+            Customer customer, 
+            Employee employee, 
             Treatment treatment,
-            DateTime bookingDate,
-            TimeOnly startTime,
+            DateTime bookingDate, 
+            TimeOnly startTime, 
             TimeSpan duration)
         {
             Customer = customer ?? throw new ArgumentNullException(nameof(customer));
@@ -60,9 +51,26 @@ public class Booking
             BookingDuration = duration;
 
             BasePrice = CalculateBasePrice();
+
+            // Validerer bookingen efter den er oprettet. Ved den køres her, køres den også i booking create og update factory metoderne
+            ValidateBooking(this);
         }
 
         public static Booking Create(
+            Customer customer, 
+            Employee employee, 
+            Treatment treatment,
+            DateTime bookingDate, 
+            TimeOnly startTime, 
+            TimeSpan? duration = null)
+        {
+            var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
+
+            return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
+        }
+
+        public static Booking Update(
+            Booking existingBooking,
             Customer customer,
             Employee employee,
             Treatment treatment,
@@ -70,9 +78,13 @@ public class Booking
             TimeOnly startTime,
             TimeSpan? duration = null)
         {
+            if (existingBooking == null)
+                throw new ArgumentNullException(nameof(existingBooking));
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
-
-            return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
+            return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration)
+            {
+                Id = existingBooking.Id // Preserver eksisterende ID
+            };
         }
 
         public decimal CalculateBasePrice()
@@ -100,23 +112,19 @@ public class Booking
 
         public void UpdateDurationFromTreatment(Booking booking)
         {
-            var (isValid, errorMessage) = ValidateBooking(booking);
-            if (!isValid)
-            {
-                throw new ArgumentException(errorMessage);
-            }
+            // Validerer booking før
+            ValidateBooking(booking);
+            
             BookingDuration = TimeSpan.FromMinutes(booking.Treatment.Duration);
             BasePrice = CalculateBasePrice();
         }
 
         #endregion
 
-
         #region Conflicts
 
         public bool ConflictsWith(Booking other)
         {
-
             if (other == null) throw new ArgumentNullException(nameof(other));
             if (this.Employee.Id != other.Employee.Id) return false; // forskellig ansat
             if (this.BookingDuration <= TimeSpan.Zero || other.BookingDuration <= TimeSpan.Zero) return false;
@@ -124,71 +132,31 @@ public class Booking
             return this.BookingDateTime < other.BookingEndTime && other.BookingDateTime < this.BookingEndTime;
         }
 
-        public (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking)
+        /// <summary>
+        /// Validerer booking domain regler. Kaster BookingValidationException hvis noget er ugyldigt.
+        /// </summary>
+        /// <param name="booking">Booking der skal valideres</param>
+        public static void ValidateBooking(Booking booking)
         {
             if (booking is null)
-                return (false, "Booking mangler.");
+                throw new ArgumentNullException(nameof(booking), "Booking mangler...");
+            
             if (booking.Customer.Id <= 0)
-                return (false, "Vælg kunde...");
+                throw new ArgumentException("Vælg kunde...", nameof(booking));
+            
             if (booking.Employee.Id <= 0)
-                return (false, "Vælg ansat...");
+                throw new ArgumentException("Vælg ansat...", nameof(booking));
+            
             if (booking.Treatment.Id <= 0)
-                return (false, "Vælg behandling...");
+                throw new ArgumentException("Vælg behandling...", nameof(booking));
+            
             if (booking.BookingStartTime == default)
-                return (false, "Ugyldigt starttidspunkt.");
+                throw new ArgumentException("Ugyldigt starttidspunkt...", nameof(booking));
+            
             if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)
-                return (false, "Ugyldig varighed.");
-            return (true, null);
+                throw new ArgumentException("Ugyldig varighed...", nameof(booking));
         }
 
         #endregion
-
->>>>>>> Stashed changes
     }
-
-    [Required]
-    public DateTime BookingDate { get; set; }
-
-    public TimeOnly BookingStartTime { get; set; }
-
-    public TimeSpan BookingDuration { get; set; }
-
-    public DateTime BookingEndTime
-    {
-        get
-        {
-            return CombineDateTime(BookingDate, BookingStartTime).Add(BookingDuration);
-        }
-    }
-
-    public decimal TotalPrice { get; set; }
-
-    // scalar FK: what EF uses & what forms bind to
-    [Required]
-    public int CustomerId { get; set; }
-
-    public Customer? Customer { get; set; }
-
-    [Required]
-    public int EmployeeId { get; set; }
-
-    [ForeignKey(nameof(EmployeeId))]
-    public Employee? Employee { get; set; }
-
-    [Required]
-    public int TreatmentId { get; set; }
-    [ForeignKey(nameof(TreatmentId))]
-    public Treatment Treatment { get; set; }
-    [Timestamp]
-    public byte[] RowVersion { get; set; }
-
-    public Booking()
-    {
-    }
-
-    public DateTime CombineDateTime(DateTime date, TimeOnly time)
-    {
-        return date.Date.Add(time.ToTimeSpan());
-    }
-
 }

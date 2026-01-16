@@ -11,17 +11,16 @@ namespace BellaFrisoer.Infrastructure.Repositories
 {
     public class TreatmentRepository : ITreatmentRepository
     {
-        private readonly IDbContextFactory<BellaFrisoerWebUiContext> _dbFactory;
+        private readonly BellaFrisoerWebUiContext _context;
 
-        public TreatmentRepository(IDbContextFactory<BellaFrisoerWebUiContext> dbFactory)
+        public TreatmentRepository(BellaFrisoerWebUiContext context)
         {
-            _dbFactory = dbFactory ?? throw new ArgumentNullException(nameof(dbFactory));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public async Task<IReadOnlyList<Treatment>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            return await ctx.Treatments
+            return await _context.Treatments
                 .AsNoTracking()
                 .OrderBy(t => t.Name)
                 .ToListAsync(cancellationToken);
@@ -29,8 +28,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task<Treatment?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            return await ctx.Treatments
+            return await _context.Treatments
                 .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         }
 
@@ -39,23 +37,19 @@ namespace BellaFrisoer.Infrastructure.Repositories
             if (treatment is null)
                 throw new ArgumentNullException(nameof(treatment));
 
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            ctx.Treatments.Add(treatment);
-            await ctx.SaveChangesAsync(cancellationToken);
+            _context.Treatments.Add(treatment);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task UpdateAsync(Treatment treatment, CancellationToken cancellationToken = default)
         {
             if (treatment is null)
                 throw new ArgumentNullException(nameof(treatment));
-
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-
             try
             {
-                ctx.Attach(treatment);
-                ctx.Entry(treatment).State = EntityState.Modified;
-                await ctx.SaveChangesAsync(cancellationToken);
+                _context.Attach(treatment);
+                _context.Entry(treatment).State = EntityState.Modified;
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -67,16 +61,15 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            var entity = await ctx.Treatments.FindAsync(new object[] { id }, cancellationToken);
+            var entity = await _context.Treatments.FindAsync(new object[] { id }, cancellationToken);
 
             if (entity is null)
                 return;
 
             try
             {
-                ctx.Treatments.Remove(entity);
-                await ctx.SaveChangesAsync(cancellationToken);
+                _context.Treatments.Remove(entity);
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -88,11 +81,9 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task<List<Treatment>> FilterTreatmentsAsync(string searchTerm, CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                return await ctx.Treatments
+                return await _context.Treatments
                     .AsNoTracking()
                     .OrderBy(t => t.Name)
                     .ToListAsync(cancellationToken);
@@ -100,7 +91,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
             searchTerm = searchTerm.Trim().ToLower();
 
-            return await ctx.Treatments
+            return await _context.Treatments
                 .AsNoTracking()
                 .Where(t =>
                     t.Name.ToLower().Contains(searchTerm) ||

@@ -5,10 +5,16 @@ using BellaFrisoer.Application.Services;
 using BellaFrisoer.Infrastructure.Data;
 using BellaFrisoer.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
+using BellaFrisoer.Application.Queries;
+using BellaFrisoer.Infrastructure.Queries;
+using BellaFrisoer.Domain.Services;
+using BellaFrisoer.Domain.Queries;
+using BellaFrisoer.Application.CommandHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContextFactory<BellaFrisoerWebUiContext>(options =>
+// AddDbContext er scoped som default
+builder.Services.AddDbContext<BellaFrisoerWebUiContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("BellaFrisoerWebUiContext")
             ?? throw new InvalidOperationException("Connection string not found."),
@@ -22,9 +28,13 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
+builder.Services.AddScoped<IBookingQuery, BookingQuery>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IBookingCommandHandler, BookingCommandHandler>();
 builder.Services.AddScoped<IBookingPriceService, BookingPriceService>();
+
+builder.Services.AddScoped<IBookingConflictChecker, BookingConflictChecker>();
+builder.Services.AddScoped<IBookingConflictQuery, BookingConflictQuery>();
 
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -11,17 +12,16 @@ namespace BellaFrisoer.Infrastructure.Repositories
 {
     public class CustomerRepository : ICustomerRepository
     {
-        private readonly IDbContextFactory<BellaFrisoerWebUiContext> _dbFactory;
+        private readonly BellaFrisoerWebUiContext _context;
 
-        public CustomerRepository(IDbContextFactory<BellaFrisoerWebUiContext> dbFactory)
+        public CustomerRepository(BellaFrisoerWebUiContext context)
         {
-            _dbFactory = dbFactory ?? throw new ArgumentNullException(nameof(dbFactory));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public async Task<IReadOnlyList<Customer>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            return await ctx.Customers
+            return await _context.Customers
                 .AsNoTracking()
                 .Include(c => c.Bookings)
                 .OrderBy(c => c.LastName)
@@ -31,8 +31,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task<Customer?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            return await ctx.Customers
+            return await _context.Customers
                 .Include(c => c.Bookings)
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
@@ -42,9 +41,8 @@ namespace BellaFrisoer.Infrastructure.Repositories
             if (customer is null)
                 throw new ArgumentNullException(nameof(customer));
 
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            ctx.Customers.Add(customer);
-            await ctx.SaveChangesAsync(cancellationToken);
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task UpdateAsync(Customer customer, CancellationToken cancellationToken = default)
@@ -52,13 +50,11 @@ namespace BellaFrisoer.Infrastructure.Repositories
             if (customer is null)
                 throw new ArgumentNullException(nameof(customer));
 
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-
             try
             {
-                ctx.Attach(customer);
-                ctx.Entry(customer).State = EntityState.Modified;
-                await ctx.SaveChangesAsync(cancellationToken);
+                _context.Attach(customer);
+                _context.Entry(customer).State = EntityState.Modified;
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -70,16 +66,15 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            var entity = await ctx.Customers.FindAsync(new object[] { id }, cancellationToken);
+            var entity = await _context.Customers.FindAsync(new object[] { id }, cancellationToken);
 
             if (entity is null)
                 return;
 
             try
             {
-                ctx.Customers.Remove(entity);
-                await ctx.SaveChangesAsync(cancellationToken);
+                _context.Customers.Remove(entity);
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -91,27 +86,20 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task<IReadOnlyList<Customer>> FilterCustomersAsync(string searchTerm, CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                return await ctx.Customers
-                    .AsNoTracking()
-                    .Include(c => c.Bookings)
-                    .OrderBy(c => c.LastName)
-                    .ThenBy(c => c.FirstName)
-                    .ToListAsync(cancellationToken);
+                return await GetAllAsync(cancellationToken);
             }
 
-            searchTerm = searchTerm.Trim().ToLower();
+            searchTerm = searchTerm.Trim();
 
-            return await ctx.Customers
+            return await _context.Customers
                 .AsNoTracking()
                 .Include(c => c.Bookings)
                 .Where(c =>
-                    (c.FirstName != null && EF.Functions.Like(c.FirstName.ToLower(), $"%{searchTerm}%")) ||
-                    (c.LastName != null && EF.Functions.Like(c.LastName.ToLower(), $"%{searchTerm}%")) ||
-                    (c.PhoneNumber != null && c.PhoneNumber.ToString().Contains(searchTerm)) ||
+                    (c.FirstName != null && EF.Functions.Like(c.FirstName, $"%{searchTerm}%")) ||
+                    (c.LastName != null && EF.Functions.Like(c.LastName, $"%{searchTerm}%")) ||
+                    (c.PhoneNumber.ToString().Contains(searchTerm)) ||
                     c.Id.ToString().Contains(searchTerm)
                 )
                 .OrderBy(c => c.LastName)

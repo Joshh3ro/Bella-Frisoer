@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -11,17 +12,16 @@ namespace BellaFrisoer.Infrastructure.Repositories
 {
     public class EmployeeRepository : IEmployeeRepository
     {
-        private readonly IDbContextFactory<BellaFrisoerWebUiContext> _dbFactory;
+        private readonly BellaFrisoerWebUiContext _context;
 
-        public EmployeeRepository(IDbContextFactory<BellaFrisoerWebUiContext> dbFactory)
+        public EmployeeRepository(BellaFrisoerWebUiContext context)
         {
-            _dbFactory = dbFactory ?? throw new ArgumentNullException(nameof(dbFactory));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public async Task<IReadOnlyList<Employee>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            return await ctx.Employees
+            return await _context.Employees
                 .AsNoTracking()
                 .OrderBy(e => e.LastName)
                 .ThenBy(e => e.FirstName)
@@ -30,8 +30,7 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task<Employee?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            return await ctx.Employees
+            return await _context.Employees
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         }
 
@@ -40,9 +39,8 @@ namespace BellaFrisoer.Infrastructure.Repositories
             if (employee is null)
                 throw new ArgumentNullException(nameof(employee));
 
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            ctx.Employees.Add(employee);
-            await ctx.SaveChangesAsync(cancellationToken);
+            _context.Employees.Add(employee);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task UpdateAsync(Employee employee, CancellationToken cancellationToken = default)
@@ -50,13 +48,11 @@ namespace BellaFrisoer.Infrastructure.Repositories
             if (employee is null)
                 throw new ArgumentNullException(nameof(employee));
 
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-
             try
             {
-                ctx.Attach(employee);
-                ctx.Entry(employee).State = EntityState.Modified;
-                await ctx.SaveChangesAsync(cancellationToken);
+                _context.Attach(employee);
+                _context.Entry(employee).State = EntityState.Modified;
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -68,16 +64,15 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-            var entity = await ctx.Employees.FindAsync(new object[] { id }, cancellationToken);
+            var entity = await _context.Employees.FindAsync(new object[] { id }, cancellationToken);
 
             if (entity is null)
                 return;
 
             try
             {
-                ctx.Employees.Remove(entity);
-                await ctx.SaveChangesAsync(cancellationToken);
+                _context.Employees.Remove(entity);
+                await _context.SaveChangesAsync(cancellationToken);
             }
             catch (DbUpdateConcurrencyException ex)
             {
@@ -89,11 +84,9 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
         public async Task<List<Employee>> FilterEmployeesAsync(string searchTerm, CancellationToken cancellationToken = default)
         {
-            await using var ctx = await _dbFactory.CreateDbContextAsync(cancellationToken);
-
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                return await ctx.Employees
+                return await _context.Employees
                     .AsNoTracking()
                     .OrderBy(e => e.LastName)
                     .ThenBy(e => e.FirstName)
@@ -102,15 +95,15 @@ namespace BellaFrisoer.Infrastructure.Repositories
 
             searchTerm = searchTerm.Trim();
 
-            return await ctx.Employees
+            return await _context.Employees
                 .AsNoTracking()
                 .Where(e =>
                     EF.Functions.Like(e.FirstName ?? string.Empty, $"%{searchTerm}%") ||
                     EF.Functions.Like(e.LastName ?? string.Empty, $"%{searchTerm}%") ||
                     EF.Functions.Like(e.Email ?? string.Empty, $"%{searchTerm}%") ||
-                    (e.PhoneNumber != null && e.PhoneNumber.ToString().Contains(searchTerm)) ||
+                    (e.PhoneNumber.ToString().Contains(searchTerm)) ||
                     e.Id.ToString().Contains(searchTerm) ||
-                    (e.Qualifications != null && e.Qualifications.Contains(searchTerm)) // Søg i Qualifications (string)
+                    (e.Qualifications != null && EF.Functions.Like(e.Qualifications, $"%{searchTerm}%"))
                 )
                 .OrderBy(e => e.LastName)
                 .ThenBy(e => e.FirstName)

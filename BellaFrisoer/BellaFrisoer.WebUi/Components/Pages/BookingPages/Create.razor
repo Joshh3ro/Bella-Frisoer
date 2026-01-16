@@ -2,6 +2,7 @@
 @using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
 @using BellaFrisoer.Domain.Models.Discounts
+@using BellaFrisoer.Application.DTOs;
 @inject IBookingService BookingService
 @inject IBookingPriceService BookingPriceService
 @inject ICustomerService CustomerService
@@ -26,20 +27,18 @@
 }
 else
 {
-    <EditForm Model="Booking" OnValidSubmit="AddBooking">
+    <EditForm Model="this" OnValidSubmit="AddBooking">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="mb-3">
             <label class="form-label">Dato</label>
-            <InputDate @bind-Value="Booking.BookingDate" class="form-control" />
-            <ValidationMessage For="@(() => Booking.BookingDate)" />
+            <InputDate @bind-Value="bookingDate" class="form-control" />
         </div>
 
         <div class="mb-3">
             <label class="form-label">Starttidspunkt</label>
             <InputText @bind-Value="BookingStartTimeString" type="time" class="form-control" />
-            <ValidationMessage For="@(() => Booking.BookingStartTime)" />
         </div>
 
         <div class="mb-3">
@@ -50,14 +49,13 @@ else
             }
             else
             {
-                <InputSelect @bind-Value="Booking.CustomerId" class="form-select" @onchange="OnCustomerChanged">
+                <InputSelect @bind-Value="selectedCustomerId" class="form-select" @onchange="OnCustomerChanged">
                     <option value="0">-- Vælg Kunde --</option>
                     @foreach (var c in customers)
                     {
                         <option value="@c.Id">@c.FirstName @c.LastName (@(c.Bookings?.Count ?? 0) bookings)</option>
                     }
                 </InputSelect>
-                <ValidationMessage For="@(() => Booking.CustomerId)" />
             }
         </div>
 
@@ -70,7 +68,6 @@ else
                     <option value="@e.Id">@e.FirstName @e.LastName</option>
                 }
             </InputSelect>
-            <ValidationMessage For="@(() => Booking.EmployeeId)" />
         </div>
 
         <div class="mb-3">
@@ -82,7 +79,6 @@ else
                     <option value="@t.Id">@t.Name (@t.Duration min)</option>
                 }
             </InputSelect>
-            <ValidationMessage For="@(() => Booking.TreatmentId)" />
         </div>
 
         <div class="card mb-3">
@@ -110,13 +106,13 @@ else
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Sluttid</label>
-                            <InputText @bind-Value="EventEndTimeString" type="time" class="form-control"" />
+                            <InputText @bind-Value="EventEndTimeString" type="time" class="form-control" />
                         </div>
                     </div>
                     <div class="row g-3 mb-2">
                         <div class="col-md-3">
                             <label class="form-label">Procent (%)</label>
-                            <InputNumber @bind-Value="EventPercent" class="form-control"" />
+                            <InputNumber @bind-Value="EventPercent" class="form-control" />
                         </div>
                     </div>
                     @if (!string.IsNullOrWhiteSpace(EventValidationMessage))
@@ -138,10 +134,10 @@ else
 }
 
 @code {
-    private Booking Booking { get; set; } = new() { BookingDate = DateTime.Now };
     private List<Customer> customers = new();
     private List<Employee> employees = new();
     private List<Treatment> treatments = new();
+    private DateTime bookingDate = DateTime.Now;
     private string BookingStartTimeString = "";
     private string? ErrorMessage;
 
@@ -154,27 +150,28 @@ else
     private decimal? EventPercent;
     private string? EventValidationMessage;
 
+    private int selectedCustomerId;
     private int selectedEmployeeId;
+    private int selectedTreatmentId;
+    private decimal totalPrice;
+
     private int SelectedEmployeeId
     {
         get => selectedEmployeeId;
         set
         {
             selectedEmployeeId = value;
-            Booking.EmployeeId = value;
             UpdatePrice();
         }
     }
 
-    private int selectedTreatmentId;
     private int SelectedTreatmentId
     {
         get => selectedTreatmentId;
         set
         {
             selectedTreatmentId = value;
-            Booking.TreatmentId = value;
-            UpdateDurationFromTreatment(value);
+            UpdatePrice();
         }
     }
 
@@ -189,28 +186,26 @@ else
     {
         if (int.TryParse(e.Value?.ToString(), out var id))
         {
-            Booking.CustomerId = id;
+            selectedCustomerId = id;
         }
         await UpdatePrice();
     }
 
-
-    private async Task UpdateDurationFromTreatment(int treatmentId)
-    {
-        var treatment = treatments.FirstOrDefault(t => t.Id == treatmentId);
-        if (treatment != null)
-        {
-            Booking.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
-            await UpdatePrice();
-        }
-    }
-
-
     private async Task UpdatePrice()
     {
-        var employee = employees.FirstOrDefault(e => e.Id == Booking.EmployeeId);
-        var treatment = treatments.FirstOrDefault(t => t.Id == Booking.TreatmentId);
-        var customer = customers.FirstOrDefault(c => c.Id == Booking.CustomerId);
+        var employee = employees.FirstOrDefault(e => e.Id == selectedEmployeeId);
+        var treatment = treatments.FirstOrDefault(t => t.Id == selectedTreatmentId);
+        var customer = customers.FirstOrDefault(c => c.Id == selectedCustomerId);
+
+        if (employee == null || treatment == null || customer == null || !TimeOnly.TryParse(BookingStartTimeString, out var startTime))
+        {
+            totalPrice = 0;
+            StateHasChanged();
+            return;
+        }
+
+        // Opret en midlertidig booking til prisberegning
+        var tempBooking = Booking.Create(customer, employee, treatment, bookingDate, startTime);
 
         // Parse event time inputs
         TimeOnly? eventStartTime = TimeOnly.TryParse(EventStartTimeString, out var est) ? est : null;
@@ -236,7 +231,7 @@ else
 
         var basePriceTask = Task.Run(() =>
             BookingPriceService.CalculateFinalPrice(
-                Booking,
+                tempBooking,
                 employee,
                 treatment,
                 customer,
@@ -252,7 +247,7 @@ else
         var eventDiscountTask = EventEnabled
             ? Task.Run(() =>
                 BookingPriceService.CalculateFinalPrice(
-                    Booking,
+                    tempBooking,
                     employee,
                     treatment,
                     customer,
@@ -272,7 +267,7 @@ else
                 var tierDiscount = BookingService.GetDiscountStrategyForCustomerTotalBookings(customer);
                 return tierDiscount?.Apply(
                     BookingPriceService.CalculateFinalPrice(
-                        Booking,
+                        tempBooking,
                         employee,
                         treatment,
                         customer,
@@ -295,15 +290,20 @@ else
 
         var prices = new[] { basePrice, eventDiscountPrice, tierDiscountPrice };
         var validPrices = prices.Where(p => p > 0).ToArray();
-        Booking.TotalPrice = validPrices.Any() ? validPrices.Min() : 0;
+        totalPrice = validPrices.Any() ? validPrices.Min() : 0;
 
         StateHasChanged();
     }
 
-
-
-    private string DurationDisplay => Booking.BookingDuration.ToString(@"hh\:mm");
-    private string PriceDisplay => Booking.TotalPrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"));
+    private string DurationDisplay
+    {
+        get
+        {
+            var treatment = treatments.FirstOrDefault(t => t.Id == selectedTreatmentId);
+            return treatment != null ? TimeSpan.FromMinutes(treatment.Duration).ToString(@"hh\:mm") : "00:00";
+        }
+    }
+    private string PriceDisplay => totalPrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"));
 
     private async Task AddBooking()
     {
@@ -315,24 +315,28 @@ else
             return;
         }
 
-        Booking.BookingStartTime = startTime;
-
-        var (IsValid, ValidationError) = BookingService.ValidateBooking(Booking);
-        if (!IsValid)
+        if (selectedCustomerId == 0 || selectedEmployeeId == 0 || selectedTreatmentId == 0)
         {
-            ErrorMessage = ValidationError;
+            ErrorMessage = "Vælg venligst kunde, ansat og behandling.";
             return;
         }
 
-        if (!await BookingService.CanCreateBookingAsync(Booking))
+		// Lightweight dto der skal sendes bruges til oprettelse af booking
+        var dto = new BookingCreateDto
         {
-            ErrorMessage = "Booking konflikt: Kunde eller ansat har allerede en booking på dette tidspunkt.";
-            return;
-        }
+            CustomerId = selectedCustomerId,
+            EmployeeId = selectedEmployeeId,
+            TreatmentId = selectedTreatmentId,
+            BookingDate = bookingDate.Date,
+            BookingStartTime = startTime,
+            
+            // Udregnes i constructor
+            //BasePrice = totalPrice
+        };
 
         try
         {
-            await BookingService.AddBookingAsync(Booking);
+            await BookingService.AddBookingAsync(dto);
             NavigationManager.NavigateTo("/bookings");
         }
         catch (Exception ex)

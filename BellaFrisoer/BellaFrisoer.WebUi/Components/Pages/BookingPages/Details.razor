@@ -1,6 +1,8 @@
 ﻿@page "/bookings/detaljer"
 @using BellaFrisoer.Application.Interfaces
 @using BellaFrisoer.Domain.Models
+@using BellaFrisoer.Application.Queries;
+@inject IBookingQuery bookingQuery;
 @inject IBookingService BookingService
 @inject NavigationManager NavigationManager
 
@@ -26,7 +28,7 @@
             <dt class="col-sm-2">Tidspunkt</dt>
             <dd class="col-sm-10">@booking.BookingDate</dd>
             <dt class="col-sm-2">Pris</dt>
-            <dd class="col-sm-10">@booking.TotalPrice</dd>
+            <dd class="col-sm-10">@booking.BasePrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"))</dd>
         </dl>
         <div>
             <div class="mt-3">
@@ -46,7 +48,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        booking = await BookingService.GetByIdAsync(Id);
+        booking = await bookingQuery.GetByIdAsync(Id, cancellationToken: default);
 
         if (booking is null)
         {

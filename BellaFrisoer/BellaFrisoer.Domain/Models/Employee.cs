@@ -13,7 +13,7 @@ public class Employee
     public string LastName { get; set; }
     public long PhoneNumber { get; set; }
     public string? Email { get; set; }
-    public double HourlyPrice { get; set; }
+    public decimal HourlyPrice { get; set; }
     public string Qualifications { get; set; }
     [Timestamp]
     public byte[] RowVersion { get; set; }

@@ -1,72 +1,121 @@
 using BellaFrisoer.Application.Interfaces;
 using BellaFrisoer.Domain.Models;
 using BellaFrisoer.Domain.Models.Discounts;
+using BellaFrisoer.Application.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BellaFrisoer.Application.Queries;
+using BellaFrisoer.Domain.Services;
 
 namespace BellaFrisoer.Application.Services
 {
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _repository;
-        private readonly IBookingConflictChecker _conflictChecker;
         private readonly IBookingPriceService _bookingPriceService;
+        private readonly ICustomerRepository _customerRepository;
+        private readonly IEmployeeRepository _employeeRepository;
+        private readonly ITreatmentRepository _treatmentRepository;
+        private readonly IBookingQuery _bookingQuery;
+        private readonly IBookingConflictChecker _bookingConflictChecker;
 
         public BookingService(
             IBookingRepository repository,
-            IBookingConflictChecker conflictChecker,
-            IBookingPriceService bookingPriceService)
+            IBookingPriceService bookingPriceService,
+            ICustomerRepository customerRepository,
+            IEmployeeRepository employeeRepository,
+            ITreatmentRepository treatmentRepository,
+            IBookingQuery bookingQuery,
+            IBookingConflictChecker bookingConflictChecker)
         {
             _repository = repository;
-            _conflictChecker = conflictChecker;
             _bookingPriceService = bookingPriceService;
+            _customerRepository = customerRepository;
+            _employeeRepository = employeeRepository;
+            _bookingQuery = bookingQuery;
+            _treatmentRepository = treatmentRepository;
+            _bookingConflictChecker = bookingConflictChecker;
         }
 
-        public async Task<bool> CanCreateBookingAsync(Booking newBooking, CancellationToken cancellationToken = default)
+
+
+
+        /// <summary>
+        /// VIRKER IKKE I NUVÆRENDE VERSION
+        /// Update funktion for en eksisterende booking. Indlæser den eksisterende booking fra repository,
+        /// opdaterer dens egenskaber baseret på de angivne data,
+        /// validerer derefter bookingreglerne og kontrollerer for konflikter,
+        /// før den gemmer de opdaterede oplysninger.
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        public async Task UpdateBookingAsync(BookingUpdateDto dto, CancellationToken cancellationToken = default)
         {
-            if (newBooking is null) throw new ArgumentNullException(nameof(newBooking));
-            if (newBooking.BookingDuration <= TimeSpan.Zero) return false;
+            if (dto is null) throw new ArgumentNullException(nameof(dto));
 
-            var relevant = await _repository.GetByEmployeeIdAndDateAsync(newBooking.EmployeeId, newBooking.BookingDate, cancellationToken);
-            return !_conflictChecker.HasBookingConflict(newBooking, relevant);
-        }
+            // Load 
+            var existingBooking = await _repository.LoadAsync(dto.Id, cancellationToken)
+                ?? throw new KeyNotFoundException($"Booking with id {dto.Id} not found.");
 
-        public async Task AddBookingAsync(Booking booking, CancellationToken cancellationToken = default)
-        {
-            if (booking is null) throw new ArgumentNullException(nameof(booking));
-            if (booking.BookingDuration <= TimeSpan.Zero) throw new ArgumentException("Booking duration must be positive.", nameof(booking));
+            // Load Relaterede entiteter fra repository
+            var customer = await _customerRepository.GetByIdAsync(dto.CustomerId, cancellationToken)
+                ?? throw new KeyNotFoundException($"Customer with id {dto.CustomerId} not found.");
 
-            if (!await CanCreateBookingAsync(booking, cancellationToken))
-            {
-                throw new InvalidOperationException("Cannot add booking: time conflict with existing booking.");
-            }
+            var employee = await _employeeRepository.GetByIdAsync(dto.EmployeeId, cancellationToken)
+                ?? throw new KeyNotFoundException($"Employee with id {dto.EmployeeId} not found.");
 
-            await _repository.AddAsync(booking, cancellationToken);
-        }
+            var treatment = await _treatmentRepository.GetByIdAsync(dto.TreatmentId, cancellationToken)
+                ?? throw new KeyNotFoundException($"Treatment with id {dto.TreatmentId} not found.");
 
-        public async Task UpdateBookingAsync(Booking booking, CancellationToken cancellationToken = default)
-        {
-            if (booking is null) throw new ArgumentNullException(nameof(booking));
+            // Validerer og opdaterer booking via factory method
+            var booking = Booking.Update(existingBooking, customer, employee, treatment, dto.BookingDate, dto.BookingStartTime);
+
+            // Checker konflikter med andre bookinger
+            if (await _bookingConflictChecker.HasConflictWithUpdated(booking, dto.Id))
+                throw new InvalidOperationException("The booking conflicts with an existing booking.");
+
+            // Kalder opdateringsmetode i repository
             await _repository.UpdateAsync(booking, cancellationToken);
         }
 
-        public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
-        {
-            await _repository.DeleteAsync(booking.Id, cancellationToken);
-        }
-
         public async Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken cancellationToken = default)
-            => await _repository.GetAllAsync(cancellationToken);
+            => await _bookingQuery.GetAllAsync(cancellationToken);
 
         public async Task<Booking?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-            => await _repository.GetByIdAsync(id, cancellationToken);
+            => await _bookingQuery.GetByIdAsync(id, cancellationToken);
 
         public async Task<List<Booking>> FilterBookingsAsync(string searchTerm, CancellationToken cancellationToken = default)
-            => await _repository.FilterBookingsAsync(searchTerm, cancellationToken);
+            => await _bookingQuery.FilterBookingsAsync(searchTerm, cancellationToken);
 
+        // Command
+        /// <summary>
+        /// Sletter en eksisterende booking. Indlæser den eksisterende booking med sporede enheder fra repository, og udfører derefter sletningen.
+        /// </summary>
+        /// <param name="booking"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="KeyNotFoundException"></exception>
+        public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
+        {
+            if (booking is null) throw new ArgumentNullException(nameof(booking));
+
+            // Load existing booking with tracked entities from repository
+            var existingBooking = await _repository.LoadAsync(booking.Id, cancellationToken)
+                ?? throw new KeyNotFoundException($"Booking with id {booking.Id} not found.");
+
+            // Sletter den eksisterende booking
+            await _repository.DeleteAsync(existingBooking.Id, cancellationToken);
+        }
+
+        // ??? discount?
         public IDiscountStrategy? GetDiscountStrategyForCustomerTotalBookings(Customer customer)
         {
             if (customer is null) return null;
@@ -83,68 +132,40 @@ namespace BellaFrisoer.Application.Services
             return null;
         }
 
-        public IDiscountStrategy? GetDiscountStrategyForCustomerAndTreatment(Customer customer, int treatmentId)
+
+        /// <summary>
+        /// ATilføjer en ny booking baseret på de angivne bookingdetaljer. Validere bookingregler og kontrollerer for konflikter, før den gemmer den nye booking.
+        /// </summary>
+        /// <param name="dto">The booking details to create the new booking.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the booking details are null.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown when the customer, employee, or treatment specified in the booking details cannot be found.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the booking violates domain rules or conflicts with an existing booking.</exception>
+        public async Task AddBookingAsync(BookingCreateDto dto, CancellationToken cancellationToken = default)
         {
-            if (customer is null) return null;
-            if (treatmentId <= 0) return null;
+            if (dto is null) throw new ArgumentNullException(nameof(dto));
 
-            var countForTreatment = customer.Bookings?
-                .Count(b => b.TreatmentId == treatmentId) ?? 0;
+            // Loader relaterede entiteter fra repository
+            var customer = await _customerRepository.GetByIdAsync(dto.CustomerId, cancellationToken)
+                ?? throw new KeyNotFoundException($"Customer with id {dto.CustomerId} not found.");
 
-            if (countForTreatment >= 20)
-                return new GoldDiscount();
-            if (countForTreatment >= 10)
-                return new SilverDiscount();
-            if (countForTreatment >= 5)
-                return new BronzeDiscount();
+            var employee = await _employeeRepository.GetByIdAsync(dto.EmployeeId, cancellationToken)
+                ?? throw new KeyNotFoundException($"Employee with id {dto.EmployeeId} not found.");
 
-            return null;
+            var treatment = await _treatmentRepository.GetByIdAsync(dto.TreatmentId, cancellationToken)
+                ?? throw new KeyNotFoundException($"Treatment with id {dto.TreatmentId} not found.");
+
+            // opretter ny booking via factory methode. valider andre regler i factory method
+            var booking = Booking.Create(customer, employee, treatment, dto.BookingDate, dto.BookingStartTime);
+
+
+            // check for booking conflicts
+            if (await _bookingConflictChecker.HasConflictWithAny(booking))
+                throw new InvalidOperationException("The booking conflicts with an existing booking.");
+            // Tilføjer ny booking til med repository
+            await _repository.AddAsync(booking, cancellationToken);
         }
 
-        public decimal CalculatePrice(Booking booking, Employee? employee, Treatment? treatment, Customer? customer = null)
-        {
-            return _bookingPriceService.CalculateFinalPrice(
-                booking,
-                employee,
-                treatment,
-                customer,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null);
-        }
-
-        public void UpdateDurationFromTreatment(Booking booking, Treatment? treatment)
-        {
-            if (booking == null)
-                throw new ArgumentNullException(nameof(booking));
-
-            if (treatment == null || treatment.Id <= 0)
-            {
-                booking.BookingDuration = TimeSpan.Zero;
-                return;
-            }
-
-            booking.BookingDuration = TimeSpan.FromMinutes(treatment.Duration);
-        }
-
-        public (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking)
-        {
-            if (booking is null)
-                return (false, "Booking mangler.");
-            if (booking.CustomerId <= 0)
-                return (false, "VÃ¦lg kunde...");
-            if (booking.EmployeeId <= 0)
-                return (false, "VÃ¦lg ansat...");
-            if (booking.TreatmentId <= 0)
-                return (false, "VÃ¦lg behandling...");
-            if (booking.BookingStartTime == default)
-                return (false, "Ugyldigt starttidspunkt.");
-            if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)
-                return (false, "Ugyldig varighed.");
-            return (true, null);
-        }
     }
 }
