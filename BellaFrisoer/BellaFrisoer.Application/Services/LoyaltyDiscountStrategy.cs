@@ -19,7 +19,7 @@
 
                 // Alle vores strategier forsøger at opdatere RabatResult.
                 // men metoden er locked så race-condition håndteres.
-                var updated = result.TryUpdateIfBetter(discount, strategy);
+                var updated = result.TryUpdateIfBetter(discount);
 
             }, cancellationToken)).ToArray();
 
