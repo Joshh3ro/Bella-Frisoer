@@ -32,12 +32,12 @@ else
 
         <div class="mb-3">
             <label class="form-label">Dato</label>
-            <InputDate @bind-Value="bookingDate" class="form-control" @bind:after="UpdatePriceSync" />
+            <InputDate @bind-Value="bookingDate" class="form-control" @onchange="UpdatePriceSync" />
         </div>
 
         <div class="mb-3">
             <label class="form-label">Starttidspunkt</label>
-            <InputText @bind-Value="BookingStartTimeString" type="time" class="form-control" @bind:after="UpdatePriceSync" />
+            <InputText @bind-Value="BookingStartTimeString" type="time" class="form-control" @onchange="UpdatePriceSync" />
         </div>
 
         <div class="mb-3">

@@ -8,7 +8,7 @@
     {
         public async Task<DiscountResult> EvaluateAsync(Booking booking, Customer customer, IEnumerable<IDiscountStrategy> strategies, CancellationToken cancellationToken = default)
         {
-            booking.ValidateBooking(booking);
+            Booking.ValidateBooking(booking);
 
             var result = new DiscountResult();
 
