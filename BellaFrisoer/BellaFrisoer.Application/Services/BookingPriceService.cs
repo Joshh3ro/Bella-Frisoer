@@ -15,9 +15,6 @@ public class BookingPriceService : IBookingPriceService
 
     public async Task<decimal> CalculateFinalPrice(Booking booking, Customer customer)
     {
-        if (booking is null) throw new ArgumentNullException(nameof(booking));
-        if (customer is null) throw new ArgumentNullException(nameof(customer));
-
         var basePrice = booking.CalculateBasePrice();
 
         var strategies = new List<IDiscountStrategy>

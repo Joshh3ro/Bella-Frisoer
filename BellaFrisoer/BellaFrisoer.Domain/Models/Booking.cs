@@ -24,8 +24,8 @@ namespace BellaFrisoer.Domain.Models
         public Treatment Treatment { get; protected set; }
 
         // Beregnede properties
-        public DateTime BookingDateTime => CombineDateTime(BookingDate, BookingStartTime);
-        public DateTime BookingEndTime => BookingDateTime.Add(BookingDuration);
+        private DateTime BookingDateTime => CombineDateTime(BookingDate, BookingStartTime);
+        private DateTime BookingEndTime => BookingDateTime.Add(BookingDuration);
 
         // EF Core kræver parameterløs constructor
         private Booking() { }
@@ -39,9 +39,7 @@ namespace BellaFrisoer.Domain.Models
             TimeOnly startTime, 
             TimeSpan duration)
         {
-            Customer = customer ?? throw new ArgumentNullException(nameof(customer));
-            Employee = employee ?? throw new ArgumentNullException(nameof(employee));
-            Treatment = treatment ?? throw new ArgumentNullException(nameof(treatment));
+            ValidateBooking();
 
             if (duration <= TimeSpan.Zero)
                 throw new ArgumentException("Booking duration must be greater than zero.", nameof(duration));
@@ -51,9 +49,6 @@ namespace BellaFrisoer.Domain.Models
             BookingDuration = duration;
 
             BasePrice = CalculateBasePrice();
-
-            // Validerer bookingen efter den er oprettet. Ved den køres her, køres den også i booking create og update factory metoderne
-            ValidateBooking(this);
         }
 
         public static Booking Create(
@@ -69,8 +64,8 @@ namespace BellaFrisoer.Domain.Models
             return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
         }
 
-        public static Booking Update(
-            Booking existingBooking,
+        public Booking Update(
+            //Booking existingBooking,
             Customer customer,
             Employee employee,
             Treatment treatment,
@@ -78,12 +73,10 @@ namespace BellaFrisoer.Domain.Models
             TimeOnly startTime,
             TimeSpan? duration = null)
         {
-            if (existingBooking == null)
-                throw new ArgumentNullException(nameof(existingBooking));
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
             return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration)
             {
-                Id = existingBooking.Id // Preserver eksisterende ID
+                Id = this.Id // Preserver eksisterende ID
             };
         }
 
@@ -112,19 +105,23 @@ namespace BellaFrisoer.Domain.Models
 
         public void UpdateDurationFromTreatment(Booking booking)
         {
-            // Validerer booking før
-            ValidateBooking(booking);
-            
+            var(isValid, errorMessage) = ValidateBooking();
+            if (!isValid)
+            {
+                throw new ArgumentException(errorMessage);
+            }
             BookingDuration = TimeSpan.FromMinutes(booking.Treatment.Duration);
             BasePrice = CalculateBasePrice();
         }
 
         #endregion
 
+
         #region Conflicts
 
         public bool ConflictsWith(Booking other)
         {
+
             if (other == null) throw new ArgumentNullException(nameof(other));
             if (this.Employee.Id != other.Employee.Id) return false; // forskellig ansat
             if (this.BookingDuration <= TimeSpan.Zero || other.BookingDuration <= TimeSpan.Zero) return false;
@@ -132,31 +129,24 @@ namespace BellaFrisoer.Domain.Models
             return this.BookingDateTime < other.BookingEndTime && other.BookingDateTime < this.BookingEndTime;
         }
 
-        /// <summary>
-        /// Validerer booking domain regler. Kaster BookingValidationException hvis noget er ugyldigt.
-        /// </summary>
-        /// <param name="booking">Booking der skal valideres</param>
-        public static void ValidateBooking(Booking booking)
+
+        public (bool IsValid, string? ErrorMessage) ValidateBooking()
         {
-            if (booking is null)
-                throw new ArgumentNullException(nameof(booking), "Booking mangler...");
-            
-            if (booking.Customer.Id <= 0)
-                throw new ArgumentException("Vælg kunde...", nameof(booking));
-            
-            if (booking.Employee.Id <= 0)
-                throw new ArgumentException("Vælg ansat...", nameof(booking));
-            
-            if (booking.Treatment.Id <= 0)
-                throw new ArgumentException("Vælg behandling...", nameof(booking));
-            
-            if (booking.BookingStartTime == default)
-                throw new ArgumentException("Ugyldigt starttidspunkt...", nameof(booking));
-            
-            if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)
-                throw new ArgumentException("Ugyldig varighed...", nameof(booking));
+            if (Customer.Id <= 0)
+                return (false, "Vælg kunde...");
+            if (Employee.Id <= 0)
+                return (false, "Vælg ansat...");
+            if (Treatment.Id <= 0)
+                return (false, "Vælg behandling...");
+            if (BookingStartTime == default)
+                return (false, "Ugyldigt starttidspunkt.");
+            if (BookingDuration == default || BookingDuration <= TimeSpan.Zero)
+                return (false, "Ugyldig varighed.");
+            return (true, null);
         }
 
+
         #endregion
+
     }
 }

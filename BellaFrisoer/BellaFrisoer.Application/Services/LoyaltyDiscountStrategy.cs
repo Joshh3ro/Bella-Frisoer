@@ -8,7 +8,7 @@
     {
         public async Task<DiscountResult> EvaluateAsync(Booking booking, Customer customer, IEnumerable<IDiscountStrategy> strategies, CancellationToken cancellationToken = default)
         {
-            Booking.ValidateBooking(booking);
+            booking.ValidateBooking();
 
             var result = new DiscountResult();
 
@@ -18,8 +18,8 @@
                 var discount = strategy.Apply(booking, customer);
 
                 // Alle vores strategier forsøger at opdatere RabatResult.
-                // men metoden er locked så race-condition håndteres.
-                var updated = result.TryUpdateIfBetter(discount);
+                // men metoden er locked så race-conditions håndteres.
+                result.UpdateIfBetter(discount);
 
             }, cancellationToken)).ToArray();
 
