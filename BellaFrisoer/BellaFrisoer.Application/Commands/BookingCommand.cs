@@ -27,12 +27,12 @@ public class BookingCommandHandler : IBookingCommandHandler
     }
 
     // Delete
-    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(BookingDeleteDto command, CancellationToken cancellationToken = default)
     {
-        var booking = await _bookingService.GetByIdAsync(id, cancellationToken);
+        var booking = await _bookingService.GetByIdAsync(command.Id, cancellationToken);
         if (booking != null)
         {
-            await _bookingService.DeleteBookingAsync(booking, cancellationToken);
+            await _bookingService.DeleteBookingAsync(command, cancellationToken);
         }
     }
 }

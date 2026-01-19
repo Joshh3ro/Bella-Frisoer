@@ -1,4 +1,5 @@
 ﻿using BellaFrisoer.Application.Interfaces;
+using BellaFrisoer.Application.DTOs;
 using BellaFrisoer.Domain.Models;
 using BellaFrisoer.Domain.Models.Discounts;
 
@@ -13,8 +14,16 @@ public class BookingPriceService : IBookingPriceService
         _discountCalculator = discountCalculator;
     }
 
-    public async Task<decimal> CalculateFinalPrice(Booking booking, Customer customer)
+    public async Task<decimal> CalculateFinalPrice(UpdatePriceDto dto, Customer customer, Employee employee, Treatment treatment)
     {
+        var booking = Booking.CreateBookingForUpdatePrice(
+            customer,
+            employee,
+            treatment,
+            dto.BookingDate,
+            dto.BookingStartTime
+            );
+
         var basePrice = booking.CalculateBasePrice();
 
         var strategies = new List<IDiscountStrategy>

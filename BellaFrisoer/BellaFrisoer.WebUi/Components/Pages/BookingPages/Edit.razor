@@ -140,7 +140,14 @@ else
         if (employee != null && treatment != null && customer != null)
         {
             // Vi bruger en midlertidig booking til prisberegning
-            var tempBooking = Booking.Create(customer, employee, treatment, bookingDate, Booking!.BookingStartTime);
+            var dto = new UpdatePriceDto
+            {
+                EmployeeId = employee.Id,
+                TreatmentId = treatment.Id,
+                CustomerId = customer.Id,
+                BookingDate = bookingDate.Date,
+                BookingStartTime = Booking.BookingStartTime
+            };
             // totalPrice = BookingService.CalculatePrice(tempBooking, employee, treatment, customer);
         }
     }

@@ -155,12 +155,18 @@ else
             return;
         }
 
-        // Create a temporary domain Booking to feed the price service (domain-heavy approach)
-        var tempBooking = Booking.Create(customer, employee, treatment, bookingDate, startTime);
+        var dto = new UpdatePriceDto
+        {
+            CustomerId = selectedCustomerId,
+            EmployeeId = selectedEmployeeId,
+            TreatmentId = selectedTreatmentId,
+            BookingDate = bookingDate.Date,
+            BookingStartTime = startTime
+        };
 
         try
         {
-            totalPrice = await BookingPriceService.CalculateFinalPrice(tempBooking, customer);
+            totalPrice = await BookingPriceService.CalculateFinalPrice(dto, customer, employee, treatment);
         }
         catch (Exception ex)
         {

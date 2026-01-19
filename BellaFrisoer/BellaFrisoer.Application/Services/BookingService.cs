@@ -61,7 +61,7 @@ namespace BellaFrisoer.Application.Services
             if (dto is null) throw new ArgumentNullException(nameof(dto));
 
             // Load 
-            var existingBooking = await _repository.LoadAsync(dto.Id, cancellationToken)
+            var booking = await _repository.LoadAsync(dto.Id, cancellationToken)
                 ?? throw new KeyNotFoundException($"Booking with id {dto.Id} not found.");
 
             // Load Relaterede entiteter fra repository
@@ -75,11 +75,7 @@ namespace BellaFrisoer.Application.Services
                 ?? throw new KeyNotFoundException($"Treatment with id {dto.TreatmentId} not found.");
 
             // Validerer og opdaterer booking via factory method
-            var booking = Booking.Update(existingBooking, customer, employee, treatment, dto.BookingDate, dto.BookingStartTime);
-
-            // Checker konflikter med andre bookinger
-            if (await _bookingConflictChecker.HasConflictWithUpdated(booking, dto.Id))
-                throw new InvalidOperationException("The booking conflicts with an existing booking.");
+            booking = await booking.UpdateAsync(customer, employee, treatment, dto.BookingDate, dto.BookingStartTime, _bookingConflictChecker);
 
             // Kalder opdateringsmetode i repository
             await _repository.UpdateAsync(booking, cancellationToken);
@@ -103,16 +99,16 @@ namespace BellaFrisoer.Application.Services
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="KeyNotFoundException"></exception>
-        public async Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default)
+        public async Task DeleteBookingAsync(BookingDeleteDto dto, CancellationToken cancellationToken = default)
         {
-            if (booking is null) throw new ArgumentNullException(nameof(booking));
+            if (dto is null) throw new ArgumentNullException(nameof(dto));
 
             // Load existing booking with tracked entities from repository
-            var existingBooking = await _repository.LoadAsync(booking.Id, cancellationToken)
-                ?? throw new KeyNotFoundException($"Booking with id {booking.Id} not found.");
+            var booking = await _repository.LoadAsync(dto.Id, cancellationToken)
+                ?? throw new KeyNotFoundException($"Booking with id {dto.Id} not found.");
 
             // Sletter den eksisterende booking
-            await _repository.DeleteAsync(existingBooking.Id, cancellationToken);
+            await _repository.DeleteAsync(booking.Id, cancellationToken);
         }
 
         // ??? discount?
@@ -157,12 +153,8 @@ namespace BellaFrisoer.Application.Services
                 ?? throw new KeyNotFoundException($"Treatment with id {dto.TreatmentId} not found.");
 
             // opretter ny booking via factory methode. valider andre regler i factory method
-            var booking = Booking.Create(customer, employee, treatment, dto.BookingDate, dto.BookingStartTime);
+            var booking = await Booking.CreateAsync(customer, employee, treatment, dto.BookingDate, dto.BookingStartTime, _bookingConflictChecker);
 
-
-            // check for booking conflicts
-            if (await _bookingConflictChecker.HasConflictWithAny(booking))
-                throw new InvalidOperationException("The booking conflicts with an existing booking.");
             // Tilføjer ny booking til med repository
             await _repository.AddAsync(booking, cancellationToken);
         }

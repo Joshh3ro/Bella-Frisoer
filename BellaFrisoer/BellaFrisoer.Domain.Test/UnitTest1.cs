@@ -15,12 +15,12 @@ namespace BellaFrisoer.Domain.Test
         // --- Booking edge cases ---
 
         [Test]
-        public void Booking_CombineDateTime_ReturnsExpectedDateTime()
+        public async Task Booking_CombineDateTime_ReturnsExpectedDateTime()
         {
             var customer = new Customer { Id = 1 };
             var employee = new Employee { Id = 1, HourlyPrice = 200m };
             var treatment = new Treatment { Id = 1, Price = 100, Duration = 30 };
-            var booking = Booking.Create(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(9, 30));
+            var booking = await Booking.CreateAsync(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(9, 30), null);
 
             var expected = new DateTime(2025, 12, 11, 9, 30, 0);
             var actual = Booking.CombineDateTime(booking.BookingDate, booking.BookingStartTime);
@@ -29,50 +29,50 @@ namespace BellaFrisoer.Domain.Test
         }
 
         [Test]
-        public void Booking_BookingEndTime_AddsDurationCorrectly()
+        public async Task Booking_BookingEndTime_AddsDurationCorrectly()
         {
             var customer = new Customer { Id = 1 };
             var employee = new Employee { Id = 1, HourlyPrice = 200 };
             var treatment = new Treatment { Id = 1, Price = 100, Duration = 90 };
-            var booking = Booking.Create(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(10, 0));
+            var booking = await Booking.CreateAsync(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(10, 0), null);
 
             var expectedStart = new DateTime(2025, 12, 11, 10, 0, 0);
             var expectedEnd = expectedStart.AddMinutes(90);
 
-            Assert.That(booking.BookingDateTime, Is.EqualTo(expectedStart));
-            Assert.That(booking.BookingEndTime, Is.EqualTo(expectedEnd));
+            Assert.That(Booking.CombineDateTime(booking.BookingDate, booking.BookingStartTime), Is.EqualTo(expectedStart));
+            Assert.That(Booking.CombineDateTime(booking.BookingDate, booking.BookingStartTime).AddMinutes(booking.Treatment.Duration), Is.EqualTo(expectedEnd));
         }
 
         [Test]
-        public void Booking_BookingEndTime_CrossesMidnightHandledCorrectly()
+        public async Task Booking_BookingEndTime_CrossesMidnightHandledCorrectly()
         {
             var customer = new Customer { Id = 1 };
             var employee = new Employee { Id = 1, HourlyPrice = 200 };
             var treatment = new Treatment { Id = 1, Price = 100, Duration = 90 };
-            var booking = Booking.Create(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(23, 30));
+            var booking = await Booking.CreateAsync(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(23, 30), null);
 
             var expectedEnd = new DateTime(2025, 12, 12, 1, 0, 0);
-            Assert.That(booking.BookingEndTime, Is.EqualTo(expectedEnd));
+            Assert.That(Booking.CombineDateTime(booking.BookingDate, booking.BookingStartTime).AddMinutes(booking.Treatment.Duration), Is.EqualTo(expectedEnd));
         }
 
         [Test]
-        public void Booking_ZeroDuration_ThrowsException()
+        public async Task Booking_ZeroDuration_ThrowsException()
         {
             var customer = new Customer { Id = 1 };
             var employee = new Employee { Id = 1, HourlyPrice = 200 };
             var treatment = new Treatment { Id = 1, Price = 100, Duration = 0 };
             
-            Assert.Throws<ArgumentException>(() => Booking.Create(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(14, 0)));
+            Assert.ThrowsAsync<ArgumentException>(async () => await Booking.CreateAsync(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(14, 0), null));
         }
 
         [Test]
-        public void Booking_NegativeDuration_ThrowsException()
+        public async Task Booking_NegativeDuration_ThrowsException()
         {
             var customer = new Customer { Id = 1 };
             var employee = new Employee { Id = 1, HourlyPrice = 200 };
             var treatment = new Treatment { Id = 1, Price = 100, Duration = -30 };
 
-            Assert.Throws<ArgumentException>(() => Booking.Create(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(12, 0)));
+            Assert.ThrowsAsync<ArgumentException>(async () => await Booking.CreateAsync(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(12, 0), null));
         }
 
         // --- Basic model assertions ---
@@ -184,12 +184,12 @@ namespace BellaFrisoer.Domain.Test
         }
 
         [Test]
-        public void Booking_DataAnnotations_Valid_WhenRequiredPresent()
+        public async Task Booking_DataAnnotations_Valid_WhenRequiredPresent()
         {
             var customer = new Customer { Id = 1 };
             var employee = new Employee { Id = 1, HourlyPrice = 200 };
             var treatment = new Treatment { Id = 1, Name = "Haircut", Price = 250m, Duration = 45 };
-            var booking = Booking.Create(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(9, 0));
+            var booking = await Booking.CreateAsync(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(9, 0), null);
 
             var results = ValidateModel(booking);
             Assert.That(results, Is.Empty, "Booking with required properties set should pass DataAnnotations validation.");
