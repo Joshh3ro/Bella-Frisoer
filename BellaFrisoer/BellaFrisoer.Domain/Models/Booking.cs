@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BellaFrisoer.Domain.Services;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace BellaFrisoer.Domain.Models
@@ -62,6 +63,7 @@ namespace BellaFrisoer.Domain.Models
             Treatment treatment,
             DateTime bookingDate, 
             TimeOnly startTime, 
+            List<Booking> bookings,
             TimeSpan? duration = null)
         {
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
@@ -76,6 +78,7 @@ namespace BellaFrisoer.Domain.Models
             Treatment treatment,
             DateTime bookingDate,
             TimeOnly startTime,
+            List<Booking> bookings,
             TimeSpan? duration = null)
         {
             if (existingBooking == null)
@@ -136,7 +139,7 @@ namespace BellaFrisoer.Domain.Models
         /// Validerer booking domain regler. Kaster BookingValidationException hvis noget er ugyldigt.
         /// </summary>
         /// <param name="booking">Booking der skal valideres</param>
-        public static void ValidateBooking(Booking booking)
+        public void ValidateBooking(Booking booking, List<Booking> bookings, IBookingConflictChecker _bookingConflictChecker)
         {
             if (booking is null)
                 throw new ArgumentNullException(nameof(booking), "Booking mangler...");
@@ -155,6 +158,8 @@ namespace BellaFrisoer.Domain.Models
             
             if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)
                 throw new ArgumentException("Ugyldig varighed...", nameof(booking));
+            if (_bookingConflictChecker.HasConflictWithAny(this).Result)
+                throw new InvalidOperationException("The booking conflicts with an existing booking.");
         }
 
         #endregion

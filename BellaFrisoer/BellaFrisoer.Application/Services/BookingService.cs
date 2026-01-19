@@ -161,8 +161,6 @@ namespace BellaFrisoer.Application.Services
 
 
             // check for booking conflicts
-            if (await _bookingConflictChecker.HasConflictWithAny(booking))
-                throw new InvalidOperationException("The booking conflicts with an existing booking.");
             // Tilføjer ny booking til med repository
             await _repository.AddAsync(booking, cancellationToken);
         }
