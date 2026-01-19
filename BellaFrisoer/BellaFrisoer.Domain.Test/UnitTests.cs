@@ -20,14 +20,15 @@ namespace BellaFrisoer.Domain.Test
             var treatment2 = new Treatment { Id = 101, Name = "Wash", Price = 50m, Duration = 30 };
 
             // booking A: 10:00 - 11:00
-            var bookingA = Booking.Create(customer1, employee, treatment1, new DateTime(2025, 1, 1), new TimeOnly(10, 0));
+            var bookingA = Booking.CreateBookingForUpdatePrice(customer1, employee, treatment1, new DateTime(2025, 1, 1), new TimeOnly(10, 0));
 
             // booking B: 10:30 - 11:00 (overlaps A)
-            var bookingB = Booking.Create(new Customer { Id = 2, FirstName = "C", LastName = "D", PhoneNumber = 40000003 },
-                                          employee,
-                                          treatment2,
-                                          new DateTime(2025, 1, 1),
-                                          new TimeOnly(10, 30));
+            var bookingB = Booking.CreateBookingForUpdatePrice(
+                new Customer { Id = 2, FirstName = "C", LastName = "D", PhoneNumber = 40000003 },
+                employee,
+                treatment2,
+                new DateTime(2025, 1, 1),
+                new TimeOnly(10, 30));
 
             // Act
             var aConflictsB = bookingA.ConflictsWith(bookingB);
@@ -49,10 +50,10 @@ namespace BellaFrisoer.Domain.Test
             var date = new DateTime(2025, 2, 1);
 
             // employee1: 10:00–11:00
-            var bookingA = Booking.Create(customer1, employee1, treatment, date, new TimeOnly(10, 0));
+            var bookingA = Booking.CreateBookingForUpdatePrice(customer1, employee1, treatment, date, new TimeOnly(10, 0));
 
             // employee2: 10:30–11:30 (overlaps in time)
-            var bookingB = Booking.Create(
+            var bookingB = Booking.CreateBookingForUpdatePrice(
                 new Customer { Id = 2, FirstName = "C", LastName = "D", PhoneNumber = 40000003 },
                 employee2,
                 treatment,

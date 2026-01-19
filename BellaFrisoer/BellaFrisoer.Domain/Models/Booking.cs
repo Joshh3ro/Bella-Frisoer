@@ -40,6 +40,9 @@ namespace BellaFrisoer.Domain.Models
             TimeOnly startTime, 
             TimeSpan duration)
         {
+            Customer = customer;
+            Employee = employee;
+            Treatment = treatment;
 
             if (duration <= TimeSpan.Zero)
                 throw new ArgumentException("Booking duration must be greater than zero.", nameof(duration));
