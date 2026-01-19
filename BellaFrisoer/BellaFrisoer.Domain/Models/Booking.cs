@@ -39,9 +39,7 @@ namespace BellaFrisoer.Domain.Models
             TimeOnly startTime, 
             TimeSpan duration)
         {
-            Customer = customer ?? throw new ArgumentNullException(nameof(customer));
-            Employee = employee ?? throw new ArgumentNullException(nameof(employee));
-            Treatment = treatment ?? throw new ArgumentNullException(nameof(treatment));
+            ValidateBooking();
 
             if (duration <= TimeSpan.Zero)
                 throw new ArgumentException("Booking duration must be greater than zero.", nameof(duration));
@@ -66,8 +64,8 @@ namespace BellaFrisoer.Domain.Models
             return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
         }
 
-        public static Booking Update(
-            Booking existingBooking,
+        public Booking Update(
+            //Booking existingBooking,
             Customer customer,
             Employee employee,
             Treatment treatment,
@@ -75,12 +73,10 @@ namespace BellaFrisoer.Domain.Models
             TimeOnly startTime,
             TimeSpan? duration = null)
         {
-            if (existingBooking == null)
-                throw new ArgumentNullException(nameof(existingBooking));
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
             return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration)
             {
-                Id = existingBooking.Id // Preserver eksisterende ID
+                Id = this.Id // Preserver eksisterende ID
             };
         }
 
@@ -109,7 +105,7 @@ namespace BellaFrisoer.Domain.Models
 
         public void UpdateDurationFromTreatment(Booking booking)
         {
-            var(isValid, errorMessage) = ValidateBooking(booking);
+            var(isValid, errorMessage) = ValidateBooking();
             if (!isValid)
             {
                 throw new ArgumentException(errorMessage);
@@ -133,22 +129,22 @@ namespace BellaFrisoer.Domain.Models
             return this.BookingDateTime < other.BookingEndTime && other.BookingDateTime < this.BookingEndTime;
         }
 
-        public (bool IsValid, string? ErrorMessage) ValidateBooking(Booking booking)
+
+        public (bool IsValid, string? ErrorMessage) ValidateBooking()
         {
-            if (booking is null)
-                return (false, "Booking mangler.");
-            if (booking.Customer.Id <= 0)
+            if (Customer.Id <= 0)
                 return (false, "Vælg kunde...");
-            if (booking.Employee.Id <= 0)
+            if (Employee.Id <= 0)
                 return (false, "Vælg ansat...");
-            if (booking.Treatment.Id <= 0)
+            if (Treatment.Id <= 0)
                 return (false, "Vælg behandling...");
-            if (booking.BookingStartTime == default)
+            if (BookingStartTime == default)
                 return (false, "Ugyldigt starttidspunkt.");
-            if (booking.BookingDuration == default || booking.BookingDuration <= TimeSpan.Zero)
+            if (BookingDuration == default || BookingDuration <= TimeSpan.Zero)
                 return (false, "Ugyldig varighed.");
             return (true, null);
         }
+
 
         #endregion
 

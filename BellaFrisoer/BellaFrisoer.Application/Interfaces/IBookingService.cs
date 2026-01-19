@@ -11,7 +11,8 @@ namespace BellaFrisoer.Application.Interfaces
     {
         Task AddBookingAsync(BookingCreateDto dto, CancellationToken cancellationToken = default);
         Task UpdateBookingAsync(BookingUpdateDto dto, CancellationToken cancellationToken = default);
-        Task DeleteBookingAsync(Booking booking, CancellationToken cancellationToken = default);
+        //TODO: opret dto til booking delete og refakturere det 
+        Task DeleteBookingAsync(BookingDeleteDto dto, CancellationToken cancellationToken = default);
         IDiscountStrategy? GetDiscountStrategyForCustomerTotalBookings(Customer customer);
 
     }
