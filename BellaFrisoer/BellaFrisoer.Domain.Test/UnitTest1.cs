@@ -62,7 +62,7 @@ namespace BellaFrisoer.Domain.Test
             var employee = new Employee { Id = 1, HourlyPrice = 200 };
             var treatment = new Treatment { Id = 1, Price = 100, Duration = 0 };
             
-            Assert.ThrowsAsync<ArgumentException>(async () => await Booking.CreateAsync(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(14, 0), null));
+            Assert.ThrowsAsync<ArgumentException>(async () => await Booking.Create(customer, employee, treatment, new DateTime(2025, 12, 11), new TimeOnly(14, 0), null));
         }
 
         [Test]

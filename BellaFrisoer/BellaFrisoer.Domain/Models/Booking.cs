@@ -51,35 +51,33 @@ namespace BellaFrisoer.Domain.Models
             BookingStartTime = startTime;
             BookingDuration = duration;
 
+            ValidateBooking(customer, employee, treatment, startTime, duration);
+
             BasePrice = CalculateBasePrice();
         }
 
-        public static async Task<Booking> CreateAsync(
+        public static Booking Create(
             Customer customer, 
             Employee employee, 
             Treatment treatment,
             DateTime bookingDate, 
             TimeOnly startTime, 
-            IBookingConflictChecker bookingConflictChecker,
             TimeSpan? duration = null)
         {
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
             var booking = new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
 
-            var (isValid, errorMessage) = await booking.ValidateBookingAsync(bookingConflictChecker);
-            if (!isValid)
-                throw new ArgumentException(errorMessage);
+            
 
             return booking;
         }
 
-        public async Task<Booking> UpdateAsync(
+        public Booking Update(
             Customer customer,
             Employee employee,
             Treatment treatment,
             DateTime bookingDate,
             TimeOnly startTime,
-            IBookingConflictChecker bookingConflictChecker,
             TimeSpan? duration = null)
         {
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
@@ -87,10 +85,6 @@ namespace BellaFrisoer.Domain.Models
             {
                 Id = this.Id // Preserver eksisterende ID
             };
-
-            var (isValid, errorMessage) = await booking.ValidateBookingUpdateAsync(bookingConflictChecker);
-            if (!isValid)
-                throw new ArgumentException(errorMessage);
 
             return booking;
         }
@@ -130,9 +124,9 @@ namespace BellaFrisoer.Domain.Models
 
         #region CRUD
 
-        public async Task UpdateDurationFromTreatment(Booking booking, IBookingConflictChecker bookingConflictChecker)
+        public void UpdateDurationFromTreatment(Booking booking)
         {
-            var(isValid, errorMessage) = await ValidateBookingAsync(bookingConflictChecker);
+            var(isValid, errorMessage) = ValidateBooking(booking.Customer, booking.Employee, booking.Treatment, booking.BookingStartTime, TimeSpan.FromMinutes(booking.Treatment.Duration));
             if (!isValid)
             {
                 throw new ArgumentException(errorMessage);
@@ -157,37 +151,19 @@ namespace BellaFrisoer.Domain.Models
         }
 
 
-        public async Task<(bool IsValid, string? ErrorMessage)> ValidateBookingAsync(IBookingConflictChecker bookingConflictChecker)
+        public static (bool IsValid, string? ErrorMessage) ValidateBooking(Customer customer, Employee employee, Treatment treatment, TimeOnly startTime, TimeSpan duration)
         {
-            if (Customer.Id <= 0)
+            if (customer.Id <= 0)
                 return (false, "Vælg kunde...");
-            if (Employee.Id <= 0)
+            if (employee.Id <= 0)
                 return (false, "Vælg ansat...");
-            if (Treatment.Id <= 0)
+            if (treatment.Id <= 0)
                 return (false, "Vælg behandling...");
-            if (BookingStartTime == default)
+            if (startTime == default)
                 return (false, "Ugyldigt starttidspunkt.");
-            if (BookingDuration == default || BookingDuration <= TimeSpan.Zero)
+            if (duration == default || duration <= TimeSpan.Zero)
                 return (false, "Ugyldig varighed.");
-            if (await bookingConflictChecker.HasConflictWithAny(this))
-                throw new InvalidOperationException("The booking conflicts with an existing booking.");
-            return (true, null);
-        }
-
-        public async Task<(bool IsValid, string? ErrorMessage)> ValidateBookingUpdateAsync(IBookingConflictChecker bookingConflictChecker)
-        {
-            if (Customer.Id <= 0)
-                return (false, "Vælg kunde...");
-            if (Employee.Id <= 0)
-                return (false, "Vælg ansat...");
-            if (Treatment.Id <= 0)
-                return (false, "Vælg behandling...");
-            if (BookingStartTime == default)
-                return (false, "Ugyldigt starttidspunkt.");
-            if (BookingDuration == default || BookingDuration <= TimeSpan.Zero)
-                return (false, "Ugyldig varighed.");
-            if (await bookingConflictChecker.HasConflictWithUpdated(this, this.Id))
-                throw new InvalidOperationException("The booking conflicts with an existing booking.");
+            
             return (true, null);
         }
 

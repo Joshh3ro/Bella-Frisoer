@@ -75,7 +75,10 @@ namespace BellaFrisoer.Application.Services
                 ?? throw new KeyNotFoundException($"Treatment with id {dto.TreatmentId} not found.");
 
             // Validerer og opdaterer booking via factory method
-            booking = await booking.UpdateAsync(customer, employee, treatment, dto.BookingDate, dto.BookingStartTime, _bookingConflictChecker);
+            booking = Booking.Update(customer, employee, treatment, dto.BookingDate, dto.BookingStartTime);
+
+            if (await _bookingConflictChecker.HasConflictWithUpdated(booking, dto.Id))
+                throw new InvalidOperationException("The booking conflicts with an existing booking.");
 
             // Kalder opdateringsmetode i repository
             await _repository.UpdateAsync(booking, cancellationToken);
@@ -153,7 +156,10 @@ namespace BellaFrisoer.Application.Services
                 ?? throw new KeyNotFoundException($"Treatment with id {dto.TreatmentId} not found.");
 
             // opretter ny booking via factory methode. valider andre regler i factory method
-            var booking = await Booking.CreateAsync(customer, employee, treatment, dto.BookingDate, dto.BookingStartTime, _bookingConflictChecker);
+            var booking = Booking.Create(customer, employee, treatment, dto.BookingDate, dto.BookingStartTime);
+
+            if (await _bookingConflictChecker.HasConflictWithAny(booking))
+                throw new InvalidOperationException("The booking conflicts with an existing booking.");
 
             // Tilføjer ny booking til med repository
             await _repository.AddAsync(booking, cancellationToken);

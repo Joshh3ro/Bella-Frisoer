@@ -16,7 +16,7 @@ public class LoyaltyDiscountStrategy : IDiscountCalculator
     }
     public async Task<DiscountResult> EvaluateAsync(Booking booking, Customer customer, IEnumerable<IDiscountStrategy> strategies, CancellationToken cancellationToken = default)
     {
-        booking.ValidateBookingAsync(_bookingConflictChecker);
+        booking.ValidateBooking(customer, employee, booking.Treatment, );
 
         var result = new DiscountResult();
 
