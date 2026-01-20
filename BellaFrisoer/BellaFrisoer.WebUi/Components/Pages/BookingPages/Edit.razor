@@ -22,23 +22,15 @@
 }
 else
 {
-    <EditForm Model="this" OnValidSubmit="UpdateBooking">
+    <EditForm Model="this" OnValidSubmit="UpdateBooking" FormName="editBooking">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <!-- Dato -->
         <div class="mb-3">
             <label class="form-label">Dato:</label>
             <InputDate @bind-Value="bookingDate" class="form-control" />
         </div>
 
-        <!-- Starttid -->
-        <div class="mb-3">
-            <label class="form-label">Starttid:</label>
-            <InputTime @bind-Value="bookingStartTime" class="form-control" />
-        </div>
-
-        <!-- Kunde -->
         <div class="mb-3">
             <label class="form-label">Kunde:</label>
             <InputSelect @bind-Value="selectedCustomerId" class="form-select">
@@ -50,7 +42,6 @@ else
             </InputSelect>
         </div>
 
-        <!-- Ansat -->
         <div class="mb-3">
             <label class="form-label">Ansat:</label>
             <InputSelect @bind-Value="selectedEmployeeId" class="form-select">
@@ -62,7 +53,6 @@ else
             </InputSelect>
         </div>
 
-        <!-- Behandling -->
         <div class="mb-3">
             <label class="form-label">Behandling:</label>
             <InputSelect @bind-Value="selectedTreatmentId" class="form-select">
@@ -74,7 +64,6 @@ else
             </InputSelect>
         </div>
 
-        <!-- Pris -->
         <div class="mb-3">
             <label class="form-label fw-bold">Pris:</label>
             <div>@totalPrice.ToString("C0", daDK)</div>
@@ -100,12 +89,11 @@ else
     private int selectedEmployeeId;
     private int selectedTreatmentId;
     private DateTime bookingDate;
-    private TimeOnly bookingStartTime;
     private decimal totalPrice;
 
     protected override async Task OnInitializedAsync()
     {
-        Booking = await BookingQuery.GetByIdAsync(Id);
+        Booking = await BookingQuery.GetByIdAsync(Id, default);
         if (Booking is null)
         {
             NavigationManager.NavigateTo("/notfound");
@@ -120,7 +108,6 @@ else
         selectedEmployeeId = Booking.Employee.Id;
         selectedTreatmentId = Booking.Treatment.Id;
         bookingDate = Booking.BookingDate;
-        bookingStartTime = Booking.BookingStartTime;
 
         await UpdatePrice();
     }
@@ -143,7 +130,7 @@ else
             EmployeeId = employee.Id,
             TreatmentId = treatment.Id,
             BookingDate = bookingDate,
-            BookingStartTime = bookingStartTime
+            BookingStartTime = Booking!.BookingStartTime
         };
 
         totalPrice = await PriceService.CalculateFinalPrice(dto, customer, employee, treatment);
@@ -162,7 +149,7 @@ else
             EmployeeId = selectedEmployeeId,
             TreatmentId = selectedTreatmentId,
             BookingDate = bookingDate,
-            BookingStartTime = bookingStartTime
+            BookingStartTime = Booking.BookingStartTime
         };
 
         await BookingService.UpdateBookingAsync(dto);

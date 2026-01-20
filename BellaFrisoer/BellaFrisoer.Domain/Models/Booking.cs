@@ -1,6 +1,4 @@
-﻿using BellaFrisoer.Domain.Services;
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace BellaFrisoer.Domain.Models
 {
@@ -44,8 +42,7 @@ namespace BellaFrisoer.Domain.Models
             Employee = employee;
             Treatment = treatment;
 
-            if (duration <= TimeSpan.Zero)
-                throw new ArgumentException("Booking duration must be greater than zero.", nameof(duration));
+            ValidateBooking();
 
             BookingDate = bookingDate.Date;
             BookingStartTime = startTime;
@@ -83,9 +80,7 @@ namespace BellaFrisoer.Domain.Models
 
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
 
-            if (effectiveDuration <= TimeSpan.Zero)
-                throw new ArgumentException("Booking duration must be greater than zero.", nameof(duration));
-
+            ValidateBooking();
             BookingDate = bookingDate.Date;
             BookingStartTime = startTime;
             BookingDuration = effectiveDuration;
