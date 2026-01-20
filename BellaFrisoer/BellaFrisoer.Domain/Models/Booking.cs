@@ -54,48 +54,22 @@ namespace BellaFrisoer.Domain.Models
             BasePrice = CalculateBasePrice();
         }
 
-        public static async Task<Booking> CreateAsync(
+        public static Booking Create(
             Customer customer, 
             Employee employee, 
             Treatment treatment,
             DateTime bookingDate, 
             TimeOnly startTime, 
-            IBookingConflictChecker bookingConflictChecker,
             TimeSpan? duration = null)
         {
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
             var booking = new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
 
-            var (isValid, errorMessage) = await booking.ValidateBookingAsync(bookingConflictChecker);
-            if (!isValid)
-                throw new ArgumentException(errorMessage);
 
             return booking;
         }
 
-        public async Task<Booking> UpdateAsync(
-            Customer customer,
-            Employee employee,
-            Treatment treatment,
-            DateTime bookingDate,
-            TimeOnly startTime,
-            IBookingConflictChecker bookingConflictChecker,
-            TimeSpan? duration = null)
-        {
-            var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
-            var booking = new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration)
-            {
-                Id = this.Id // Preserver eksisterende ID
-            };
-
-            var (isValid, errorMessage) = await booking.ValidateBookingUpdateAsync(bookingConflictChecker);
-            if (!isValid)
-                throw new ArgumentException(errorMessage);
-
-            return booking;
-        }
-
-        public static Booking CreateBookingForUpdatePrice(
+        public void Update(
             Customer customer,
             Employee employee,
             Treatment treatment,
@@ -103,8 +77,20 @@ namespace BellaFrisoer.Domain.Models
             TimeOnly startTime,
             TimeSpan? duration = null)
         {
+            Customer = customer;
+            Employee = employee;
+            Treatment = treatment;
+
             var effectiveDuration = duration ?? TimeSpan.FromMinutes(treatment.Duration);
-            return new Booking(customer, employee, treatment, bookingDate, startTime, effectiveDuration);
+
+            if (effectiveDuration <= TimeSpan.Zero)
+                throw new ArgumentException("Booking duration must be greater than zero.", nameof(duration));
+
+            BookingDate = bookingDate.Date;
+            BookingStartTime = startTime;
+            BookingDuration = effectiveDuration;
+
+            BasePrice = CalculateBasePrice();
         }
 
         public decimal CalculateBasePrice()
@@ -112,7 +98,7 @@ namespace BellaFrisoer.Domain.Models
             decimal price = 0m;
 
             if (Treatment.Price > 0)
-                price += Treatment.Price;
+                price += Treatment.Price;   
 
             if (Employee.HourlyPrice > 0 && BookingDuration > TimeSpan.Zero)
             {
@@ -130,34 +116,16 @@ namespace BellaFrisoer.Domain.Models
 
         #region CRUD
 
-        public async Task UpdateDurationFromTreatment(Booking booking, IBookingConflictChecker bookingConflictChecker)
+        public void UpdateDurationFromTreatment()
         {
-            var(isValid, errorMessage) = await ValidateBookingAsync(bookingConflictChecker);
-            if (!isValid)
-            {
-                throw new ArgumentException(errorMessage);
-            }
-            BookingDuration = TimeSpan.FromMinutes(booking.Treatment.Duration);
-            BasePrice = CalculateBasePrice();
+                BookingDuration = TimeSpan.FromMinutes(this.Treatment.Duration);
+                BasePrice = CalculateBasePrice();
         }
 
         #endregion
 
 
-        #region Conflicts
-
-        public bool ConflictsWith(Booking other)
-        {
-
-            if (other == null) throw new ArgumentNullException(nameof(other));
-            if (this.Employee.Id != other.Employee.Id) return false; // forskellig ansat
-            if (this.BookingDuration <= TimeSpan.Zero || other.BookingDuration <= TimeSpan.Zero) return false;
-
-            return this.BookingDateTime < other.BookingEndTime && other.BookingDateTime < this.BookingEndTime;
-        }
-
-
-        public async Task<(bool IsValid, string? ErrorMessage)> ValidateBookingAsync(IBookingConflictChecker bookingConflictChecker)
+        public (bool IsValid, string? ErrorMessage) ValidateBooking()
         {
             if (Customer.Id <= 0)
                 return (false, "Vælg kunde...");
@@ -169,30 +137,8 @@ namespace BellaFrisoer.Domain.Models
                 return (false, "Ugyldigt starttidspunkt.");
             if (BookingDuration == default || BookingDuration <= TimeSpan.Zero)
                 return (false, "Ugyldig varighed.");
-            if (await bookingConflictChecker.HasConflictWithAny(this))
-                throw new InvalidOperationException("The booking conflicts with an existing booking.");
             return (true, null);
         }
-
-        public async Task<(bool IsValid, string? ErrorMessage)> ValidateBookingUpdateAsync(IBookingConflictChecker bookingConflictChecker)
-        {
-            if (Customer.Id <= 0)
-                return (false, "Vælg kunde...");
-            if (Employee.Id <= 0)
-                return (false, "Vælg ansat...");
-            if (Treatment.Id <= 0)
-                return (false, "Vælg behandling...");
-            if (BookingStartTime == default)
-                return (false, "Ugyldigt starttidspunkt.");
-            if (BookingDuration == default || BookingDuration <= TimeSpan.Zero)
-                return (false, "Ugyldig varighed.");
-            if (await bookingConflictChecker.HasConflictWithUpdated(this, this.Id))
-                throw new InvalidOperationException("The booking conflicts with an existing booking.");
-            return (true, null);
-        }
-
-
-        #endregion
 
     }
 }

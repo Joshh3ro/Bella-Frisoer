@@ -16,30 +16,31 @@ public class BookingPriceService : IBookingPriceService
 
     public async Task<decimal> CalculateFinalPrice(UpdatePriceDto dto, Customer customer, Employee employee, Treatment treatment)
     {
-        var booking = Booking.CreateBookingForUpdatePrice(
-            customer,
-            employee,
-            treatment,
-            dto.BookingDate,
-            dto.BookingStartTime
-            );
+        // Opretter en midlertidig booking til prisberegning
+        var booking = Booking.Create(
+            customer, 
+            employee, 
+            treatment, 
+            dto.BookingDate, 
+            dto.BookingStartTime);
 
         var basePrice = booking.CalculateBasePrice();
 
+        // Opretter strategier på en liste, som senere kan køres som tasks.
         var strategies = new List<IDiscountStrategy>
         {
             new BronzeDiscount(),
             new SilverDiscount(),
             new GoldDiscount(),
         };
-
-        var rabatResult = await _discountCalculator.EvaluateAsync(
+        // Afventer bedste rabatresultat fra LoyaltyDiscountStrategy
+        var discountResult = await _discountCalculator.EvaluateAsync(
             booking,
             customer,
             strategies
         );
-
-        var finalPrice = basePrice - rabatResult.BestDiscountAmount;
+        // Beregner den komplette pris, og anvender automatisk den bedste rabat.
+        var finalPrice = basePrice - discountResult.BestDiscountAmount;
 
         return finalPrice;
     }

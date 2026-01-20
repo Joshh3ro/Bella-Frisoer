@@ -4,7 +4,7 @@ using BellaFrisoer.Domain.Queries;
 namespace BellaFrisoer.Domain.Services
 {
     /// <summary>
-    /// Service der checker booking conflict
+    /// Domain service der checker booking conflicts.
     /// </summary>
     public class BookingConflictChecker : IBookingConflictChecker
     {
@@ -16,36 +16,54 @@ namespace BellaFrisoer.Domain.Services
         }
 
         /// <summary>
-        /// Checker om en booking har konflikt med eksisterende bookings
+        /// Checker om en booking har konflikt med eksisterende bookings.
         /// </summary>
         public async Task<bool> HasConflictWithAny(Booking booking)
         {
             var existingBookings = await _conflictQuery
                 .GetBookingsByEmployeeAndDateAsync(booking.Employee.Id, booking.BookingDate);
 
-            return existingBookings.Any(existing => booking.ConflictsWith(existing));
+            return existingBookings.Any(existing => Conflicts(booking, existing));
         }
+
         /// <summary>
-        /// Checker om booking har konflikt med eksisterende bookings, ekskluderer en specifik booking (bruges til opdateringsscenarier)
+        /// Checker om booking har konflikt med eksisterende bookings,
+        /// men ekskluderer en specifik booking (bruges ved update).
         /// </summary>
-        /// <param name="booking"></param>
-        /// <param name="excludeBookingId"></param>
-        /// <returns></returns>
         public async Task<bool> HasConflictWithUpdated(Booking booking, int excludeBookingId)
         {
             var existingBookings = await _conflictQuery
                 .GetBookingsByEmployeeAndDateAsync(booking.Employee.Id, booking.BookingDate);
 
-            var filteredBookings = FilterExcludedBooking(existingBookings, excludeBookingId);
-            return filteredBookings.Any(existing => booking.ConflictsWith(existing));
+            var filtered = existingBookings.Where(b => b.Id != excludeBookingId);
+
+            return filtered.Any(existing => Conflicts(booking, existing));
         }
 
-        /// <summary>
-        /// Filtrerer en specifik booking ud fra samlingen (bruges til opdateringsscenarier)
-        /// </summary>
-        private static IEnumerable<Booking> FilterExcludedBooking(IEnumerable<Booking> bookings, int excludeBookingId)
+
+        private static bool Conflicts(Booking a, Booking b)
         {
-            return bookings.Where(b => b.Id != excludeBookingId);
+            if (a == null || b == null)
+                throw new ArgumentNullException();
+
+            if (a.Employee.Id != b.Employee.Id)
+                return false;
+
+            if (a.BookingDuration <= TimeSpan.Zero || b.BookingDuration <= TimeSpan.Zero)
+                return false;
+
+            var aStart = Combine(a.BookingDate, a.BookingStartTime);
+            var aEnd = aStart.Add(a.BookingDuration);
+
+            var bStart = Combine(b.BookingDate, b.BookingStartTime);
+            var bEnd = bStart.Add(b.BookingDuration);
+
+            return aStart < bEnd && bStart < aEnd;
+        }
+
+        private static DateTime Combine(DateTime date, TimeOnly time)
+        {
+            return date.Date.Add(time.ToTimeSpan());
         }
     }
 }

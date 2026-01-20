@@ -1,48 +1,59 @@
 ﻿@page "/bookings/rediger"
 @using BellaFrisoer.Application.Interfaces
+@using BellaFrisoer.Application.Queries
 @using BellaFrisoer.Domain.Models
-@using BellaFrisoer.Application.DTOs;
-@using BellaFrisoer.Application.Queries;
+@using BellaFrisoer.Application.DTOs
 @inject IBookingService BookingService
 @inject IBookingQuery BookingQuery
 @inject ICustomerService CustomerService
 @inject IEmployeeService EmployeeService
 @inject ITreatmentService TreatmentService
+@inject IBookingPriceService PriceService
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Redigér Booking</PageTitle>
 
 <h1>Redigér Booking</h1>
 
-@if (Booking is null || customers is null || employees is null || treatments is null)
+@if (Booking is null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <EditForm Model="this" OnValidSubmit="UpdateBooking" FormName="editBooking">
+    <EditForm Model="this" OnValidSubmit="UpdateBooking">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
+        <!-- Dato -->
         <div class="mb-3">
             <label class="form-label">Dato:</label>
             <InputDate @bind-Value="bookingDate" class="form-control" />
         </div>
 
+        <!-- Starttid -->
+        <div class="mb-3">
+            <label class="form-label">Starttid:</label>
+            <InputTime @bind-Value="bookingStartTime" class="form-control" />
+        </div>
+
+        <!-- Kunde -->
         <div class="mb-3">
             <label class="form-label">Kunde:</label>
             <InputSelect @bind-Value="selectedCustomerId" class="form-select">
                 <option value="0">-- Vælg Kunde --</option>
                 @foreach (var c in customers)
                 {
-                    <option value="@c.Id">@c.FirstName @c.LastName (@(c.Bookings?.Count ?? 0) bookings)</option>
+                    <option value="@c.Id">@c.FirstName @c.LastName</option>
                 }
             </InputSelect>
         </div>
 
+        <!-- Ansat -->
         <div class="mb-3">
             <label class="form-label">Ansat:</label>
-            <InputSelect @bind-Value="SelectedEmployeeId" class="form-select">
+            <InputSelect @bind-Value="selectedEmployeeId" class="form-select">
                 <option value="0">-- Vælg Ansat --</option>
                 @foreach (var e in employees)
                 {
@@ -51,9 +62,10 @@ else
             </InputSelect>
         </div>
 
+        <!-- Behandling -->
         <div class="mb-3">
             <label class="form-label">Behandling:</label>
-            <InputSelect @bind-Value="SelectedTreatmentId" class="form-select">
+            <InputSelect @bind-Value="selectedTreatmentId" class="form-select">
                 <option value="0">-- Vælg behandling --</option>
                 @foreach (var t in treatments)
                 {
@@ -62,14 +74,10 @@ else
             </InputSelect>
         </div>
 
-        <dl class="row">
-            <dt class="col-sm-2">Pris</dt>
-            <dd class="col-sm-10">@totalPrice.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("da-DK"))</dd>
-        </dl>
-
+        <!-- Pris -->
         <div class="mb-3">
-            <label class="form-label">Rabat:</label>
-            <span class="badge bg-info">@GetDiscountLabel()</span>
+            <label class="form-label fw-bold">Pris:</label>
+            <div>@totalPrice.ToString("C0", daDK)</div>
         </div>
 
         <button type="submit" class="btn btn-primary">Gem</button>
@@ -78,7 +86,11 @@ else
 }
 
 @code {
+    private static readonly System.Globalization.CultureInfo daDK =
+        System.Globalization.CultureInfo.GetCultureInfo("da-DK");
+
     [SupplyParameterFromQuery] private int Id { get; set; }
+
     private Booking? Booking { get; set; }
     private List<Customer> customers = new();
     private List<Employee> employees = new();
@@ -88,114 +100,72 @@ else
     private int selectedEmployeeId;
     private int selectedTreatmentId;
     private DateTime bookingDate;
+    private TimeOnly bookingStartTime;
     private decimal totalPrice;
-
-    private int SelectedEmployeeId
-    {
-        get => selectedEmployeeId;
-        set
-        {
-            selectedEmployeeId = value;
-            UpdatePrice();
-        }
-    }
-
-    private int SelectedTreatmentId
-    {
-        get => selectedTreatmentId;
-        set
-        {
-            selectedTreatmentId = value;
-            UpdatePrice();
-        }
-    }
 
     protected override async Task OnInitializedAsync()
     {
-        Booking = await BookingQuery.GetByIdAsync(Id, cancellationToken: default);
+        Booking = await BookingQuery.GetByIdAsync(Id);
         if (Booking is null)
         {
-            NavigationManager.NavigateTo("notfound");
+            NavigationManager.NavigateTo("/notfound");
             return;
         }
 
-        customers = (await CustomerService.GetAllAsync()).OrderBy(c => c.FirstName).ToList();
-        employees = (await EmployeeService.GetAllAsync()).OrderBy(e => e.LastName).ToList();
-        treatments = (await TreatmentService.GetAllAsync()).OrderBy(t => t.Name).ToList();
+        customers = (await CustomerService.GetAllAsync()).ToList();
+        employees = (await EmployeeService.GetAllAsync()).ToList();
+        treatments = (await TreatmentService.GetAllAsync()).ToList();
 
-        selectedCustomerId = Booking.Customer?.Id ?? 0;
-        selectedEmployeeId = Booking.Employee?.Id ?? 0;
-        selectedTreatmentId = Booking.Treatment?.Id ?? 0;
+        selectedCustomerId = Booking.Customer.Id;
+        selectedEmployeeId = Booking.Employee.Id;
+        selectedTreatmentId = Booking.Treatment.Id;
         bookingDate = Booking.BookingDate;
+        bookingStartTime = Booking.BookingStartTime;
 
-        UpdatePrice();
+        await UpdatePrice();
     }
 
-    private void UpdatePrice()
+    private async Task UpdatePrice()
     {
+        var customer = customers.FirstOrDefault(c => c.Id == selectedCustomerId);
         var employee = employees.FirstOrDefault(e => e.Id == selectedEmployeeId);
         var treatment = treatments.FirstOrDefault(t => t.Id == selectedTreatmentId);
-        var customer = customers.FirstOrDefault(c => c.Id == selectedCustomerId);
 
-        if (employee != null && treatment != null && customer != null)
+        if (customer == null || employee == null || treatment == null)
         {
-            // Vi bruger en midlertidig booking til prisberegning
-            var dto = new UpdatePriceDto
-            {
-                EmployeeId = employee.Id,
-                TreatmentId = treatment.Id,
-                CustomerId = customer.Id,
-                BookingDate = bookingDate.Date,
-                BookingStartTime = Booking.BookingStartTime
-            };
-            // totalPrice = BookingService.CalculatePrice(tempBooking, employee, treatment, customer);
+            totalPrice = 0;
+            return;
         }
-    }
 
-    private string GetDiscountLabel()
-    {
-        var count = customers.FirstOrDefault(c => c.Id == selectedCustomerId)?.Bookings?.Count ?? 0;
-        if (count >= 15) return "Guld (15%)";
-        if (count >= 10) return "Sølv (10%)";
-        if (count >= 5) return "Bronze (5%)";
-        return "Ingen rabat";
+        var dto = new UpdatePriceDto
+        {
+            CustomerId = customer.Id,
+            EmployeeId = employee.Id,
+            TreatmentId = treatment.Id,
+            BookingDate = bookingDate,
+            BookingStartTime = bookingStartTime
+        };
+
+        totalPrice = await PriceService.CalculateFinalPrice(dto, customer, employee, treatment);
+        StateHasChanged();
     }
 
     private async Task UpdateBooking()
     {
-        if (Booking == null) return;
-
-        var customer = customers.First(c => c.Id == selectedCustomerId);
-        var employee = employees.First(e => e.Id == selectedEmployeeId);
-        var treatment = treatments.First(t => t.Id == selectedTreatmentId);
-
+        if (Booking == null)
+            return;
 
         var dto = new BookingUpdateDto
         {
             Id = Booking.Id,
-            CustomerId = customer.Id,
-            EmployeeId = employee.Id,
-            TreatmentId = treatment.Id,
-            BookingDate = bookingDate.Date,
-            BookingStartTime = Booking.BookingStartTime,
-		};
+            CustomerId = selectedCustomerId,
+            EmployeeId = selectedEmployeeId,
+            TreatmentId = selectedTreatmentId,
+            BookingDate = bookingDate,
+            BookingStartTime = bookingStartTime
+        };
 
         await BookingService.UpdateBookingAsync(dto);
         NavigationManager.NavigateTo("/bookings");
-    }
-
-    private void SetProperty(object obj, string propertyName, object value)
-    {
-        var prop = obj.GetType().GetProperty(propertyName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        if (prop != null && prop.CanWrite)
-        {
-            prop.SetValue(obj, value);
-        }
-        else if (prop != null)
-        {
-            // Prøv backing field hvis property setter er utilgængelig
-            var field = obj.GetType().GetField($"<{propertyName}>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            field?.SetValue(obj, value);
-        }
     }
 }
